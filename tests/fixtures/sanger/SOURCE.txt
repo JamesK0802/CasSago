@@ -1,0 +1,7 @@
+Public ABIF instrument fixtures used for parser/self-comparison tests.
+Source: https://github.com/biopython/biopython/tree/master/Tests/Abi
+Downloaded 28 October 2026. Biopython license included in LICENSE.biopython.rst.
+These files are not CasMANGO biological validation data.
+
+3100.ab1: 209224 bytes; SHA-256 78588d824dd967a1e58a9667a8f7ca1687ba38266420bbc5a6562c1893888efd
+3730.ab1: 299987 bytes; SHA-256 e4663e4db40232576ccdda5b878dddb01ef80a3d1b032941ba053146ce53f77b

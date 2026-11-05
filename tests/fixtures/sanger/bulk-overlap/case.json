@@ -1,0 +1,89 @@
+{
+  "id": "bulk-930471221-3",
+  "reference": "GGTACGTAAACGGCATTACGAGATCGCTCGTGTGGAATCCGACGCTCTGAATTTAGTTGCGCCATACTAACTTTCGGGTTAGGCGGAACCTATGCTAAACTCGAACACGAGAAGCCAAGACGGTCTATCATTGGTGTACCCGCTTACAAACAAAGTTTTGAGAACTTATGCAATCCACAGTCAGTGTTTCCTCAGGTATCGTTCGCCTGTACTGCACACACAACCGTGATTTGCCCTTTGACATTGATATCGCTTACGGCGCTGGAGCGCGTGCACTTCCAGCTGAACGCCGCCATGCGGGACGTCGTGCATATTGCGGAACCTAGGTTGTTAAAGGCATAACGTTAAAATTGTGTCAGTGCAAGAGGCGCTGCGTGGTCGGTGGTTTAGTTAGGAGTCAAACCCCACAAGATTAAGTCCAATCAGGTCGTTGCCACGGTGAGCCTTTGACAAGTGCCAATGGACTCCATAGACAAAGCAACTCACAACCATCACTGAGAAGACGACCGCAGGGCTCGCCTTAGAGCCAAGGATAGTTCAACCAGATACGGTGACTGTGCCAGCACCTTGCCTTATTGCGGTCGGAAGTCAGGTTTAAATCTAGTCCCCATGATAATGATGGAGATTATCAAGGGACATCATGGAAACGAATCTGGCTCTGTGGACTTTACCTTACTCATGCCCCGTTCATCTACGCTGGCTAGGTCTTACTACACGTTCACTGAACCGTGTATGTCTTTAGGGGGCTCTAACCGTTGCGTAACAAATTACTCCTAATTCGCCACCAATGTTTAAGGGCCTAGCTGCTTTTACGCTCATGTTGCCTCTTAGTACAAGATAGATCTATGTATGGTGTCTTATGCTTGTGGCCAGGGACTAGGTGGCCTCGTTCCCAGAGTCAAACATTTAGGAAATTTTGTTGAAGGGATGAGCAAGAAGGCGGACATCCCTGGGGGTGTCACATCAGCTAGAGGCCACGGATTACCGCTGTGATCCACCCAGAGCTATTGTTACCTTCCAAAACGCACCGTAAGTAAGTAGCCCGGTAGCTTATTACACAGTTTTGTCGAGAATCCCTAGTCGTTTATTGCATGATCGTATTCACTTTACGAAACGTCCCGGGACTAACGCGCCAGTTTAGGGGACAATGTAAACACAGGTACCAGTTTAACCGAATAAGTTGCAGCGCGCTAAATCATCGGTATAACTTACTTCTGGGCCAAACGCCAGAAACCTCCCGTGGAGGGCTG",
+  "primer": "ACGTGATCTAGCTGACTGAC",
+  "cut": 321,
+  "guide": "TCGTGCATATTGCGGAACCT",
+  "pam": "AGG",
+  "nonWtAlleles": 3,
+  "ratio": "equal",
+  "family": "empirical",
+  "files": {
+    "control": "control.ab1",
+    "sample": "sample.ab1"
+  },
+  "settings": {
+    "scope": "single",
+    "method": "mixture",
+    "readStart": 35,
+    "readEnd": 780,
+    "maxIndel": 20,
+    "window": 90,
+    "controlPhred": 15,
+    "direction": "forward",
+    "signalModel": "calibrated",
+    "checkWiderRange": false,
+    "largeDeletions": false,
+    "maxDeletion": 20,
+    "maxInsertion": 6,
+    "editStartRadius": 5,
+    "jointEngine": "signal-path"
+  },
+  "truth": {
+    "id": "bulk-930471221-3",
+    "alleles": [
+      {
+        "fraction": 0.25,
+        "events": []
+      },
+      {
+        "fraction": 0.25,
+        "events": [
+          {
+            "start": 323,
+            "end": 337,
+            "inserted": ""
+          }
+        ]
+      },
+      {
+        "fraction": 0.25,
+        "events": [
+          {
+            "start": 326,
+            "end": 326,
+            "inserted": "CT"
+          }
+        ]
+      },
+      {
+        "fraction": 0.25,
+        "events": [
+          {
+            "start": 324,
+            "end": 340,
+            "inserted": ""
+          }
+        ]
+      }
+    ],
+    "net": [
+      {
+        "size": 0,
+        "fraction": 0.25
+      },
+      {
+        "size": -14,
+        "fraction": 0.25
+      },
+      {
+        "size": 2,
+        "fraction": 0.25
+      },
+      {
+        "size": -16,
+        "fraction": 0.25
+      }
+    ]
+  }
+}

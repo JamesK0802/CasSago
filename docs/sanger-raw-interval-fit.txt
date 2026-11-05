@@ -1,0 +1,116 @@
+Current handoff — v38, 2026-11-05
+
+Conditional profile/class choices are now evaluated again against the SAME
+raw ADC objective as final sequence phase and coefficients. Earlier centroid
+selection no longer freezes a wrong slot allocation. Feasible zero-ADC-loss
+profile search may stop; primary genotype generation and all evaluation rules
+remain blind to truth.
+
+Known old seven: case3 v38 has 20 direct + 10 exact-equivalent + 0 unexplained.
+A separate reverse certificate fixes original truth frequencies and proves
+complete-emission equality using inferred genotypes for all three references.
+Fresh v38-b frozen batch: 4/5 pass; case4 has TWO Demo-A T1 failures.
+Five consecutive passes are NOT achieved for this version.
+User requested stop after this verification and handoff. No further runs until resumed.
+Latest: ../handoff-20261105-v38/NEXT_CODEX_HANDOFF.txt.
+The v36/v33 descriptions below are historical checkpoints.
+
+Current checkpoint — v36, 2026-11-05
+
+The candidate-independent objective is maximum ORIGINAL ADC interval violation,
+not the sum over a candidate-dependent number of compressed extrema rows.
+Centroid pruning is widened by the incumbent residual; a failed zero-error
+compatibility test cannot reject a positive-error improvement. Final reporting
+retains physical raw coefficients. Exactly one WT slot stays fixed; additional
+zero-net slots remain editable even when their current estimate is WT.
+WT response calibration now refines rounded-center least squares against the
+original control rounding intervals before extracting normalized observations.
+No truth, generator constants or mutant genotype is used for that calibration.
+
+Frozen fresh five: prospective-20261105-control-interval-v36-a; gate passed.
+134/150 direct recovery + 16 strictly certified full-signal equivalence.
+Known v33 case3 is still failing (7 unexplained); these fresh results do not
+establish universal recovery or robustness on noisy experimental traces.
+Details: ../benchmarks/resume-20261105-audit/재개_검증_결과_v36.txt.
+The older v33 description below is retained as history, not the current norm.
+
+Raw interval phase fitting — development, 2026-11-05
+
+Scope
+The conditional two-forward-target engine can use this adapter only after the
+existing Gaussian/integer-ADC adapter validates the measured control and sample.
+This is not evidence of robustness on noisy experimental chromatograms. The
+current conditional initializer still assumes WT plus five edited groups.
+
+Input and calibration
+The optimizer reads submitted references, target positions, and original control
+and edited channels. It reads no truth, recipe, seed, benchmark outcome or file ID.
+Genotype-independent center/side peak ratios bound the inverse Gaussian width.
+Known WT emissions bound the amplitude. Sample and control have a shared amplitude
+in this unit-response model; different unsupported responses use the existing
+adapter path, not a fabricated positive result.
+
+Objective
+Full-molecule coefficients remain free across the two targets and references.
+For each original measured channel value k, a compatible continuous prediction
+must be in [k - 0.5, k + 0.5]. Equal emission patterns at the same peak displacement
+are compacted by intersecting their intervals. Thus zero compacted residual
+implies every included measurement satisfies its interval. Nonzero residuals are
+summed per distinct compacted row, not per original repeated pixel.
+Fluorescence coefficients and the narrow width correction are fitted by sequential
+linear programs (at most five linearizations). Values are scaled to measured
+amplitude and width range for numerical conditioning. Every proposed score is
+recomputed with the nonlinear Gaussian, independently of the linear surrogate.
+Reported chromatogram R2 and centroid RMSE retain their ordinary meaning. They
+are not relabelled as raw interval scores. Search uses a separate selection loss.
+The fit is a local numerical optimization; no global nonlinear optimality is claimed.
+
+Candidate rejection and priority
+A conservative fraction interval permits every WT-compatible amplitude and width.
+Any exactly compatible model must lie in that box. Its squared distance to the
+extracted centroid is bounded by the farthest box endpoint at each observation.
+Since the simplex fit is the minimum centroid error for a dictionary, a value
+above this bound rejects exact compatibility without a full raw LP solve.
+If identical emission patterns require incompatible ADC intervals, half their
+interval separation is a lower bound on maximum error and therefore on total
+absolute error. A bound above an already fitted incumbent cannot improve it.
+Such a rejected candidate is labelled non-converged and is not reported as a fit.
+Measured residual locations prioritize target/reference coordinate updates.
+Coordinates currently fitting their local signal are deferred/skipped by this
+local search; this is a search heuristic, not a proof that all other genotypes
+are identified. New frozen prospective validation remains mandatory.
+
+Separation from benchmark certificates
+The inference score includes only the registered usable trace positions. Even
+zero raw interval loss is NOT a proof of identical AB1 files, identical genotype,
+unique allele phasing, or biological ground truth. Post-inference strict/native
+certificates remain separate and unchanged. Native certificates require both
+complete AB1 files to match byte for byte for inferred AND truth dictionaries.
+No GT input or certificate-derived candidate is returned to inference.
+
+Accepted compact genotype update (v33)
+A binary legal-base/origin model uses the measured raw intervals directly when
+available. Its emission constraints are scaled to measured ADC amplitude, so
+sub-count information is not silently rounded away in fraction-unit feasibility
+tolerances. A time-limited integer incumbent is a proposal only after explicitly
+checking binary values and every linear constraint; the whole-signal refit must
+then improve the selection loss. It is never treated as a genotype certificate.
+
+If a base/rate coordinate update stalls, the code transfers a small amount of
+mass between equal-net-length groups, proportional to each donor upstream-shift
+mass. It conserves those shift totals and the invariant tail length marginals.
+Steps start at a quarter of one half-ADC fraction (0.125 / learned amplitude),
+double geometrically, and do not exceed half the donor mass. All bases are then
+rediscovered jointly and the free complete-molecule weights are refitted.
+No file identity, truth frequency, or specially chosen allele word enters this.
+
+After a successful update, variable projection resumes before expensive local
+tract/origin exchanges. The rejected bilinear full-genotype/frequency MIP
+experiments are archived outside src and are not part of the accepted decoder.
+The raw interval metric guides genotype selection; final reporting retains the
+existing centroid-based coefficient quantification and measured-signal QC.
+The unchanged post-inference benchmark independently checks reported fractions
+and direct sequence recovery or complete-file exact-equivalence certificates.
+
+Solver option reference (bundled HiGHS 1.15.4):
+https://ergo-code.github.io/HiGHS/dev/options/definitions/

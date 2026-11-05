@@ -1,0 +1,301 @@
+{
+  "references": [
+    {
+      "name": "A",
+      "sequence": "ACGTGATCTAGCTGACTGACGGATTAGCGATCCCGCTGACAGTGATCCGCCCCCTCGTACTGTCAACCTCGTAGCTATTCCCGCGTCATGACTCACTACCGGAGAGCGAATCTCGGCCGCCAGACGCTAAGGCTCCGGAGACTCCCTCGGATGTTGGTGTCAGGTGCGGTTGCACAGGCAGAGGCTCCGGTGCGGGAGCTGGGCTTCGGAGGTTGGGGCCATGGGCTCCGCAAGGGCCTGGGGTACCCACCACAACAGGACTGTGCGGTGGTGAATGCATGGCCCGCTCTAAAACGGCCCGGGAGTCGGGATCCTCTGGACCACATCGCAAGAAGGGGGCCCTAGGCGGCCGCGCCTCACCCGTCGACGCTAGATGCACACGGCCAGCGGGGGGTGTGGCTCGTTTGACCCTCTCCAGCGCCGGAGCGATTCTCTGAGACCGAAAGGGTGGAGCCGGGACGCTACGCTCGGGAATCAGCAGCCCGTGCTCCGGAGAGGTCTGCTCCCTAGGCGGGACCGCCGGGGGCACTCTCTGACTGCCTACATCCTAAGATGGATCATTCCATTTGGGAGGCAACCTCAACTGACGTGTACGCGTCTCAGTGGCCGTGGTGCTCACCCTTTGAGGGCTCTACACCGAATGGGCACGTAAACCTGACGACCCAACCCTCTCGGAAGGGATGGCGGCGGGGGAGCCGCGCCCTTCCCACTCAGAGGGGCCCGCAAGACCACACGACCTGATAGCAAAGCGGGCACAGAGCCGCCGCGGCTCCCGGTCGGTTTGTGGAGGCGTCCTGCGCCTGCCCGCTCCATGCTGAGCCTGCTCCCGGGCCAGCCCGTAGTAACCACCACGGCGACAGTGCCGTTGCCGCTGCGGGGCATCTGAGGACCAAGGGATTGTCATCTTTCGCCGTACCCGCGCCGCGGTTTATGGATGCAGGTGTGCCCCGCCGTGACGCTGTAGCTAGGCCCCCCCGCGGCAGCGGGCGTGTGTGCCGCTATCGGGACGAGACGGGTGAGTGCTGAAAGCCAAGACTGTAATGGCGTGTAAGAGCGCTCGTCGCGCGCTTCCTCCAGCCGAGCCCGTTCGGGCCGTCCAACCGAGTTCGGGGGCCGACACGACACACGCGTGAGGCTAGGTACTAGTCTATCTATCAATTGCCGGCCTTCGGCACAGTGTGTGCGGCCATCGCGCGCCGTGAACCCAGGGCACGCCCGGC",
+      "cut": 334,
+      "cuts": [
+        334
+      ]
+    },
+    {
+      "name": "B",
+      "sequence": "ACGTGATCTAGCTGACTGACGGATTAGCGATCCCGCTGACAGTGATCCGCCCCCTCGTACTGTCAACCTCGTAGCTATTCCCGCGTCATGACTCACTACCGGAGAGCGAATCTCGGCCGCCAGACGCTAAGGGTCCGGAGACTCCCTCGGATGTTGGTGTCAGGTGCGGTTGCACAGGCAGAGGCTCCGGTGCGGGAGCTGGGCTTCGGAGGTTGGGGCCATGGGCTCCGCAAGGGCCTGGGGTACCCACCACAACAGGACTGTGCTGTGGTGAATGCATGGCCCGGTCTAAAACGGCCCGGGAGTCGGGATCCTCTGGACCACATCGCAAGAAGGGGGCCCTAGGCGGCCGCGCCTCACCCGTCGACGCTAGATGCACACGGCCAGCGGGGGGTGTGGCTCGTTTGACCCTCTCCAGCGCCGGAGCGATTCTCTGAGACCGAAAGGGTGGAGCCGGGACGCTACGCTCGGGAATCAGCAGCCCGTGCTCCGGAGAGGTCTGCTCCCTAGGCGGCACCGCCGGGGGCACTCTCTGACTGCCTACATCCTAAGATGGATCATTCCATTTGGGAGGCAACCTCAACTGACGTGTACGCGTCTCAGTGGCCGTGGTGCTCACCCTTTAAGGGCTCTACACCGAATGGTCAAGTAAACCTGACGACCCAACGCTCTCGGAAGGGATGGCGGCAGGGGAGCCGCGCCCTTCCCACTCAGAGGGGCCCGCAAGACCACACGACTTGATAGCAAAGCGGGCACAGAGCCGCCGCGGCTCCCGGTCGGGTTGTGGAGGCGTCCTGCGCCTGCCCGCTCGATGCTGAGCCTGCTCCCGGGCCAGCCCGTAGTAACCACCACGGCGACAGTGCCGTTGCCGCTGCGGGGCATCTGAGGACCAAGGGATTGTCATCTTTCGCCGTACCCGCGCCGCGGTTTATGGATGCAGGTGTGCCCCGCCGTGACGCTGTAGCTAGGCCCCCCCGCGGCAGCGGGCGTGTGTGCCGCTATCGGGACGAGACGGGTGAGTGCTGAAAGCCAAGACTGTAATGGCGTGTAAGAGCGCTCGTCGCGCGCTTCCTCCAGCCGAGCCCGTTCGGGCCGTCCAACCGAGTTCGGGGGCCGACACGACACACGCGTGAGGCTAGGTACTAGTCTATCTATCAATTGCCGGCCTTCGGCACAGTGTGTGCGGCCATCGCGCGCCGTGAACCCAGGGCACGCCCGGC",
+      "cut": 334,
+      "cuts": [
+        334
+      ]
+    },
+    {
+      "name": "D",
+      "sequence": "ACGTGATCTAGCTGACTGACGGATTAGCGATCCCGCTGACAGTGATCCGCCCCCTCGTACTGTCAACCTCGTAGCTATTCCCGCGTCATGCCTCACTACCGGAGAGCGAATCTCGGCCGCCAGATGCTAAGGCTCCGGAGACTCCCTCGGATGTTGGTGTCAGGTGCGGTTGCACAGGCAGAGGCTCCGGTGCGGGAGCGGGGCTTCGGAGGTTGGGGCCATGGGCTCCGCAAGGGCCTGGGGTACCCACCACAACAGGACTGTGCGGTGGTGAATGCATGGCCCGCTCTAAAACGGCCCGGGAGTCGGGATCCTCTGGACCACATCGCAAGAAGGGGGCCCTAGGCGGCCGCGCCTCACCCGTCGACGCTAGATGCACACGGCCAGCGGGGGGTGTGGCTCGTTTGACTCTCTCCAGCGCCGGAGCGATTCTCTGAGACAGAAAGGGTGGAGCCGGGACGCTACGCTCGGGAATCCGCAGCCCGTGCTCCGGAGAGGTCTGATCCCTAGGCGGGACCGCCGGGGGCACTCTCTGACTGCCTACATCCTAAGATGGATCATTCCATTTGGGAGGCAACCTCAACTGACGTGTACGCGTCTCAGTTGCCGTGGTGCTCACCCTTTGAGGGCTCTACACCGGAGGGGCACGTAAACCTGACGACCCAACCCTCTCGGAAGGGATGGCGGCGGGGGAGCCGCGCCCTTCCCACTCAGAGGGGCCCGCAAGACCACACGACCTGATAGCAAAGCGGGCACAGAGCCGCCGCGGCTCACGGTCGGTTTGTGGAGGCGCCCTGCGCCTGCCCGCTCCATGCTGAGCCTGCTCCCGGGCCAGCCCGTAGTAACCACCACGGCGACAGTGCCGTTGCCGCTGCGGGGCATCTGAGGACCAAGGGATTGTCATCTTTCGCCGTACCCGCGCCGCGGTTTATGGATGCAGGTGTGCCCCGCCGTGACGCTGTAGCTAGGCCCCCCCGCGGCAGCGGGCGTGTGTGCCGCTATCGGGACGAGACGGGTGAGTGCTGAAAGCCAAGACTGTAATGGCGTGTAAGAGCGCTCGTCGCGCGCTTCCTCCAGCCGAGCCCGTTCGGGCCGTCCAACCGAGTTCGGGGGCCGACACGACACACGCGTGAGGCTAGGTACTAGTCTATCTATCAATTGCCGGCCTTCGGCACAGTGTGTGCGGCCATCGCGCGCCGTGAACCCAGGGCACGCCCGGC",
+      "cut": 334,
+      "cuts": [
+        334
+      ]
+    }
+  ],
+  "primer": "ACGTGATCTAGCTGACTGAC",
+  "maxDeletion": 10,
+  "maxInsertion": 10,
+  "files": {
+    "control": "reference-allocation-control.ab1",
+    "sample": "reference-allocation-sample.ab1"
+  },
+  "truth": {
+    "id": "homeo-481903427-23",
+    "references": [
+      {
+        "name": "A",
+        "share": 0.25,
+        "controlShare": 0.3333333333333333,
+        "alleles": [
+          {
+            "fraction": 0.5626312984270043,
+            "events": []
+          },
+          {
+            "fraction": 0.13452015014449403,
+            "events": [
+              {
+                "start": 318,
+                "end": 319,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.0635703561768302,
+            "events": [
+              {
+                "start": 318,
+                "end": 321,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.05477087098260828,
+            "events": [
+              {
+                "start": 310,
+                "end": 317,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.05983646871514096,
+            "events": [
+              {
+                "start": 311,
+                "end": 311,
+                "inserted": "CG"
+              }
+            ]
+          },
+          {
+            "fraction": 0.1246708555539222,
+            "events": [
+              {
+                "start": 317,
+                "end": 317,
+                "inserted": "CCAAGT"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.5626312984270043
+          },
+          {
+            "size": -1,
+            "fraction": 0.13452015014449403
+          },
+          {
+            "size": -3,
+            "fraction": 0.0635703561768302
+          },
+          {
+            "size": -7,
+            "fraction": 0.05477087098260828
+          },
+          {
+            "size": 2,
+            "fraction": 0.05983646871514096
+          },
+          {
+            "size": 6,
+            "fraction": 0.1246708555539222
+          }
+        ]
+      },
+      {
+        "name": "B",
+        "share": 0.3,
+        "controlShare": 0.3333333333333333,
+        "alleles": [
+          {
+            "fraction": 0.3020647165714763,
+            "events": []
+          },
+          {
+            "fraction": 0.1664536290111347,
+            "events": [
+              {
+                "start": 310,
+                "end": 311,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.1066464732394301,
+            "events": [
+              {
+                "start": 315,
+                "end": 318,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.11634716921298209,
+            "events": [
+              {
+                "start": 315,
+                "end": 322,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.19081630504574065,
+            "events": [
+              {
+                "start": 312,
+                "end": 312,
+                "inserted": "GG"
+              }
+            ]
+          },
+          {
+            "fraction": 0.11767170691923622,
+            "events": [
+              {
+                "start": 318,
+                "end": 318,
+                "inserted": "TTGCCA"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.3020647165714763
+          },
+          {
+            "size": -1,
+            "fraction": 0.1664536290111347
+          },
+          {
+            "size": -3,
+            "fraction": 0.1066464732394301
+          },
+          {
+            "size": -7,
+            "fraction": 0.11634716921298209
+          },
+          {
+            "size": 2,
+            "fraction": 0.19081630504574065
+          },
+          {
+            "size": 6,
+            "fraction": 0.11767170691923622
+          }
+        ]
+      },
+      {
+        "name": "D",
+        "share": 0.45,
+        "controlShare": 0.3333333333333333,
+        "alleles": [
+          {
+            "fraction": 0.5013886889093555,
+            "events": []
+          },
+          {
+            "fraction": 0.08210227470169691,
+            "events": [
+              {
+                "start": 314,
+                "end": 315,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.10526881931120022,
+            "events": [
+              {
+                "start": 319,
+                "end": 322,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.09248407977048198,
+            "events": [
+              {
+                "start": 313,
+                "end": 320,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.06847161647160001,
+            "events": [
+              {
+                "start": 319,
+                "end": 319,
+                "inserted": "TC"
+              }
+            ]
+          },
+          {
+            "fraction": 0.1502845208356654,
+            "events": [
+              {
+                "start": 314,
+                "end": 314,
+                "inserted": "ACGGGG"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.5013886889093555
+          },
+          {
+            "size": -1,
+            "fraction": 0.08210227470169691
+          },
+          {
+            "size": -3,
+            "fraction": 0.10526881931120022
+          },
+          {
+            "size": -7,
+            "fraction": 0.09248407977048198
+          },
+          {
+            "size": 2,
+            "fraction": 0.06847161647160001
+          },
+          {
+            "size": 6,
+            "fraction": 0.1502845208356654
+          }
+        ]
+      }
+    ]
+  }
+}

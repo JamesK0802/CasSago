@@ -1,0 +1,173 @@
+CasMANGO shared-primer Sanger design prototype
+Research and implementation notes — 28 October 2026
+
+Requested assay
+One identical sequencing oligonucleotide and one mixed Sanger reaction. Each
+homeolog must support that same oligonucleotide at a position producing a
+different distance to its corresponding editing target. No homeolog-specific
+sequencing primer mixture, barcoded sequencing primers, or separate sequencing
+reactions are substituted for this requirement.
+
+The opposite PCR primer is a separate role. A conventional PCR pair can use
+the shared sequencing oligo and one common opposite oligo, followed by cleanup
+and Sanger sequencing from the shared oligo alone. The PCR partner is never
+presented as a second sequencing primer.
+
+References consulted
+1. Untergasser et al. 2012. Primer3—new capabilities and interfaces.
+   https://doi.org/10.1093/nar/gks596
+   https://primer3.org/manual.html
+   Borrowed design principles: primer length, GC, melting temperature,
+   secondary-structure checks, product geometry and reuse of design settings.
+   Primer3's implementation and thermodynamic secondary-structure engine are
+   NOT included or claimed to run in this browser prototype.
+2. Ye et al. 2012. Primer-BLAST: A tool to design target-specific primers
+   for polymerase chain reaction.
+   https://doi.org/10.1186/1471-2105-13-134
+   https://www.ncbi.nlm.nih.gov/tools/primer-blast/
+   Candidate generation must be followed by a binding-site and pair-geometry
+   check. This prototype searches only user-supplied references. It does not
+   run BLAST or establish genome-wide or mismatch-tolerant specificity.
+3. SantaLucia 1998. A unified view of polymer, dumbbell, and oligonucleotide
+   DNA nearest-neighbor thermodynamics.
+   https://doi.org/10.1073/pnas.95.4.1460
+   Implements a perfect-match DNA/DNA nearest-neighbour Tm calculation with
+   initiation, terminal A/T and self-complementarity terms, plus a monovalent
+   entropy correction. Na+ and oligo concentration are explicit. Mg2+, dNTP,
+   mismatch duplex thermodynamics and primer modifications are not modelled.
+4. Brinkman et al. 2014. Easy quantitative assessment of genome editing
+   by sequence trace decomposition (TIDE).
+   https://doi.org/10.1093/nar/gku936
+   Related precedent for fitting editing-induced shifts in a mixed trace.
+   Its published validation is not evidence validating this homeolog assay.
+5. Hill et al. 2014. Poly Peak Parser: Method and software for identification
+   of unknown indels using Sanger Sequencing of PCR products.
+   https://pmc.ncbi.nlm.nih.gov/articles/PMC4525701/
+   https://github.com/jonathonthill/sangerseqR
+   Related reference-assisted interpretation of overlaid allele traces.
+   The existing two-allele method is not treated as a general solution for
+   several edited homeologs or several simultaneous editing targets.
+
+Implemented search
+- Accept full genomic/gene references up to 2,000,000 bp each and 8,000,000
+  bp total (2–8 references). Enumerate A/C/G/T oligos near the targets within
+  the chosen read/product geometry, in both orientations. Scan entire input
+  sequences for these candidates; distant extra exact sites also reject them.
+  Only the sequencing side requires different target offsets. A common
+  opposite PCR primer may have identical target-relative positions.
+- Filter on Na-only NN Tm, GC, homopolymer runs, contiguous self-complement
+  runs, 3-prime complement runs, and simple hairpin stem length.
+- Require exactly one exact site per supplied reference, checking both
+  strands and overlapping occurrences. Every accepted primary primer has
+  one shared reading orientation across references.
+- Require every complete target window to fall downstream of the primer
+  and within the user-defined usable extension range. Do not silently crop
+  a window at a reference boundary.
+- Compare primer-to-cut distances for each corresponding target separately.
+  Different FASTA origins alone do not count as useful separation.
+- Report pairwise minimum WT sequence differences in the common observed
+  extension range. When a PCR pair is selected, extension sequences stop
+  at the PCR product boundary, not the end of the input genomic reference.
+- Report whether the corresponding cut-offset intervals overlap under the
+  chosen +/-indel geometry range. This does not simulate chromatogram
+  physics or establish identifiability of a mixture model.
+- Search for a common, unique exact-match opposite PCR partner. All required
+  windows must lie between the two primers in every reference, all product
+  sizes must be within limits, and pair Tm/complement checks must pass.
+- The partner stage evaluates at most 100 ranked primary candidates and
+  returns at most 24 designs. A negative after hitting this bound is labelled
+  an incomplete shortlist search, not impossibility.
+- Work runs in a cancellable web worker. Draft inputs are stored in the
+  browser's session storage. FASTA, CSV and versioned JSON exports are local.
+
+Limits of the feasibility status
+This is an exact-site candidate finder, not an experimentally validated
+assay or a complete Primer3/Primer-BLAST replacement. Extra sites with
+mismatches can still prime; sites outside supplied references are not checked.
+Unknown bases are not accepted as exact primer matches. Hairpin/dimer screens
+are heuristics, not calculated structure free energies. Different extension
+efficiencies can change observed trace proportions. No AB1 parser, peak
+decomposition engine, homeolog editing percentages, or NGS read analysis is
+newly implemented by this feature.
+
+Necessary next validation
+Obtain separate WT traces for the intended homeolog products using the same
+sequencing primer and matched chemistry. Test known mixtures before edited
+samples. Evaluate extra priming, PCR representation, trace alignment/mobility,
+and whether alternative homeolog-by-indel combinations produce equivalent
+signals. Add controlled indel mixtures and compare to molecule-resolved NGS
+before treating coefficients as homeolog-specific editing estimates.
+
+Engineering verification
+Tests cover genuine target-distance changes vs coordinate-origin changes,
+both orientations, duplicate sites, complete multi-target window coverage,
+PCR product geometry, no-candidate outcomes, indel-offset warnings, FASTA
+validation, guide/PAM cut coordinates, worker termination, stale-result
+invalidation, current-analysis imports and navigation state isolation.
+
+Separate-homeolog PCR workflow (added 28 October 2026)
+- Select a separate pair per reference, with all required windows inside the
+  product and the selected sequencing side covering every target window.
+- At least one primer must be specific to its homeolog under the selected
+  ungapped mismatch screen (0, 1 or 2 substitutions). An option requires both
+  primers to pass. The other side may use a common sequence/position.
+- Screen both strands of every full input. A candidate must have exactly one
+  qualifying site in its own reference and no qualifying site in other
+  inputs if labelled specific. Inputs with N are rejected in this workflow
+  because unknown bases cannot establish absence of near binding.
+- m+1 disjoint exact seeds retrieve all possible ungapped matches with at
+  most m substitutions; full oligo comparison then counts mismatches.
+- Candidate generation/quality ranking is followed by a bounded check of up
+  to 180 primaries and 180 partners per orientation per homeolog, returning
+  up to 3 pairs each. Missing homeologs are listed; no bounded negative is
+  labelled impossible. Biological specificity still needs validation.
+- No gapped-binding, mismatch-thermodynamic or genome-database search.
+- Supplementary design reference: Ramirez-Gonzalez et al., PolyMarker,
+  https://pmc.ncbi.nlm.nih.gov/articles/PMC4765872/
+  Its polyploid locus-specific design principle informed this option;
+  PolyMarker itself and its aligner/Primer3 pipeline are not executed.
+
+Position inspection
+Maps align on the selected target boundary, with shared scale, primer
+orientation, opposite primer, required windows, actual genomic coordinates
+and a full-reference position strip. A horizontal sequence inspector can
+focus on the target, sequencing primer or opposite primer. It displays
+input-strand bases; target anchoring is not a homology alignment.
+
+Separate analysis tab added 28 October 2026
+Primer-design diagnostics remain separate from experimental analysis. The same
+Sanger page now includes single-locus AB1 analysis; see sanger-analysis-methods.txt
+for selectable methods, references, implementation scope and validation limits.
+A later experimental mixed-amplicon extension adds a mandatory reference-model
+separation gate; it is not biologically validated. See sanger-analysis-methods.txt.
+
+3′ diagnostic SNP mode and wheat simulation (28 October 2026)
+The default separate-PCR method now aligns target-anchored homologous regions,
+requires a diagnostic SNP in the last 3 bases (or terminal base only) against
+every other supplied homeolog, and prioritizes those primers before the bounded
+shortlist. Full-input near sites with a compatible terminal segment reject a
+specific primer. Shared opposite primers remain possible. Reverse-primer SNPs
+are reported in oligo orientation with positions on the original inputs.
+PolyMarker (Ramirez-Gonzalez et al. 2015; doi:10.1093/bioinformatics/btv069)
+provides the published precedent for 3′ genome-specific variation. This is our
+own candidate algorithm, not execution or validation of PolyMarker/Primer3.
+The alignment is target anchored, local (up to ±1,600 bp), gapped; primer binding
+screens remain ungapped. A terminal mismatch does not guarantee selective PCR.
+
+The shared-primer PCR partner also must retain every template beyond the latest
+required target window on the common extension axis, including shifted models.
+Checking each product only around its own cut was insufficient for pooled fitting.
+
+The Sanger Analysis tab and ABIF mixed-trace prototype were subsequently added;
+earlier 'no AB1 engine' wording above describes the original design-only stage.
+An independent forward simulation and reproducible wheat harness now live in
+scripts/sanger-wheat/. Source assembly: Chinese Spring IWGSC GCA_900519105.1.
+Simulation results, detailed methods and source hashes are separate artifacts,
+not biological validation. All 21 chromosome types are catalogued; full-genome
+PCR specificity and gRNA off-target screening were not performed.
+
+Live Ensembl reference import (28 October 2026)
+Both gRNA Design and Primer Design now support on-demand genomic reference imports.
+Selected species/cultivar, assembly, genomic coordinates, retrieval date and SHA-256
+travel with imported references. Check latest stages source changes for explicit
+replacement and resets old target coordinates. See docs/reference-library.txt.

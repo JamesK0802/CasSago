@@ -1,0 +1,70 @@
+Two-target sequence groups: implemented inference contract
+
+The fast branch supports two ordered forward targets, edit origins within +/-3 bp,
+length limits up to 10 bp, separated local windows, and validated unit-cycle
+emissions. It uses measured control and sample chromatograms. Unsupported inputs
+retain the general analysis fallback. Synthetic truth is never an inference input.
+
+1. Use only the measured prefix before the earliest possible second-target edit.
+   Infer first-target length marginals from invariant flanks, then local sequence
+   candidates from frequency atoms and bounded edit paths. Keep complete first-
+   target allele backgrounds, rather than treating downstream phase as WT.
+
+2. Fit cumulative length marginals on invariant signal after both targets. Invert
+   the first-target shift convolution to propose second-target profiles. This
+   initializer approximates independent pairing. Approximate local proposals are
+   not accepted results: they are ranked against the original complete signal.
+   Default proposal limits are five non-WT alleles per target, a 1% within-reference
+   atom floor, substitution tracts up to 10 bp, and 200 proposal states per reference.
+
+3. Materialize complete molecules for all pairings of a first-target background
+   and a proposed second-target allele. With Phi[h,i,j] the complete unit-emission
+   column, fit nonnegative w[h,i,j] with sum(w)=1 to all usable measured cycles.
+   No constraint w[h,i,j]=p[h,i]*q[h,j] is imposed. The joint fit can represent
+   correlated editing. Search candidate profiles by this same full-signal loss
+   until stable (at most four passes). This is bounded candidate search, not a
+   claim of exhaustive global sequence optimization. Reference shares and target
+   marginals are sums of the fitted molecule weights. T1 candidate sequences are
+   established from the prefix; their weights are jointly refitted.
+
+4. Check control agreement, convergence, and per-cycle unexplained signal. Signal
+   fit QC and sequence identifiability are distinct. Poor matrix conditioning is
+   reported; it does not by itself prove a failed fluorescence reconstruction.
+
+Default sequence reporting
+
+Keep the fitted sequence groups and their point fractions. Different substitution
+alleles and different deletion placements are not pooled into an N sequence.
+N is permitted for a certified insertion fiber only: same canonical insertion
+position, same inserted length, exactly conserved family mass, and unchanged
+non-family genotype masses. Every alternative must pass complete fitted-emitter
+rational equality, not merely a rounded R-squared or similar objective value.
+Verified identical final deletion sequences may retain placement alternatives.
+Broad substitution/WT transfers and cross-class exchanges remain research helpers;
+they are not default discovery or default N/mass-range rendering.
+
+Benchmark evaluation
+
+The public score is a direct comparison of the current inferred sequence groups
+and point fractions. A group is sequence-detected only when its sequence is
+actually called above the display threshold. GT sequence detection is blue;
+missing/unresolved GT sequences are red. Detection does not guarantee an accurate
+fraction: estimated percentages and their deltas are evaluated separately.
+An N insertion block does not earn recovery credit for its possible GT words.
+The usual fraction accuracy audit uses a 2 percentage-point tolerance.
+
+Complete-profile fiber membership is an explicitly separate research diagnostic.
+It does not earn detection/recovery credit, replace a missed group, select a
+representative from GT, or appear as an Option match badge. Earlier compatibility
+reports must not be interpreted as complete genotype recovery rates. The corrected
+point-detection audit is benchmarks/point-display-20261104/detection-audit.json.
+
+Result navigation
+
+Reference/target selection does not start an analysis worker. Summary rows,
+reference tabs, chart inputs, annotation views, and separated raw traces are
+cached for the immutable result and view parameters. Switching to an existing
+target reuses those data; changed results or windows invalidate their caches.
+
+Validation uses ideal synthetic traces. It is not a general claim about noisy
+instrument data or unsupported observation models.

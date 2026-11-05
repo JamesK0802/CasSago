@@ -1,0 +1,88 @@
+PRESENTATION AMENDMENT — 2026-10-31
+The default result now draws one representative physical placement per length
+group: the placement with the greatest fitted allocation. Group fractions retain
+the sum over all placements. Equal optima are resolved deterministically by the
+lowest reference coordinate and explicitly marked as tied. Best fit is a point
+estimate, not a calibrated probability or biological confirmation. No position is
+invented for components without fitted events. Alternative placement lists and
+selection controls are removed from the default UI; full alternatives remain in
+JSON/CSV, and the representative site is exported consistently. The existing
+Window controls display coverage for both annotations and chromatograms.
+The inference workers and earlier top-placement accuracy metrics are unchanged.
+Historical presentation descriptions below are superseded by this amendment.
+
+Sanger length evidence and placement semantics — 2026-10-31
+
+One physical junction-mixture engine and the existing minimal public inputs remain.
+No Phred, confidence, method or signal-processing knob was added to the automatic UI.
+The percentage threshold is display-only. Every registered measured sample cycle
+remains in the final point fit. Deletions keep both physical endpoint directions.
+
+Interpretation contract
+A fitted group is reference x net indel length, not an observed molecular allele.
+Origin alternatives are nested within that group. Threshold the summed length mass
+before expanding placements; retain the full denominator and all allocations.
+A component with no fitted events does not acquire an invented cut-anchored site.
+Fitted placements are not exhaustive uncertainty sets or calibrated probabilities.
+Even one fitted placement is not an experimentally confirmed breakpoint. Insertion
+bases remain N when identity is unresolved. Configured cuts mark input targets.
+Unresolved lengths carry an explicit Unconfirmed candidate label. Old results with
+no evidence metadata remain unresolved. QC and length evidence are separate.
+CSV carries the same evidence and position interpretation; JSON retains full fits,
+pre-screen coefficients, scores and predictive-fold metadata.
+
+Numerical model and checks
+Relative phase now permits nonnegative leading or lagging fluorescence mixtures.
+Its signed amplitude is estimated/validated using intact upstream WT only. The
+same phase convention is used by calibration, physical junction, context, transition
+and legacy emission helpers. Signed amplitude is not a user-editable parameter.
+Single-reference fitting now uses the same length-support procedure as mixed fits.
+The covariance calculation uses the regression precision weights consistently.
+For pooled reference attribution, independent WT-control prediction error provides
+an additional model-error floor. This changes evidence, not reference coefficients.
+
+A residual test alone can overstate evidence after flexible insertion probabilities
+have absorbed noise. Two complementary contiguous-cycle block fits therefore relearn
+the SAME junction model's origins and insertion marginals from their own training
+observations. Blocks have length ceil(cuberoot(number of measured positions)).
+Selected nonzero classes and WT are retained for this conditional check. Held-out
+prediction is compared to a training-only null refit without the tested class; both
+folds must improve. No full-fit origin/base probabilities are copied into folds.
+Length-class selection itself used the full fit: this is an engineering predictive
+guard, not independent model-selection inference, a calibrated CI, or biological proof.
+The point estimate is not altered by the predictive guard. Lack of evidence is not
+proof of absence; numerical estimates remain visible even with warnings.
+
+Results and limitations
+Frozen legacy244: single156/156 and homeolog87/88 retain the original numeric gates.
+All1780 true edited groups>=2% remain estimated;1723 meet conditional evidence.
+The other57 retain numerical estimates. All39 nonzero wrong allocations fail that
+conditional evidence. Numerical zero tolerance is1e-8 fraction, not a biological floor.
+The old homeolog cohorts violate default shared-primer offsets and remain analyzer
+stresses, not complete-workflow accuracy claims. The5.85pp assertion remains failing.
+
+Final separately frozen seed1672314073: four actual-first-primer/template/AB1 cases,
+single/three-homeolog x directions x small/31bp deletion, with different A/B/D spectra.
+All28 true edited groups>=2% meet conditional evidence;12 wrong nonzero allocations
+do not. Raw wrong allocations still reach2.56%, one conditional TV5.45pp fails the
+unchanged5pp gate, and all four0.5% truths are missed. The raw numeric gate is3/4,
+not an overall robustness or group-precision pass. A noise-free0.5% insertion has
+predictive support, so there is no fixed1% exclusion rule.
+
+Top placement compatibility is61/96 in the earlier12 cases and13/32 in the final4.
+The final fitted alternatives include a compatible placement in24/32. Equivalence
+allows repeated-sequence positions producing the same edited DNA; insertion identity
+is unphased. These are descriptive compatibility metrics, not calibrated coverage.
+Accurate physical edit-site identification remains unvalidated. Multi-target is not
+implemented in the automatic workflow and was not routed to the masked legacy joint fit.
+
+Public cross-run negative-control diagnostic:1.91%/0.70% estimated indel ->0%/0%,
+matching native public ICE1.2.0 on these files. They are not confirmed identical-specimen
+technical replicates; one called SNP differs. No edited wet-lab truth is established.
+The synthetic component model also does not establish the full instrument-noise law.
+
+Tests653/654 (sole failure: retained old5.85pp gate); worker typecheck and production
+build pass, with the pre-existing2.33MB initial-bundle warning. Desktop artifact:
+/Users/james/Desktop/CasMango_Sanger/04_개발기록/CasMANGO_Sanger_GroupPosition_20261031
+Source/binary freezes, all truth/data, rejected diagnostics, raw accuracy, evidence
+and position audits are preserved. See scripts/sanger-empirical/README.txt.

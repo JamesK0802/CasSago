@@ -1,0 +1,10 @@
+Sanger output policy — 2026-10-30
+Computed estimates are shown even when QC fails. QC is advisory and accuracy is evaluated
+against truth independently. Incorrect estimates count as failures even when QC warns.
+Reference geometry, conditioning, registration and control-fit warnings do not suppress a
+computable pooled result. Low-share references retain conditional spectra when share>0;
+zero-share conditional percentages are undefined. Invalid files, invalid reference/primer
+inputs and insufficient actual signal coverage still produce explicit computation errors.
+No unresolved insertion identity or breakpoint is fabricated. Multitarget inference is unchanged.
+Homeolog validation:60 results,59 accuracy passes,1 failure,2 QC warnings. The known failure
+has maximum reference-conditional TV5.14pp against a5pp threshold. Robustness gate is not complete.

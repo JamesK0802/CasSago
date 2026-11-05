@@ -1,0 +1,13 @@
+v42 conditional Sanger decoder checkpoint, 5 November 2026
+
+Scope: fixed three-reference, two-forward-target synthetic panel. Each target/reference contains WT plus five distinct edited groups, with independently generated event sequences, unequal proportions and molecular pairings. Origins are within cut ±3 bp; insertion/deletion lengths are 1–10 bp. This checkpoint does not establish general recovery on noisy experimental traces.
+
+Frozen prospective gate: 5 consecutive datasets passed. Across 150 non-WT groups, 121 matched directly by complete target sequence and within ±2 percentage points; 29 were accepted only with strict complete-signal or independently re-rendered native control+edit equivalence certificates. Unexplained 0; WT 30/30 accepted; false extra groups >=1pp 0. Candidate/option membership alone receives no credit. Ground truth is read after inference only.
+
+Changes: half-open integer ADC rounding intervals prevent adjacent observed bins from sharing an excluded upper endpoint. A 1e-5 ADC numerical upper interior is used. Near-coincident allele frequencies from different net-length classes can be perturbed in bounded proposals; every proposed sequence dictionary is freely refitted to the full measured signal and must improve the same measured objective. Equal-length transfers retain the previous invariant-marginal behavior.
+
+Original failed two-group set: passed with 28 direct + 2 exact-equivalent + 0 unexplained. The formerly missing Demo-A T1 substitution and insertion themselves were recovered directly, at about 12.55% and 12.61%. A separate older seven-failure set passed with 20 direct + 10 exact-equivalent. An inherited coupled-deletion set passed 30/30 directly.
+
+The independent repository retains the decoder modules unchanged. App navigation, contact branding, the removal of the CasMango AppState dependency and export filename prefixes are integration changes. Original frozen core hash (including the old directory inventory): 98f5df4059ee4a0d882747ba2d1ac4e828df7605e995699b9f46c12769c671f8. See validation-v42.json for frozen evaluation/generator/solver hashes and seeds. Removing unrelated NGS files changes the directory inventory, not the retained decoder implementations.
+
+Release regression: tests/release/sanger-v42-known-failure.spec.ts runs blind inference on a retained original failure, then independently evaluates its truth. New prospective evaluation is available in tests/probes/sanger-prospective-validation.spec.ts using a NEW output directory and CASSAGO_ENFORCE_GATE=1. Do not overwrite manifests or treat Vitest execution alone as a scientific pass.

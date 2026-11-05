@@ -1,0 +1,75 @@
+Live reference import — 28 October 2026
+
+Available in gRNA Design and Primer Design. Manual DNA and FASTA input remain.
+This is an on-demand public-source connector, not a mirrored genome/sequence DB.
+Ensembl species/cultivar metadata is fetched each time the library opens or the
+collection is refreshed. No client sequence cache is used for external requests.
+The selected imported references and provenance remain with the local design
+snapshot so results are reproducible and still usable without the source server.
+
+Live collections: Ensembl Plants, Vertebrates, Metazoa, Fungi and Protists.
+Choose a species/cultivar explicitly. Search 1–8 stable gene IDs or one exact gene
+symbol. Ambiguous symbol matches are shown for selection; transcript/protein IDs
+are rejected because these workflows require genomic DNA, including introns.
+No fuzzy description search or automatic homeolog discovery is claimed.
+
+The gene lookup always includes the selected species, since wheat cultivars can
+reuse gene IDs. Imported metadata must match that species. At import time the
+lookup is repeated; assembly metadata and chromosome bounds are fetched live.
+Requested flanks are applied relative to gene strand and clipped at chromosome
+bounds. The DNA request uses an explicit chromosome interval, strand and assembly
+version. The returned assembly, locus, strand, alphabet and length are validated.
+Genes/contigs not represented in the returned top-level assembly metadata cannot
+be imported through this first connector. Single import limit: 500 kb including
+flanks. Adjustable flanks: 0–20,000 bp at each end. Existing tool limits still apply.
+
+Saved provenance includes provider, species/cultivar, assembly, gene ID/version,
+genomic/sequence coordinates, orientation, requested flanks, retrieval timestamp,
+SHA-256 and exact source request URLs. It survives gRNA-to-primer handoff and JSON
+exports/imports. Local sequence edits keep the original source fingerprint and
+are labelled Edited locally. That fingerprint describes the source snapshot,
+not the edited sequence.
+
+Check latest re-fetches public metadata and DNA, comparing SHA-256 plus gene,
+assembly, locus and orientation metadata. A changed result is staged, never
+silently applied. Use latest resets target positions and invalidates prior design
+results. It can replace local edits only after the user selects that visible
+replacement action. An unchanged result reports a check date while retaining the
+original import provenance. No background monitoring or automatic data migration.
+
+Network and failures
+HTTPS to rest.ensembl.org, credentials omitted, cache:no-store. Only selected
+species/IDs/symbols/regions are sent; manually pasted DNA is not uploaded. Requests
+are sequential, cancellable and have a 30-second per-request timeout. The linked-
+gene symbol endpoint uses 8 seconds before trying the official direct-symbol
+lookup if unavailable. That fallback is labelled and requires stable-ID verification;
+it does not claim to list all linked genes. Rate limits are not bypassed. Failed
+multi-ID imports are atomic; no partial reference replacement is emitted. Errors
+and provider rate limiting remain visible; manual FASTA continues to work.
+Sanger Analysis deliberately has no genomic-library import: it requires the actual
+PCR amplicons submitted to sequencing, not full genes from a genomic database.
+
+Official API documentation
+https://rest.ensembl.org/documentation/info/species
+https://rest.ensembl.org/documentation/info/lookup
+https://rest.ensembl.org/documentation/info/xref_external
+https://rest.ensembl.org/documentation/info/assembly_info
+https://rest.ensembl.org/documentation/info/sequence_region
+
+Validation includes SHA-256 comparison with independent Node crypto, forward and
+reverse flank geometry, boundary clipping, wrong-cultivar rejection, assembly/
+coordinate mismatch rejection, oversized imports, cancellation, HTTP errors,
+explicit update staging, local-edit detection, stale-result protection and source
+metadata preservation through the primer handoff.
+
+Assembly upgrades
+The live catalogue can list multiple assemblies of a cultivar as different species
+keys (for example Chinese Spring IWGSC and IWGSC_RefSeq_v2.1). Check latest stays
+within the original selected key. It does not silently migrate a design to another
+assembly. To switch, select the new catalogue entry and explicitly import/redesign.
+
+During live verification, wheat ID/sequence import and Check latest succeeded.
+The human BRAF linked-gene endpoint timed out; the official direct-symbol endpoint
+returned ENSG00000157764 / homo_sapiens / GRCh38. This observed provider failure
+motivated the explicitly labelled fallback above.
+https://rest.ensembl.org/documentation/info/symbol_lookup

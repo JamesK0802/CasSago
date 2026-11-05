@@ -1,0 +1,12 @@
+import '@angular/compiler';
+import {expect,it} from 'vitest';
+import {writeFileSync,mkdirSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {fiveGroupIdentifiabilityFixture,fiveIndelSequenceIdentifiabilityFixture} from '../fixtures/sanger-identifiability-fixture';
+import {generateSangerSynth} from '../../src/app/utils/sanger-synthetic-benchmark';
+const run=process.env.CASSAGO_IDENTIFIABILITY==='1'?it:it.skip;
+run('tests distinct five-group two-target recipes for exact raw-signal indistinguishability',()=>{
+ const f=process.env.CASSAGO_INSERTION_WITNESS==='1'?fiveIndelSequenceIdentifiabilityFixture():fiveGroupIdentifiabilityFixture(),{refs,alternate}=f,folder=process.env.CASSAGO_INSERTION_WITNESS==='1'?'../benchmarks/identifiability-five-indel-sequences':'../benchmarks/identifiability-five-groups';mkdirSync(folder,{recursive:true});for(const recipe of [refs,alternate]){const values=recipe.flatMap(r=>r.profiles!.flatMap(p=>p.alleles.map(a=>a.percent)));expect(new Set(values).size).toBe(30);}
+ const comparisons=[];for(const seed of [20261104,20261105,20261106,20261107,20261108]){const a=generateSangerSynth(f.result,f.candidate,refs,seed),b=generateSangerSynth(f.result,f.candidate,alternate,seed),x=new Uint8Array(a.edit),y=new Uint8Array(b.edit),different=x.reduce((n,value,i)=>n+Number(value!==y[i]),0),row={seed,bytes:x.length,differentBytes:different,controlEqual:Buffer.from(a.control).equals(Buffer.from(b.control)),shaA:createHash('sha256').update(x).digest('hex'),shaB:createHash('sha256').update(y).digest('hex')};comparisons.push(row);if(seed===20261104){writeFileSync(folder+'/A-control.ab1',new Uint8Array(a.control));writeFileSync(folder+'/A-edit.ab1',x);writeFileSync(folder+'/B-control.ab1',new Uint8Array(b.control));writeFileSync(folder+'/B-edit.ab1',y);writeFileSync(folder+'/A-truth.json',JSON.stringify({recipe:a.recipe,truth:a.truth,mixing:a.mixing},null,2));writeFileSync(folder+'/B-truth.json',JSON.stringify({recipe:b.recipe,truth:b.truth,mixing:b.mixing},null,2));writeFileSync(folder+'/analysis-template.json',JSON.stringify(a.template,null,2));}writeFileSync(folder+'/comparison.json',JSON.stringify(comparisons,null,2));}
+ expect(comparisons.every(r=>r.differentBytes===0&&r.controlEqual&&r.shaA===r.shaB)).toBe(true);expect(refs.every(r=>r.profiles!.every(p=>p.alleles.length===5))).toBe(true);expect(alternate[0].profiles![0].alleles.map(a=>a.percent)).not.toEqual(refs[0].profiles![0].alleles.map(a=>a.percent));
+},120000);

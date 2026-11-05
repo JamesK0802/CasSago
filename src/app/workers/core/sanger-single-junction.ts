@@ -1,0 +1,80 @@
+import {fitControlTransfer} from './sanger-control-transfer';
+import {refineJunctionSupport,rejectNonpredictiveJunctions} from './sanger-junction-support';
+import {fitControlResponse,controlContextEmission} from './sanger-control-response';
+import {integratedPeaks,calibrateSignal,correctGain} from './sanger-signal';
+import {junctionPredictionEvidence} from './sanger-junction-evidence';
+import {emissionGroupSupport,fitEmissionMixture} from './sanger-emission';
+import {fitJunctionMixture,junctionAnnotationComponents,aliasedDeletionMass} from './sanger-junction-mixture';
+import {upstreamNoiseScale} from './sanger-single-fit';
+import {signalWeights,rawSignalScore,gramCondition} from './sanger-signal';
+import {singleResidualSupport,controlTemplateReliability} from './sanger-single-quality';
+import {SangerAnalysisResult,SangerAnalysisSettings,SangerTrace} from '../../models/sanger-analysis';
+import {matchedSingleSignals} from './sanger-single-signals';
+import {reverseComplement} from '../../utils/biology.utils';
+
+interface Input {base:SangerAnalysisResult;reference:string;cutIndex:number;referenceOrigin:number;control:SangerTrace;sample:SangerTrace;settings:SangerAnalysisSettings;offset:number;upstreamRows:number[];matched:ReturnType<typeof matchedSingleSignals>;maxDeletion:number;maxInsertion:number;plots:SangerAnalysisResult['plots']}
+/** Single-reference adapter to the same full-junction model used for homeologs. */
+export function analyzeSingleJunction(input:Input):SangerAnalysisResult {
+ const {base,reference,cutIndex,referenceOrigin,control,sample,settings:s,offset,upstreamRows,matched,maxDeletion,maxInsertion}=input;
+ let {wt,edited,raw,calibration,controlSignal,sampleSignal,upstreamError}=matched;
+ const prefix=s.analysisPolicy==='automatic'?Math.min(Math.max(0,referenceOrigin),Math.max(0,offset)):0,fitCut=cutIndex+prefix;
+ const start=Math.max(s.analysisPolicy==='automatic'?0:1,s.readStart,-offset+prefix),end=Math.min(s.readEnd,edited.length-offset+prefix),positions=Array.from({length:Math.max(0,end-start)},(_,j)=>j+start).filter(p=>edited[p-prefix+offset]?.some(v=>v>0));
+ if(positions.length<60)throw new Error('Too few measured sample cycles for trace decomposition.');
+ const known=referenceOrigin-prefix>=0?reference.slice(referenceOrigin-prefix):'N'.repeat(prefix-referenceOrigin)+reference;
+ const controlArea=integratedPeaks(control,[0,0,0,0]),sampleArea=integratedPeaks(sample,[0,0,0,0]);
+ const controlRows=Array.from({length:controlArea.vectors.length},(_,i)=>i+prefix).filter(p=>p>prefix+1&&p<known.length-2);
+ const areaAxis=Array.from({length:controlArea.vectors.length+prefix},(_,p)=>controlArea.areas![p-prefix]||[0,0,0,0]);
+ const contextResponse=fitControlResponse([known],controlRows,areaAxis,[1]);
+ const expected=Array.from({length:controlArea.vectors.length},(_,i)=>{const v=controlContextEmission(known,i+prefix,0,contextResponse),sum=v.reduce((s,x)=>s+x,0);return v.map(x=>sum?x/sum:0);});
+ calibration=calibrateSignal(expected.map((_,i)=>sampleArea.vectors[i+offset]||[0,0,0,0]),upstreamRows,[expected],'fine');
+ const sampleAreas=Array.from({length:sampleArea.vectors.length+prefix-offset},(_,p)=>sampleArea.areas![p-prefix+offset]||[0,0,0,0]),transfer=fitControlTransfer([known],upstreamRows.map(i=>i+prefix),sampleAreas,contextResponse,calibration.lag,calibration.gains,[1]);
+ if(transfer.used)calibration={...calibration,gains:transfer.gains,weights:transfer.shares,used:true,validationR2:transfer.colourR2,trainingBases:transfer.trainingBases,validationBases:transfer.validationBases};
+ wt=expected;raw=sampleArea.vectors;edited=raw.map(v=>correctGain(v,calibration.gains));controlSignal=controlArea;sampleSignal=sampleArea;
+ upstreamError=upstreamRows.reduce((sum,i)=>sum+wt[i].reduce((s,v,b)=>s+Math.abs(v-edited[i+offset][b]),0)/2,0)/upstreamRows.length;
+ const fitReferences=[{sequence:known,cut:fitCut,contextResponse}];
+ const qualityPositions=positions.filter(p=>p>=prefix&&p-prefix<wt.length);
+ const measuredWeights=signalWeights([controlSignal,sampleSignal],[qualityPositions.map(p=>p-prefix),qualityPositions.map(p=>p-prefix+offset)]);
+ const weightMap=new Map(qualityPositions.map((p,i)=>[p,measuredWeights[i]]));
+ let reliability=positions.map(p=>weightMap.get(p)??signalWeights([sampleSignal],[[p-prefix+offset]])[0]);
+ const sigma=upstreamNoiseScale(upstreamRows.flatMap(i=>wt[i].map((v,b)=>edited[i+offset][b]-v)));
+ const templateWeights=controlTemplateReliability(control.quality,positions.map(p=>p-prefix),sigma);
+ reliability=reliability.map((v,i)=>v*templateWeights[i]);
+ const observed=positions.flatMap(p=>edited[p-prefix+offset]);
+ const fitInput={references:fitReferences,positions,observed,maxDeletion,maxInsertion,radius:s.editStartRadius??5,lag:calibration.lag,theta:Array(8).fill(0),positionWeights:reliability,fit:fitEmissionMixture};
+ const junction=fitJunctionMixture(fitInput);
+ const unprunedWeights=[...junction.weights];
+ const templateResidual=positions.flatMap(p=>controlArea.vectors[p-prefix]?controlArea.vectors[p-prefix].map((v,b)=>v-wt[p-prefix][b]):[0,0,0,0]);
+ const support=refineJunctionSupport(fitInput,junction,templateResidual);
+ junction.weights=support.fit.weights;
+ junction.converged=junction.converged&&support.fit.converged;
+ const predictive=junctionPredictionEvidence({references:fitReferences,positions,observed,maxDeletion,maxInsertion,radius:s.editStartRadius??5,lag:calibration.lag,theta:Array(8).fill(0),positionWeights:reliability},junction,junction.models.flatMap((m,i)=>m.size&&junction.weights[i]>1e-8?[i]:[]));
+ const predictionRemoved=rejectNonpredictiveJunctions(fitInput,junction,predictive,support.referenceScores,support.scores);support.removed.push(...predictionRemoved.filter(i=>!support.removed.includes(i)));
+ const score=rawSignalScore(junction.columns,positions.flatMap(p=>raw[p-prefix+offset]),junction.weights,calibration.gains),components=junction.models.map((m,i)=>({size:m.size,fraction:junction.weights[i]})),zero=components.find(c=>c.size===0)!.fraction;
+ const halves=[0,1].map(parity=>{const ids=positions.flatMap((_,i)=>i%2===parity?[i]:[]);return fitEmissionMixture(junction.columns.map(c=>ids.flatMap(i=>c.slice(4*i,4*i+4))),ids.flatMap(i=>observed.slice(4*i,4*i+4)),ids.map(i=>reliability[i])).weights;});
+ const splitStabilityPp=50*halves[0].reduce((sum,v,i)=>sum+Math.abs(v-halves[1][i]),0),discordantPositions=score.positionRmse.filter(v=>v>.2).length;
+ const active=junction.columns.filter((_,i)=>Math.max(junction.weights[i],unprunedWeights[i])>.01),geometry=gramCondition(active),geometryPass=geometry.rank===active.length&&geometry.condition!==null&&geometry.condition<=100&&!junction.duplicateLengths&&aliasedDeletionMass(fitReferences,junction.models,junction.weights,positions,maxDeletion,s.editStartRadius??5)<=.01;
+ let rangeSuggestion:{maxIndel:number;validationR2Gain:number;outsideFraction:number}|undefined;
+ if(s.signalModel!=='classic'&&s.checkWiderRange!==false&&!s.largeDeletions&&s.maxIndel<30){
+  const train=positions.filter((_,i)=>i%4!==0),valid=positions.filter((_,i)=>i%4===0),range=Math.min(30,s.maxIndel+10);
+  const search=(deletion:number,insertion:number)=>fitJunctionMixture({references:fitReferences,positions:train,observed:train.flatMap(p=>edited[p-prefix+offset]),maxDeletion:deletion,maxInsertion:insertion,radius:s.editStartRadius??5,lag:calibration.lag,theta:Array(8).fill(0),positionWeights:train.map(p=>reliability[positions.indexOf(p)]),fit:fitEmissionMixture});
+  const small=search(maxDeletion,maxInsertion),wide=search(range,range),validation=valid.flatMap(p=>raw[p-prefix+offset]),a=rawSignalScore(small.predictColumns(valid),validation,small.weights,calibration.gains),b=rawSignalScore(wide.predictColumns(valid),validation,wide.weights,calibration.gains),outside=wide.weights.reduce((sum,v,i)=>sum+(Math.abs(wide.models[i].size)>s.maxIndel?v:0),0);
+  if(outside>=.03&&b.r2>=a.r2+.01&&b.rmse<a.rmse*.85)rangeSuggestion={maxIndel:range,validationR2Gain:b.r2-a.r2,outsideFraction:outside};
+ }
+ const warnings=base.warnings;
+ const qualityRows=positions.filter(p=>p>=prefix&&p-prefix<control.peaks.length),lowQuality=!!control.quality?.some(q=>q>0)&&qualityRows.filter(p=>control.quality![p-prefix]<s.controlPhred).length>qualityRows.length*.2;
+ if(lowQuality)warnings.push('Many WT-control quality values are below the requested Phred threshold. Measured cycles are retained; interpret the estimates with caution.');
+ if(!geometryPass)warnings.push('Some fitted length models are indistinguishable or poorly conditioned. Estimates are shown; review reference ambiguity.');
+ if(score.r2<.9)warnings.push('Fit R² is below0.90. Review the fitted estimates.');
+ if(upstreamError>.1)warnings.push('Control/sample upstream signal disagreement exceeds10%.');
+ if(splitStabilityPp>10)warnings.push('Net-size spectra differ by more than10pp between split-position fits.');
+ if(discordantPositions)warnings.push(`${discordantPositions} measured positions have unexplained fluorescence.`);
+ if(calibration.validationR2<.8)warnings.push('Upstream calibration validation R² is below0.80.');
+ if(rangeSuggestion)warnings.push(`A wider ±${rangeSuggestion.maxIndel}bp model improves fit; consider recalculating.`);
+ const edge=components.filter(c=>c.size===-maxDeletion||c.size===maxInsertion).reduce((sum,c)=>sum+c.fraction,0);if(edge>.05)warnings.push('More than5% of fitted signal is at the requested range boundary.');
+ const extrapolated=positions.some(p=>p>contextResponse.end);if(extrapolated)warnings.push('Some sample cycles extend beyond the measured control calibration. Learned WT responses are used; all measured sample cycles are retained.');
+ const passesChecks=(s.analysisPolicy!=='automatic'||edge<=.05)&&!lowQuality&&geometryPass&&score.r2>=.9&&upstreamError<=.1&&junction.converged&&calibration.validationR2>=.8&&splitStabilityPp<=10&&singleResidualSupport(score.positionRmse).passes&&!rangeSuggestion&&(!s.largeDeletions||(components[0].fraction<=.05));
+ base.mixture={components,wt:zero,indel:1-zero,inFrame:components.filter(c=>c.size!==0&&c.size%3===0).reduce((sum,c)=>sum+c.fraction,0),outOfFrame:components.filter(c=>c.size%3!==0).reduce((sum,c)=>sum+c.fraction,0),r2:score.r2,rmse:score.rmse,upstreamError,bases:positions.length,fitStart:start-fitCut,fitEnd:end-fitCut,converged:junction.converged,passesChecks};
+ base.diagnostics={algorithmVersion:s.signalModel==='classic'?'sanger-junction-classic-v1':'sanger-junction-v2',signalModel:s.signalModel||'calibrated',requestedMaxIndel:s.maxIndel,modeledRange:{maxDeletion,maxInsertion},sampleCalibration:calibration,supportScreen:{predictionRemoved:predictionRemoved.map(i=>({reference:0,size:junction.models[i].size,foldGains:predictive.get(i)!.foldGains})),removed:support.removed.map(i=>({reference:0,size:junction.models[i].size})),threshold:support.threshold,unpruned:junction.models.map((m,i)=>({reference:0,size:m.size,jointFraction:unprunedWeights[i]})),evidence:(support.scores||[]).map(e=>({...e,reference:0,size:junction.models[e.group[0]].size}))},splitStabilityPp,discordantPositions,maxPositionRmse:Math.max(...score.positionRmse),rangeSuggestion,controlResponse:contextResponse,controlTransfer:transfer,junctionFit:{positions,iterations:junction.iterations,duplicateLengths:junction.duplicateLengths,models:junction.models.map((m,i)=>({...m,fraction:junction.weights[i]}))},background:{method:'local-peak-area',control:{levels:controlSignal.background||[],trainingSamples:controlSignal.backgroundSamples||[]},sample:{levels:sampleSignal.background||[],trainingSamples:sampleSignal.backgroundSamples||[]}}};
+ base.annotations=[{name:base.referenceName,reference:base.direction==='forward'?reference:reverseComplement(reference),cut:base.cutPosition,direction:base.direction,share:1,estimable:passesChecks,components:junctionAnnotationComponents(junction.models,junction.weights,referenceOrigin-prefix,reference.length,base.direction==='reverse').map(c=>({...c,support:emissionGroupSupport(support.scores,junction.models.findIndex(m=>m.size===c.size),predictive.get(junction.models.findIndex(m=>m.size===c.size)))}))}];
+ base.plots=input.plots;return base;
+}

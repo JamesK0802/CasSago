@@ -1,0 +1,71 @@
+<section class="design-page" aria-labelledby="sanger-title">
+  <header class="design-header">
+    <h1 id="sanger-title" title="CRISPR Amplicon Sequencing with Sanger Analysis for Genotyping and Outcomes">CasSago</h1>
+    <button type="button" class="quiet" *ngIf="activeSection === 'design'" (click)="loadExample()" [disabled]="busy">Load example</button>
+  </header>
+  <nav class="sanger-page-tabs" role="tablist" aria-label="Sanger workspace"><button id="sanger-design-tab" type="button" role="tab" [attr.aria-selected]="activeSection === 'design'" aria-controls="sanger-design-panel" (click)="activeSection = 'design'">Primer Design</button><button id="sanger-analysis-tab" type="button" role="tab" [attr.aria-selected]="activeSection === 'analysis'" aria-controls="sanger-analysis-panel" (click)="activeSection = 'analysis'">Sanger Analysis</button></nav>
+  <app-sanger-analysis-panel id="sanger-analysis-panel" role="tabpanel" aria-labelledby="sanger-analysis-tab" [hidden]="activeSection !== 'analysis'" [designRows]="analysisDesignRows" />
+  <div id="sanger-design-panel" class="design-layout" role="tabpanel" aria-labelledby="sanger-design-tab" [hidden]="activeSection !== 'design'">
+    <div class="setup">
+      <fieldset [disabled]="busy">
+        <section class="input-section">
+          <div class="section-title"><h2>Genes &amp; targets</h2><span>{{ rows.length }} / 8</span></div>
+          <article class="reference" *ngFor="let row of rows; let i = index">
+            <div class="gene-fields compact-pair"><label><span class="dot" [style.background]="colours[i]"></span> Gene name<input [attr.aria-label]="'Gene '+(i+1)+' name'" [(ngModel)]="row.name" (ngModelChange)="changed()" placeholder="Gene name"></label><label>Gene sequence <span class="length">{{ row.sequence.replaceAll(' ','').replaceAll('\n','').length | number }} bp</span><textarea class="sequence" [attr.aria-label]="'Gene '+(i+1)+' reference sequence'" [(ngModel)]="row.sequence" (ngModelChange)="referenceChanged(row)" placeholder="5′ → 3′ reference" spellcheck="false" rows="1"></textarea></label><button type="button" class="remove" (click)="removeReference(i)" [disabled]="rows.length <= 1" aria-label="Remove gene">×</button></div>
+            <app-reference-source [source]="row.source" [sequence]="row.sequence" [disabled]="busy" (updated)="updateLibrary(i,$event)" />
+            <div class="named-target compact-pair" *ngFor="let target of targetRows(row);let t=index"><label>Target name<input [attr.aria-label]="'Gene '+(i+1)+' target '+(t+1)+' name'" [(ngModel)]="target.name" (ngModelChange)="changed()" [placeholder]="'Target '+(t+1)"></label><label>Target sequence<input class="guide-sequence" [attr.aria-label]="'Gene '+(i+1)+' target '+(t+1)+' gRNA sequence'" [(ngModel)]="target.guide" (ngModelChange)="targetChanged(row,target)" placeholder="20-nt gRNA · no PAM" spellcheck="false"></label><button type="button" class="remove" [disabled]="targetRows(row).length<=1" (click)="removeTarget(row,t)" [attr.aria-label]="'Remove target '+(t+1)+' from gene '+(i+1)">×</button><small *ngIf="!target.guide && target.cut !== undefined">Imported cut: after base {{target.cut}}. Enter a gRNA to replace it.</small></div>
+            <div class="reference-footer" *ngIf="targetRows(row).length<2"><button type="button" class="add-target" (click)="addTarget(row)">+ Add second target</button></div>
+          </article>
+          <button type="button" class="add-reference" (click)="addReference()" [disabled]="rows.length >= 8">+ Add gene</button>
+        </section>
+        <section class="input-section parameters">
+          <h2>Primer design</h2>
+          <div class="range-setting main-settings"><label for="sanger-amplification">Amplification</label><select id="sanger-amplification" [ngModel]="amplification" (ngModelChange)="setAmplification($event)"><option value="shared">Co-amplify</option><option value="specific">Reference-specific</option></select></div>
+          <div class="range-setting main-settings"><span>Window (bp)</span><input aria-label="Window bp around each cut" type="number" min="10" max="2000" [(ngModel)]="settings.window" (ngModelChange)="changed()"></div>
+          <details class="advanced-design"><summary>Advanced settings</summary>
+            <div class="range-setting"><span>Primer length (nt)</span><div class="range-values" role="group" aria-label="Primer length range"><input aria-label="Minimum primer length" type="number" min="16" max="30" [(ngModel)]="settings.primerMin" (ngModelChange)="changed()"><span>–</span><input aria-label="Maximum primer length" type="number" min="16" max="30" [(ngModel)]="settings.primerMax" (ngModelChange)="changed()"></div></div>
+            <div class="range-setting"><span>Tm (°C)</span><div class="range-values" role="group" aria-label="Primer Tm range"><input aria-label="Minimum primer Tm" type="number" [(ngModel)]="settings.tmMin" (ngModelChange)="changed()"><span>–</span><input aria-label="Maximum primer Tm" type="number" [(ngModel)]="settings.tmMax" (ngModelChange)="changed()"></div></div>
+            <div class="range-setting"><span>GC (%)</span><div class="range-values" role="group" aria-label="Primer GC range"><input aria-label="Minimum primer GC" type="number" [(ngModel)]="settings.gcMin" (ngModelChange)="changed()"><span>–</span><input aria-label="Maximum primer GC" type="number" [(ngModel)]="settings.gcMax" (ngModelChange)="changed()"></div></div>
+            <div class="range-setting"><span>Sanger read (bp)</span><div class="range-values" role="group" aria-label="Sanger read range"><input aria-label="Usable read start" type="number" min="50" [(ngModel)]="settings.readStart" (ngModelChange)="changed()"><span>–</span><input aria-label="Sanger read limit" type="number" min="100" max="1000" [(ngModel)]="settings.readEnd" (ngModelChange)="changed()"></div></div>
+            <div class="range-setting" *ngIf="rows.length>1 && amplification === 'shared'"><span>Reference offset (bp)</span><input aria-label="Minimum target offset" type="number" min="1" [(ngModel)]="settings.minOffset" (ngModelChange)="changed()"></div>
+          </details>
+        </section>
+      </fieldset>
+      <div class="run-actions"><button type="button" class="primary" *ngIf="!busy" (click)="search()">Find primers <span>→</span></button><button type="button" *ngIf="busy" (click)="cancel()">Cancel search</button></div>
+      <div class="progress" *ngIf="busy" aria-live="polite"><progress max="100" [value]="progress"></progress><span>{{ stage }} · {{ progress }}%</span></div>
+      <p class="error" role="alert" *ngIf="error">{{ error }}</p><p class="notice" aria-live="polite" *ngIf="notice">{{ notice }}</p>
+    </div>
+    <div class="results">
+      <div class="empty" *ngIf="!result && !busy"><div class="empty-icon" aria-hidden="true">↦</div><h2>Design from full-length references</h2><p>Add genes and one or two named gRNAs, then find primers.</p><div class="scope-tag">Target-local candidates · full-input binding checks · both strands</div></div>
+      <div class="empty" *ngIf="busy"><h2>Searching the supplied references</h2><p>{{ stage }}</p></div>
+      <ng-container *ngIf="result">
+        <header class="results-header"><div><div class="eyebrow">DESIGN RESULTS</div><h2>{{ status }}</h2></div></header>
+        <div class="result-status" *ngIf="!result.candidates.length"><h3>{{ noResultReason }}</h3><p *ngIf="!result.complete">A ranked candidate shortlist was checked. This is a bounded search.</p><p>No match applies to the supplied sequences and settings, not every possible experimental design.</p></div>
+        <div class="coverage-list" *ngIf="result.coverage"><span *ngFor="let coverage of result.coverage" [class.missing]="!coverage.candidates">{{ coverage.reference }} <strong>{{ coverage.candidates ? coverage.candidates + ' pairs' : 'No pair in shortlist' }}</strong></span></div>
+        <div class="candidate-table" *ngIf="result.candidates.length">
+          <table>
+            <thead><tr>
+              <th class="candidate-index">#</th><th title="PCR primer reused for sequencing; arrow shows its extension direction">Sequencing primer · 5′ → 3′</th>
+              <th title="Opposite PCR primer; reverse when the sequencing primer is forward, and vice versa">Opposite PCR primer · 5′ → 3′</th>
+              <th title="Expected PCR product lengths, in input-reference order">Amplicon sizes</th>
+              <th>Tm (°C)</th><th>GC (%)</th>
+              <th title="Minimum sequencing-primer mismatches at unintended sites across all supplied references, including the same reference; intended sites excluded">Min other-site difference</th><th class="chroma-column">Open Map</th>
+            </tr></thead>
+            <tbody><ng-container *ngFor="let c of visibleCandidates; let i = index"><tr [class.selected]="selected?.id === c.id" (click)="selectCandidate(c)">
+              <td class="candidate-index">{{i+1}}</td><td><button type="button" class="candidate" (click)="selectCandidate(c)"><code>{{ c.sequence }}</code><span class="direction" [title]="c.direction === 'forward' ? 'Forward sequencing primer' : 'Reverse sequencing primer'">{{ c.direction === 'forward' ? 'F →' : 'R ←' }}</span></button></td>
+              <td><code class="partner-option">{{ c.partner?.sequence || '—' }}</code></td>
+              <td>{{ c.partner ? c.partner.products.join(' / ') + ' bp' : '—' }}</td>
+              <td>{{ c.tm | number:'1.1-1' }}</td><td>{{ c.gc | number:'1.0-0' }}%</td>
+              <td><app-sanger-primer-difference [candidate]="c" [result]="result" /></td><td class="chroma-column"><button type="button" class="trace-toggle" (click)="$event.stopPropagation();toggleCandidateMap(c)" [attr.aria-expanded]="showMap && selected?.id===c.id" [attr.aria-label]="'Toggle map for pair '+(i+1)"><span class="chroma-chevron">{{showMap && selected?.id===c.id?'▴':'▾'}}</span></button></td>
+            </tr><tr class="inline-wt-row" *ngIf="selected?.id===c.id && showMap"><td colspan="8"><app-sanger-primer-map [compact]="true" [result]="result" [candidates]="[c]" [selected]="c" [references]="rows" [showChroma]="showChroma" (candidateSelected)="selectCandidate($event)" (chromaRequested)="toggleCandidateTrace($event)" /></td></tr></ng-container></tbody>
+          </table>
+        </div>
+        <div class="candidate-pagination" *ngIf="visibleCandidates.length < result.candidates.length"><button type="button" (click)="loadMore()">Load 10 more</button></div>
+        <app-sanger-amplicon-alignment [result]="result" [selected]="selected" [references]="rows" />
+        <div class="analysis-handoff" *ngIf="selected?.partner"><button type="button" (click)="showSynth=!showSynth" [attr.aria-expanded]="showSynth">Generate Synth Data</button><button type="button" (click)="exportAnalysisTemplate()" [disabled]="!!templateIssue">Download Profile</button><button type="button" class="primary" (click)="useInAnalysis()" [disabled]="!!templateIssue">Use in Sanger Analysis →</button><p class="field-note" *ngIf="templateIssue">{{templateIssue}}</p></div>
+        <app-sanger-synth-builder *ngIf="showSynth" [result]="result" [selected]="selected" [references]="rows" (analyze)="useGeneratedSynth($event)" />
+      </ng-container>
+      <details class="research"><summary>Method &amp; references</summary><p>Accepts full genomic or gene sequences (up to 2 Mb each; 8 Mb total), generates candidates around the required target windows, and checks binding across the full input. Shared-Sanger mode searches one identical A/C/G/T oligo across every input reference, requiring a single exact binding site in a shared orientation. Every required window must fit within the usable read range, with different distances to corresponding targets. Only the sequencing side must have different target distances. The optional common opposite primer completes the PCR pair; it is not an additional sequencing primer. Separate-reference mode designs individual PCR pairs with a configurable cross-binding mismatch screen.</p><p>Offset separation and WT sequence differences are design diagnostics. They do not prove that mixed edited reference traces can be decomposed. These design diagnostics are separate from trace fitting in the Sanger Analysis tab.</p><p><a href="https://doi.org/10.1093/NAR/GKU410" target="_blank" rel="noopener noreferrer">CHOPCHOP</a> uses Primer3 and genomic mapping for primer design. This browser search screens the supplied references, not a whole genome. Shared designs check at most 600 primary primers, retain multiple partner options and return up to 300 pairs. Sanger results prioritize greater minimum unintended-site mismatch counts, then fewer near sites, usable WT signal differences for shared-Sanger candidates, and target coverage. PCR-only ranking is unchanged. Sanger coverage excludes at least the first 50 bp and the final 50 bp of the shorter of the configured read limit and predicted extension. The whole target window plus indel allowance must fit inside this usable region. Measured quality may require a larger exclusion.</p><p>Candidate generation and oligo checks follow principles used by <a href="https://primer3.org/manual.html" target="_blank" rel="noopener noreferrer">Primer3</a> and <a href="https://doi.org/10.1186/1471-2105-13-134" target="_blank" rel="noopener noreferrer">Primer-BLAST</a>; this browser implementation does not run either tool. <a href="https://doi.org/10.1073/pnas.95.4.1460" target="_blank" rel="noopener noreferrer">SantaLucia 1998</a> supplies the Tm model. <a href="https://doi.org/10.1093/nar/gku936" target="_blank" rel="noopener noreferrer">TIDE</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4525701/" target="_blank" rel="noopener noreferrer">Poly Peak Parser</a> provide related trace-decomposition work, not validation of this proposed assay.</p><p>Separate-reference design also draws on the locus-specific design strategy described in <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4765872/" target="_blank" rel="noopener noreferrer">PolyMarker</a>; this prototype does not run PolyMarker.</p></details>
+    </div>
+  </div>
+</section>

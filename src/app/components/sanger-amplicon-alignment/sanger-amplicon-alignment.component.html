@@ -1,0 +1,9 @@
+<section class="amplicon-alignment" *ngIf="rows.length" aria-label="Sequencing-aligned amplicons">
+ <header><h3>Sequencing-aligned amplicons</h3></header>
+ <div class="alignment-key"><span class="primer">Sequencing primer →</span><span class="partner">Opposite primer binding site</span><span class="guide">gRNA</span><span class="window">Target window</span><span>│ Cut site · ruler: bp after sequencing primer</span></div>
+
+ <div class="alignment-scroll" tabindex="0" aria-label="Scroll aligned amplicon sequences">
+  <div class="alignment-ruler"><div class="row-label">Position (bp)</div><div class="ruler" [style.width.ch]="width"><span *ngFor="let tick of ticks" [style.left.ch]="tick.position">{{tick.label}}</span></div></div>
+  <div class="alignment-row" *ngFor="let row of rows"><div class="row-label"><strong>{{row.name}}</strong><small>{{row.length|number}} bp{{row.reversed?' · reverse complement':''}}</small></div><div class="bases" [style.width.ch]="width" [attr.aria-label]="row.name+' full amplicon in sequencing orientation'"><span class="padding" [style.width.ch]="row.padding"></span><span *ngFor="let segment of row.segments" [class]="segment.kind" [class.cut]="segment.cut" [attr.title]="'Amplicon base '+(segment.position+1)+(segment.cut?' · cut boundary':'')">{{segment.text}}</span></div></div>
+ </div>
+</section>

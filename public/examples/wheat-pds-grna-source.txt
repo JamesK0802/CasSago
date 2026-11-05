@@ -1,0 +1,1 @@
+Public Chinese Spring genomic loci, IWGSC GCA_900519105.1. Ensembl REST sequence/id with species=triticum_aestivum; type=genomic; expand_5prime=1500; expand_3prime=1500. TaPDS-4A: TraesCS4A02G004900, 4B: TraesCS4B02G300100, 4D: TraesCS4D02G299000. Retrieved 28 October 2026. These full loci include flanks/introns/UTRs. No inferred coding annotation in the guide designer.

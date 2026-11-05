@@ -1,0 +1,205 @@
+import type{assessSangerBenchmark}from'../../utils/sanger-benchmark-assessment';
+import {exactDisplayView,exactFractionLabel} from '../../utils/sanger-exact-display';
+import {selectExactRepresentative} from '../../utils/sanger-exact-selection';
+import {projectTargetAnnotation} from '../../utils/sanger-target-profile';
+import {sangerProgress} from '../../utils/sanger-progress';
+import {tracePreviewSites,PreviewSite} from '../../utils/sanger-trace-preview';
+import {BenchmarkTruth,parseBenchmarkTruth,validateBenchmarkTruth,benchmarkMetrics,benchmarkComparison,benchmarkCsv} from '../../utils/sanger-benchmark';
+import {SynthComparison} from '../../utils/sanger-synthetic-benchmark';
+import {SangerResultChartsComponent} from '../../components/sanger-result-charts/sanger-result-charts.component';
+import {SangerChromatogramComponent} from '../../components/sanger-chromatogram/sanger-chromatogram.component';
+import {sangerAnnotationViews} from '../../utils/sanger-annotation';
+import {ChangeDetectorRef,Component,Input,OnDestroy,ViewChild,ElementRef} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {SangerAnnotationComponent} from '../../components/sanger-annotation/sanger-annotation.component';
+import {SangerAnalysisResult,SangerTrace,TRACE_BASES} from '../../models/sanger-analysis';
+import {AutomaticSangerInput} from '../../workers/core/sanger-automatic';
+import {parseSangerTrace} from '../../utils/sanger-trace';
+import {parseSangerFasta,resolveSangerReference} from '../../utils/sanger-design.utils';
+import {parseAutomaticSangerTemplate} from '../../utils/sanger-automatic-template';
+import {sangerAnalysisDemo,sangerPooledDemo} from '../../utils/sanger-analysis-demo';
+import {plotTrace} from '../../workers/core/sanger-analysis';
+type TraceRole='sample'|'control'|'oppositeSample'|'oppositeControl';
+interface ReferenceRow {name:string;sequence:string;targets:string;mode:'cuts'|'guides';uiTargets?:{name:string;value:string}[]}
+@Component({selector:'app-sanger-analysis-panel',standalone:true,imports:[CommonModule,FormsModule,SangerAnnotationComponent,SangerChromatogramComponent,SangerResultChartsComponent],templateUrl:'./sanger-analysis-panel.component.html',styleUrls:['../analysis-page/analysis-page.component.css','../../components/result-dashboard/result-dashboard.component.css','./sanger-analysis-panel.component.css']})
+export class SangerAnalysisPanelComponent implements OnDestroy {
+ @ViewChild('signalWorkspace') signalWorkspace?:ElementRef<HTMLElement>;
+ @Input() designRows:ReferenceRow[]=[];
+ references:ReferenceRow[]=[{name:'Gene 1',sequence:'',targets:'',mode:'guides'}];
+ syntheticTruth:unknown=null;benchmarkEnabled=false;benchmarkTruth:BenchmarkTruth|null=null;truthName='';
+ private readonly noComparison:SynthComparison[]=[];
+ private rawFiles:Partial<Record<TraceRole,ArrayBuffer>>={};
+ benchmarkAssessment:ReturnType<typeof assessSangerBenchmark>|null=null;
+ private assessmentResult:SangerAnalysisResult|null=null;private acceptedReferences:string[]=[];private readonly noReferences:string[]=[];
+ get equivalentReferences(){return this.assessmentResult===this.result&&this.benchmarkEnabled?this.acceptedReferences:this.noReferences;}
+
+ private benchmarkCache?:{result:SangerAnalysisResult;truth:BenchmarkTruth;threshold:number;rows:SynthComparison[]};
+ advancedOpen=false;
+ primer='';maxDeletion=10;maxInsertion=10;window=200;indelThreshold=1;
+ sample:SangerTrace|null=null;control:SangerTrace|null=null;
+ oppositeEnabled=false;oppositePrimer='';oppositeSample:SangerTrace|null=null;oppositeControl:SangerTrace|null=null;
+ progressPercent=0;progressLabel='';elapsedSeconds=0;private startedAt=0;private progressTicker:ReturnType<typeof setInterval>|null=null;
+ get elapsedLabel(){return Math.floor(this.elapsedSeconds/60)+':'+String(this.elapsedSeconds%60).padStart(2,'0');}
+ private updateProgress(stage:string){const p=sangerProgress(stage);this.progressPercent=Math.max(this.progressPercent,p.percent);this.progressLabel=p.label;}
+ result:SangerAnalysisResult|null=null;selectedAmplicon=0;selectedTargetIndex=0;busy=false;loading=false;stage='';error='';notice='';demoLabel='';
+ previewStart=0;previewCycles=80;stageHistory:string[]=[];
+ private previewSites:{control:PreviewSite[];sample:PreviewSite[]}={control:[],sample:[]};
+ private previewMapping?:{key:string;control:SangerTrace|null;sample:SangerTrace|null};
+ private previewKnown?:{key:string;control:SangerTrace;sample:SangerTrace};
+ private previewTimer:ReturnType<typeof setTimeout>|null=null;
+ private previewCache?:{control:SangerTrace|null;sample:SangerTrace|null;start:number;cycles:number;sites:{control:PreviewSite[];sample:PreviewSite[]};plots:{role:string;plot:ReturnType<typeof plotTrace>|null}[]};
+ private previewKey(){return JSON.stringify([this.primer,this.references.map(r=>[r.name,r.sequence,r.targets,r.mode])]);}
+ centerPreview(force=false){
+  const key=this.previewKey();if(!force&&this.previewMapping?.key===key&&this.previewMapping.control===this.control&&this.previewMapping.sample===this.sample)return;
+  this.previewMapping={key,control:this.control,sample:this.sample};let refs:Parameters<typeof tracePreviewSites>[0]=[];
+  try{refs=this.references.map(row=>{const r=resolveSangerReference(row.name,row.sequence,row.targets,row.mode);return {...r,targetNames:this.inputTargets(row).map(t=>t.name)};});}catch{}
+  const known=this.previewKnown?.key===key&&this.previewKnown.control===this.control&&this.previewKnown.sample===this.sample;
+  this.previewSites={control:this.control?tracePreviewSites(refs,this.primer,this.control,known?0:undefined):[],sample:this.sample?tracePreviewSites(refs,this.primer,this.sample,known?0:undefined):[]};
+  const cuts=[...this.previewSites.control,...this.previewSites.sample].map(s=>s.cut);if(!cuts.length)return;
+  const lo=Math.min(...cuts),hi=Math.max(...cuts),span=hi-lo+40;this.previewCycles=span<=80?80:span<=160?160:320;
+  this.previewStart=Math.max(0,Math.floor(span>320?lo-30:(lo+hi-this.previewCycles)/2));this.previewCache=undefined;
+ }
+ get previewPlots(){const start=Math.max(0,Math.floor(Number(this.previewStart)||0)),cycles=Math.min(400,Math.max(60,Number(this.previewCycles)||160));if(this.previewCache?.control===this.control&&this.previewCache.sample===this.sample&&this.previewCache.start===start&&this.previewCache.cycles===cycles&&this.previewCache.sites===this.previewSites)return this.previewCache.plots;
+  const plots=([{role:'WT control',trace:this.control,sites:this.previewSites.control},{role:'Edited sample',trace:this.sample,sites:this.previewSites.sample}]).map(({role,trace,sites})=>{if(!trace)return{role,plot:null};const at=Math.min(start,Math.max(0,trace.sequence.length-4)),plot=plotTrace(trace,at,cycles,0);plot.cuts=sites.map(s=>({name:s.name,x:16+(s.cut-at-.5)*13})).filter(s=>s.x>=0&&s.x<=plot.width);return{role,plot};});this.previewCache={control:this.control,sample:this.sample,start,cycles,sites:this.previewSites,plots};return this.previewCache.plots;
+ }
+ get progressPhase(){return /align|register|matching|separability/i.test(this.stage)?0:/fitting|nonnegative|jointly/i.test(this.stage)?2:/calibrat|control fit/i.test(this.stage)?1:/check|validat|evidence/i.test(this.stage)?3:0;}
+ readonly phases=['Register reads','Calibrate signal','Fit groups','Check evidence'];
+ readonly bases=TRACE_BASES;readonly colours:Record<string,string>={A:'#00996d',C:'#187bbb',G:'#344454',T:'#de6259'};
+ private worker:Worker|null=null;private reads:Record<TraceRole,number>={sample:0,control:0,oppositeSample:0,oppositeControl:0};private generation=0;
+ private submitted:{references:AutomaticSangerInput['references'];primer:string;maxDeletion:number;maxInsertion:number;groupRecovery:boolean;sample:string;control:string;opposite?:{primer:string;sample:string;control:string}}|null=null;
+ private plotResult:SangerAnalysisResult|null=null;private plotIndex=-1;private plotWindow=-1;private plots:SangerAnalysisResult['plots']=[];
+ constructor(private changeDetector:ChangeDetectorRef){}
+ get mixed(){return this.references.length>1;}
+ get hasMultipleTargets(){return this.references.some(r=>r.targets.trim().split(/[\s,;]+/).filter(Boolean).length>1);}
+ get needsPrimer(){return this.mixed||this.hasMultipleTargets||this.oppositeEnabled;}
+ get synthetic(){return !!(this.sample?.synthetic||this.control?.synthetic||this.oppositeEnabled&&(this.oppositeSample?.synthetic||this.oppositeControl?.synthetic));}
+ changed(){if(this.control||this.sample){if(this.previewTimer)clearTimeout(this.previewTimer);this.previewTimer=setTimeout(()=>{this.centerPreview();this.changeDetector.markForCheck();},180);}this.benchmarkCache=undefined;this.benchmarkAssessment=null;this.assessmentResult=null;this.acceptedReferences=[];this.result=null;this.submitted=null;this.plotResult=null;this.error='';this.notice='';}
+ addReference(){if(this.references.length>=4||this.busy)return;this.references.push({name:'Reference '+(this.references.length+1),sequence:'',targets:'',mode:'guides'});this.changed();}
+ removeReference(i:number){if(this.references.length<=1||this.busy)return;this.references.splice(i,1);this.changed();}
+ async files(event:Event,role:TraceRole){const el=event.target as HTMLInputElement;await this.loadFiles(Array.from(el.files||[]),role);el.value='';}
+ async drop(event:DragEvent,role:TraceRole){event.preventDefault();await this.loadFiles(Array.from(event.dataTransfer?.files||[]),role);}
+ async loadFiles(files:File[],role:TraceRole){
+  if(this.busy||this.loading)return;if(files.length!==1){if(files.length)this.error='Upload one chromatogram per slot.';return;}
+  const file=files[0],id=++this.reads[role];this.loading=true;this.error='';
+  try{if(!/\.(ab1|abi|scf)$/i.test(file.name)||file.size>12000000)throw Error('Use one AB1, ABI or SCF chromatogram smaller than 12 MB.');const raw=await file.arrayBuffer(),t=parseSangerTrace(raw,file.name);if(id!==this.reads[role])return;this.rawFiles[role]=raw;this[role]=t;this.changed();if(role==='control'&&!this.mixed&&!this.oppositeEnabled&&!this.references[0].sequence.trim())this.useControlReference();}
+  catch(e){this.error=e instanceof Error?e.message:String(e);}finally{this.loading=false;this.changeDetector.markForCheck();}
+ }
+ remove(role:TraceRole){if(this.busy)return;this.reads[role]++;delete this.rawFiles[role];this[role]=null;this.changed();}
+ useControlReference(){if(!this.control||this.mixed||this.busy)return;this.references=[{name:this.control.name.replace(/\.(ab1|abi|scf)$/i,''),sequence:this.control.sequence.replace(/[^ACGTN]/g,'N'),targets:'',mode:'cuts'}];this.changed();this.notice='Reference copied from WT-control base calls. Enter the cut position in this sequence. A full reference can also be supplied.';}
+ async uploadReference(event:Event){const el=event.target as HTMLInputElement,file=el.files?.[0];if(!file||this.busy||this.loading)return;this.loading=true;try{if(file.size>2200000)throw Error('Use a reference FASTA smaller than 2.2 MB.');const rows=parseSangerFasta(await file.text());if(!rows.length||rows.length>4)throw Error('Import 1–4 reference sequences.');this.references=rows.map(r=>({...r,targets:'',mode:'guides'}));this.changed();}catch(e){this.error=e instanceof Error?e.message:String(e);}finally{el.value='';this.loading=false;this.changeDetector.markForCheck();}}
+ applyTemplate(value:unknown){if(this.busy||this.loading)throw Error('Finish the analysis before loading a template.');const v=parseAutomaticSangerTemplate(value);this.clearTruth();this.advancedOpen=false;this.references=v.references;const metadata=(value as any)?.amplicons;this.references.forEach((row,i)=>{if(metadata?.[i]?.targetNames)row.uiTargets=row.targets.split(/[,;\s]+/).filter(Boolean).map((value,t)=>({name:metadata[i].targetNames[t]||'Target '+(t+1),value}));});this.primer=v.primer;this.oppositePrimer=v.oppositePrimer;this.oppositeEnabled=false;this.oppositeSample=null;this.oppositeControl=null;this.maxDeletion=v.maxDeletion;this.maxInsertion=v.maxInsertion;this.window=v.window;this.rawFiles={};this.sample=null;this.control=null;this.generation++;this.changed();this.notice='Template loaded.';}
+ applySynthetic(template:unknown,control:ArrayBuffer,edit:ArrayBuffer,truth:unknown){const parsedTruth=parseBenchmarkTruth(truth),parsedControl={...parseSangerTrace(control,'SYNTHETIC_control.ab1'),synthetic:true},parsedEdit={...parseSangerTrace(edit,'SYNTHETIC_edit.ab1'),synthetic:true};this.applyTemplate(template);this.rawFiles={control,sample:edit};this.control=parsedControl;this.sample=parsedEdit;this.changed();this.syntheticTruth=structuredClone(truth);this.benchmarkTruth=parsedTruth;this.benchmarkEnabled=true;this.truthName='Generated truth';this.advancedOpen=false;this.previewKnown={key:this.previewKey(),control:parsedControl,sample:parsedEdit};this.centerPreview(true);this.demoLabel='Generated synthetic traces · truth table attached';this.notice='Synthetic inputs and ground truth loaded.';}
+ async uploadTemplate(event:Event){const el=event.target as HTMLInputElement,f=el.files?.[0];if(!f||this.busy||this.loading)return;try{if(f.size>500000)throw Error('Use a template smaller than 500 KB.');this.applyTemplate(JSON.parse(await f.text()));}catch(e){this.error=e instanceof Error?e.message:String(e);}finally{el.value='';this.changeDetector.markForCheck();}}
+ useDesign(){if(!this.designRows.length)return;if(this.designRows.length>4||this.designRows.some(r=>r.targets.trim().split(/[\s,;]+/).filter(Boolean).length>2)){this.error='Use 1–4 submitted products with one or two corresponding targets each.';return;}this.references=this.designRows.map(r=>({...r}));this.changed();}
+ loadDemo(mixed=false){if(this.busy||this.loading)return;this.clearTruth();this.clearOpposite();const d=mixed?sangerPooledDemo():sangerAnalysisDemo();if(mixed){const m=d as ReturnType<typeof sangerPooledDemo>;this.references=m.amplicons.map(a=>({name:a.name,sequence:a.sequence,targets:String(a.cut),mode:'cuts'}));this.primer=m.primer;}else{const s=d as ReturnType<typeof sangerAnalysisDemo>;this.references=[{name:'Synthetic reference',sequence:s.reference,targets:String(s.cut),mode:'cuts'}];this.primer='';}this.rawFiles={control:d.control,sample:d.sample};this.control={...parseSangerTrace(d.control,'Synthetic_control.ab1'),synthetic:true};this.sample={...parseSangerTrace(d.sample,'Synthetic_edited.ab1'),synthetic:true};this.maxDeletion=10;this.maxInsertion=10;this.previewStart=Math.max(0,Number(this.references[0].targets)-30);this.changed();this.demoLabel='Synthetic known mixture. Not experimental data.';this.centerPreview(true);}
+ async loadWheatDemo(){if(this.busy||this.loading)return;this.clearTruth();const id=++this.generation;this.loading=true;try{const get=async(f:string)=>{const r=await fetch('examples/sanger-wheat/'+f);if(!r.ok)throw Error('Synthetic wheat demo could not be loaded.');return r;},config=await(await get('config.json')).json();const buffers=await Promise.all(['control.ab1','sample.ab1'].map(async f=>(await get(f)).arrayBuffer()));const [control,sample]=buffers.map((buffer,i)=>parseSangerTrace(buffer,'SYNTHETIC_Wheat_'+(i?'sample.ab1':'control.ab1')));if(id!==this.generation)return;this.rawFiles={control:buffers[0],sample:buffers[1]};this.references=config.amplicons.map((a:any)=>({name:a.name,sequence:a.sequence,targets:String(a.cut),mode:'cuts'}));this.primer=config.primer;this.clearOpposite();this.maxDeletion=config.settings.maxIndel;this.maxInsertion=config.settings.maxIndel;this.control={...control,synthetic:true};this.sample={...sample,synthetic:true};this.changed();this.demoLabel='Synthetic wheat: A 60%, B 45%, D 70% edited. Not experimental data.';this.centerPreview(true);}catch(e){this.error=e instanceof Error?e.message:String(e);}finally{this.loading=false;this.changeDetector.markForCheck();}}
+ addOpposite(){if(this.busy||this.loading)return;this.oppositeEnabled=true;this.changed();}
+ clearOpposite(){this.oppositeEnabled=false;this.oppositeSample=null;this.oppositeControl=null;this.reads.oppositeSample++;this.reads.oppositeControl++;this.changed();}
+ run(){if(this.busy||this.loading)return;this.error='';try{
+  if(!this.sample||!this.control)throw Error('Upload an edited sample and an unedited WT control.');
+  if(this.needsPrimer&&!this.primer.trim())throw Error('Enter the shared sequencing primer for multiple references or targets.');
+  if(!Number.isFinite(this.indelThreshold)||this.indelThreshold<0||this.indelThreshold>100)throw Error('Use an indel threshold from 0 to 100%.');
+  if(!Number.isInteger(this.maxDeletion)||this.maxDeletion<1||this.maxDeletion>500||!Number.isInteger(this.maxInsertion)||this.maxInsertion<1||this.maxInsertion>30)throw Error('Use deletion limit 1–500 and insertion limit 1–30 bp.');
+  const references=this.references.map(row=>{if(this.inputTargets(row).some(t=>!t.value.trim()))throw Error(row.name+': enter each target sequence or cut position.');if(row.targets.trim().split(/[\s,;]+/).filter(Boolean).length>2)throw Error('Enter one or two targets per reference.');const r=resolveSangerReference(row.name,row.sequence,row.targets,row.mode);return {name:r.name,sequence:r.sequence,cut:r.cuts[0],cuts:r.cuts};});
+  if(new Set(references.map(r=>r.name)).size!==references.length)throw Error('Reference names must be unique.');
+  if(this.benchmarkEnabled){if(!this.benchmarkTruth)throw Error('Upload a ground truth JSON or CSV file for benchmark mode.');validateBenchmarkTruth(this.benchmarkTruth,references);}
+  if(typeof Worker==='undefined')throw Error('A browser with background-worker support is required.');
+  if(this.oppositeEnabled&&(!this.oppositeSample||!this.oppositeControl||!this.oppositePrimer.trim()))throw Error('The opposite read pair needs its sequencing primer, edited trace and WT control.');
+  const additionalReads=this.oppositeEnabled?[{primer:this.oppositePrimer,sample:this.oppositeSample!,control:this.oppositeControl!}]:undefined;
+  const payload:AutomaticSangerInput={groupRecovery:true,references,primer:this.primer,sample:this.sample,control:this.control,maxDeletion:this.maxDeletion,maxInsertion:this.maxInsertion,additionalReads,synthetic:this.synthetic};
+  this.submitted={groupRecovery:true,references:references.map(r=>({...r})),primer:this.primer,maxDeletion:this.maxDeletion,maxInsertion:this.maxInsertion,sample:this.sample.name,control:this.control.name,...(this.oppositeEnabled?{opposite:{primer:this.oppositePrimer,sample:this.oppositeSample!.name,control:this.oppositeControl!.name}}:{})};this.result=null;this.busy=true;this.stageHistory=[];this.stage='Registering chromatograms';this.startedAt=Date.now();this.elapsedSeconds=0;this.progressPercent=0;this.updateProgress(this.stage);this.progressTicker=setInterval(()=>{this.elapsedSeconds=Math.floor((Date.now()-this.startedAt)/1000);this.changeDetector.markForCheck();},1000);if(this.signalWorkspace)this.signalWorkspace.nativeElement.scrollIntoView({behavior:typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});const worker=new Worker(new URL('../../workers/sanger-analysis.worker',import.meta.url),{type:'module'});this.worker=worker;
+  worker.onmessage=({data})=>{if(this.worker!==worker)return;if(data.type==='progress'){this.stage=data.stage;this.updateProgress(this.stage);if(this.stageHistory.at(-1)!==data.stage)this.stageHistory=[...this.stageHistory,data.stage].slice(-40);}else if(data.type==='result'){this.result=data.result;this.selectedAmplicon=0;this.selectedTargetIndex=0;this.plotResult=null;this.stop();this.checkBenchmark();}else if(data.type==='error'||data.type==='blocked'){this.error=data.message||data.report?.reason||'Analysis failed.';this.stop();}this.changeDetector.markForCheck();};worker.onerror=()=>{if(this.worker===worker){this.error='Analysis worker failed. Review the input files.';this.stop();this.changeDetector.markForCheck();}};worker.postMessage({action:'automatic',...payload});
+ }catch(e){this.error=e instanceof Error?e.message:String(e);this.stop();}}
+ private checkBenchmark(){
+  // This worker is created only AFTER inference has returned. Truth and original
+  // file bytes are never included in the automatic-analysis request.
+  if(this.busy||!this.benchmarkEnabled||!this.benchmarkTruth||!this.result||!this.submitted||!this.rawFiles.control||!this.rawFiles.sample)return;
+  const result=this.result,truth=this.benchmarkTruth,worker=new Worker(new URL('../../workers/sanger-analysis.worker',import.meta.url),{type:'module'});this.worker=worker;this.busy=true;this.stage='Checking ground truth after inference';this.updateProgress(this.stage);
+  worker.onmessage=({data})=>{if(this.worker!==worker)return;if(data.type==='benchmark'){
+   if(this.result===result&&this.benchmarkTruth===truth){this.benchmarkAssessment=data.assessment;this.assessmentResult=result;this.acceptedReferences=[...new Set<string>([...data.assessment.certificates.map((c:any)=>c.reference),...(data.assessment.nativeCertificate?.references||[])])];}
+   this.stop();
+  }else if(data.type==='error'){this.notice='Analysis completed; benchmark equivalence could not be certified.';this.stop();}this.changeDetector.markForCheck();};
+  worker.onerror=()=>{if(this.worker===worker){this.notice='Analysis completed; benchmark comparison failed.';this.stop();this.changeDetector.markForCheck();}};
+  worker.postMessage({action:'benchmark',result,truth,references:this.submitted.references.map(r=>({...r,cuts:r.cuts||[r.cut]})),threshold:this.indelThreshold,controlBytes:this.rawFiles.control,sampleBytes:this.rawFiles.sample});
+ }
+ private stop(){if(this.progressTicker){clearInterval(this.progressTicker);this.progressTicker=null;}this.worker?.terminate();this.worker=null;this.busy=false;}
+ cancel(){this.stop();this.stage='';}
+ ngOnDestroy(){if(this.previewTimer)clearTimeout(this.previewTimer);this.generation++;for(const role of Object.keys(this.reads)as TraceRole[])this.reads[role]++;this.stop();}
+ inputTargets(row:ReferenceRow){if(!row.uiTargets)row.uiTargets=row.targets.split(/[\s,;]+/).filter(Boolean).map((value,i)=>({name:'Target '+(i+1),value}));if(!row.uiTargets.length)row.uiTargets=[{name:'Target 1',value:''}];return row.uiTargets;}
+ syncInputTargets(row:ReferenceRow){row.targets=this.inputTargets(row).map(t=>t.value.trim()).join(', ');this.changed();}
+ setInputMode(row:ReferenceRow,mode:'cuts'|'guides'){row.mode=mode;row.targets='';row.uiTargets=[{name:'Target 1',value:''}];this.changed();}
+ addInputTarget(row:ReferenceRow){const targets=this.inputTargets(row);if(targets.length<2)targets.push({name:'Target '+(targets.length+1),value:''});this.syncInputTargets(row);}
+ removeInputTarget(row:ReferenceRow,index:number){if(this.inputTargets(row).length>1)row.uiTargets!.splice(index,1);this.syncInputTargets(row);}
+ newAnalysis(){this.advancedOpen=false;this.cancel();this.clearTruth();this.rawFiles={};this.sample=null;this.control=null;this.oppositeSample=null;this.oppositeControl=null;this.oppositeEnabled=false;this.primer='';this.oppositePrimer='';this.references=[{name:'Gene 1',sequence:'',targets:'',mode:'guides'}];this.maxDeletion=10;this.maxInsertion=10;this.window=200;this.indelThreshold=1;this.changed();this.demoLabel='';}
+ chooseExactRepresentative(event:{reference:string;option:number}){if(this.busy||!this.result)return;this.result=selectExactRepresentative(this.result,event.reference,event.option);this.plotResult=null;this.benchmarkCache=undefined;this.benchmarkAssessment=null;this.assessmentResult=null;this.checkBenchmark();this.changeDetector.markForCheck();}
+ selectResultReference(index:number){this.selectedAmplicon=index;this.selectedTargetIndex=0;this.plotResult=null;}
+ selectResultTarget(index:number){this.selectedTargetIndex=index;this.plotResult=null;}
+ get selectedReferenceSummary(){return this.resultSummary.filter(row=>row.index===this.selectedAmplicon);}
+ get currentTargetLabel(){return this.selectedReferenceSummary.find(row=>row.targetIndex===this.selectedTargetIndex)?.target||'Target 1';}
+ private referenceSource:SangerAnalysisResult|null|undefined;private referenceRows:{name:string;share:number}[]=[];
+ get resultReferences(){if(this.referenceSource!==this.result){this.referenceSource=this.result;this.referenceRows=this.result?.pooled?.amplicons.map(a=>({name:a.name,share:a.share}))||[{name:this.result?.referenceName||'',share:1}];}return this.referenceRows;}
+ get zeroNetUnresolved(){return false;}
+ private emptyProfile={share:1,wt:null,inFrame:null,outOfFrame:null};
+ get currentProfile(){return this.selectedReferenceSummary.find(row=>row.targetIndex===this.selectedTargetIndex)||this.emptyProfile;}
+ linkageFor(index:number,target:number){const name=this.result?.annotations?.[index]?.name;if(this.result?.exactAlternatives?.some(s=>s.reference===name&&s.targets.includes(target+1)))return [];return this.result?.diagnostics?.substitutionLinkage?.filter(a=>a.reference===name&&a.target===target+1)||[];}
+ identifiedFraction(_index:number,_target:number,value:number|null){return value;}
+ fractionLabel(_index:number,_target:number,_kind:'wt'|'substitution',value:number|null){return this.percentLabel(value);}
+ percentLabel(value:number|null|undefined){return value===null||value===undefined?'—':(100*value).toFixed(2)+'%';}
+ private summarySource:SangerAnalysisResult|null=null;private summaryFlags='';private summaryRows:ReturnType<SangerAnalysisPanelComponent['buildResultSummary']>=[];
+ get resultSummary(){const flags=this.result?.annotations?.map(a=>Number(a.estimable)).join(',')||'';if(this.summarySource!==this.result||this.summaryFlags!==flags){this.summarySource=this.result;this.summaryFlags=flags;this.summaryRows=this.buildResultSummary();}return this.summaryRows;}
+ private buildResultSummary(){const r=this.result;if(!r)return[];const refs=r.pooled?.amplicons||[{name:r.referenceName,share:1,wt:r.mixture?.wt??null,inFrame:r.mixture?.inFrame??null,outOfFrame:r.mixture?.outOfFrame??null}];return refs.flatMap((a,index)=>{const annotation=r.annotations?.[index],cuts=annotation?.cuts||[annotation?.cut||r.cutPosition];return cuts.map((_,target)=>{const configured=this.references.find(ref=>ref.name===a.name),label=configured?this.inputTargets(configured)[target]?.name:undefined;if(cuts.length<2)return {...a,index,targetIndex:target,target:label||'T'+(target+1)};const components=annotation?.components||[];if(components.some(c=>c.fraction>0&&(!c.pathSizes||c.pathSizes.length!==cuts.length)))return {name:a.name,share:a.share,index,targetIndex:target,target:label||'T'+(target+1),wt:null,inFrame:null,outOfFrame:null};if(annotation?.sequenceGrouping){const events=(c:typeof components[number])=>(c.events||[]).filter(e=>e.target===target+1||e.target===0);const sum=(test:(c:typeof components[number])=>boolean)=>annotation.estimable?components.reduce((n,c)=>n+(test(c)?c.fraction:0),0):null;return {name:a.name,share:a.share,index,targetIndex:target,target:label||'T'+(target+1),wt:sum(c=>!c.unresolved&&!events(c).length),inFrame:sum(c=>{const es=events(c),size=c.pathSizes?.[target]||0;return !!es.length&&size%3===0&&es.some(e=>e.inserted!==e.end-e.start);}),outOfFrame:sum(c=>(c.pathSizes?.[target]||0)%3!==0)};}const fraction=(test:(size:number)=>boolean)=>components.reduce((sum,c)=>sum+(test(c.pathSizes?.[target]??c.size)?c.fraction:0),0);return {name:a.name,share:a.share,index,targetIndex:target,target:label||'T'+(target+1),wt:fraction(size=>size===0),inFrame:fraction(size=>size!==0&&size%3===0),outOfFrame:fraction(size=>size%3!==0)};});});}
+ get needsRecalculation(){return !!this.result&&!!this.submitted&&(this.maxDeletion!==this.submitted.maxDeletion||this.maxInsertion!==this.submitted.maxInsertion);}
+ get targetSpectra(){
+  const r=this.result;if(!r?.joint||!r.pooled)return[];
+  return r.joint.targets.map(t=>{const share=r.pooled!.amplicons.find(a=>a.name===t.reference)?.share||0,groups=r.joint!.groups.filter(g=>g.reference===t.reference),components=new Map<number,number>();
+   for(const g of groups){const size=g.pathSizes?.[t.target-1]||0;components.set(size,(components.get(size)||0)+(share?g.fraction/share:0));}
+   return{...t,ambiguous:r.joint!.attributionAmbiguous?.some(a=>a.reference===t.reference&&a.target===t.target)||false,components:[...components].sort((a,b)=>a[0]-b[0]).filter(([,fraction])=>fraction>0).map(([size,fraction])=>({size,fraction}))};
+  });
+ }
+ get sequenceGroupFit(){return this.result?.diagnostics?.algorithmVersion?.startsWith('sanger-sequence-groups-v');}
+ get substitutionFraction(){return this.substitutionFor(this.selectedAmplicon,this.selectedTargetIndex);}
+ substitutionFor(index:number,target?:number){if(!this.sequenceGroupFit)return null;const a=this.result?.annotations?.[index];if(!a?.estimable)return null;return a.components.filter(c=>{const events=(c.events||[]).filter(e=>target===undefined||e.target===target+1||e.target===0);return events.length&&events.every(e=>e.inserted===e.end-e.start);}).reduce((sum,c)=>sum+c.fraction,0);}
+
+ private spectrumSource:SangerAnalysisResult|null=null;private spectrumCache=new Map<string,ReturnType<SangerAnalysisPanelComponent['buildSpectrumComponents']>>();
+ get spectrumComponents(){if(this.spectrumSource!==this.result){this.spectrumSource=this.result;this.spectrumCache.clear();}const key=this.selectedAmplicon+':'+this.selectedTargetIndex;if(!this.spectrumCache.has(key))this.spectrumCache.set(key,this.buildSpectrumComponents());return this.spectrumCache.get(key)!;}
+ private buildSpectrumComponents(){const a=this.result?.annotations?.[this.selectedAmplicon];if((a?.cuts?.length||0)>1){const bins=new Map<number,number>();if(a!.components.some(c=>!c.pathSizes||c.pathSizes.length!==a!.cuts!.length))return [];for(const c of a!.components){const size=c.pathSizes![this.selectedTargetIndex];bins.set(size,(bins.get(size)||0)+c.fraction);}return [...bins].sort((a,b)=>a[0]-b[0]).map(([size,fraction])=>({size,fraction}));}return this.result?.pooled?this.result.pooled.amplicons[this.selectedAmplicon]?.components||[]:this.result?.mixture?.components||[];}
+ get visibleComponents(){return this.spectrumComponents.filter(c=>c.fraction>0);}
+ groupSupportLabel(size:number){if(size===0)return this.result?.joint?'No net size change; compensated edits included':'No net indel';const component=this.result?.annotations?.[this.result.pooled?this.selectedAmplicon:0]?.components.find(c=>c.size===size);return component?.support?.status==='supported'?'Conditional length evidence':'Length evidence unresolved';}
+ get viewWindow(){return Number.isInteger(this.window)&&this.window>=60&&this.window<=500?this.window:200;}
+ get displayedPlots(){
+  const r=this.result;if(!r||!this.sample||!this.control)return r?.plots||[];
+  if(this.plotResult===r&&this.plotIndex===this.selectedAmplicon&&this.plotWindow===this.viewWindow)return this.plots;
+  this.plotResult=r;this.plotIndex=this.selectedAmplicon;this.plotWindow=this.viewWindow;
+  const pairs=[{control:this.control,sample:this.sample},...(r.reads?.length&&this.oppositeSample&&this.oppositeControl?[{control:this.oppositeControl,sample:this.oppositeSample}]:[])];
+  this.plots=pairs.flatMap((pair,read)=>[pair.control,pair.sample].map((trace,i)=>{
+   const meta=r.reads?.[read],pooled=meta?{preflight:meta.preflight,sampleTrim:meta.sampleTrim,controlTrim:meta.controlTrim}:r.pooled,selected=pooled?.preflight.amplicons[this.selectedAmplicon],cut=selected?(selected.targets?.[this.selectedTargetIndex]?.cutOffset??selected.cutOffset)-(i?pooled!.sampleTrim:pooled!.controlTrim):r.plots[i]?.cutIndex;
+   if(cut===undefined)return r.plots[i];
+   const plot=plotTrace(trace,cut,Math.ceil(this.viewWindow/2),Math.floor(this.viewWindow/2));
+   if(selected)plot.cuts=pooled!.preflight.amplicons.flatMap(a=>(a.targets||[{cutOffset:a.cutOffset}]).map((t,j)=>({name:a.name+(a.targets&&a.targets.length>1?' T'+(j+1):''),x:plot.cutX+(t.cutOffset-(selected.targets?.[this.selectedTargetIndex]?.cutOffset??selected.cutOffset))*13}))).filter(c=>c.x>=0&&c.x<=plot.width);
+   if(r.reads)plot.name=`Read ${read+1} · ${plot.name}`;return plot;
+  })).filter((p):p is NonNullable<typeof p>=>!!p);return this.plots;
+ }
+
+ clearTruth(){this.benchmarkAssessment=null;this.assessmentResult=null;this.acceptedReferences=[];this.syntheticTruth=null;this.benchmarkTruth=null;this.truthName='';this.benchmarkEnabled=false;this.benchmarkCache=undefined;}
+ toggleBenchmark(enabled:boolean){if(this.busy)return;this.benchmarkEnabled=enabled;this.benchmarkCache=undefined;this.error='';if(enabled)this.checkBenchmark();}
+ async uploadTruth(event:Event){const el=event.target as HTMLInputElement,file=el.files?.[0];if(!file||this.busy||this.loading)return;this.loading=true;try{if(file.size>20000000||!/\.(json|csv)$/i.test(file.name))throw Error('Use a ground truth JSON or CSV file smaller than 20 MB.');const data=parseBenchmarkTruth(await file.text());this.benchmarkTruth=data;this.syntheticTruth={truth:data.truth,recipe:data.recipe};this.truthName=file.name;this.benchmarkEnabled=true;this.benchmarkCache=undefined;this.error='';}catch(e){this.benchmarkTruth=null;this.syntheticTruth=null;this.truthName='';this.benchmarkCache=undefined;this.error=e instanceof Error?e.message:String(e);}finally{el.value='';this.loading=false;if(this.benchmarkTruth)this.checkBenchmark();this.changeDetector.markForCheck();}}
+ get comparison(){if(!this.benchmarkEnabled||!this.benchmarkTruth||!this.result||!this.submitted)return this.noComparison;if(this.benchmarkCache?.result===this.result&&this.benchmarkCache.truth===this.benchmarkTruth&&this.benchmarkCache.threshold===this.indelThreshold)return this.benchmarkCache.rows;const refs=this.submitted.references.map(r=>({...r,cuts:r.cuts||[r.cut]})),rows=benchmarkComparison(this.benchmarkTruth,refs,this.result,this.indelThreshold);this.benchmarkCache={result:this.result,truth:this.benchmarkTruth,threshold:this.indelThreshold,rows};return rows;}
+ truthFor(name:string,target?:number){return this.benchmarkEnabled&&this.benchmarkTruth?benchmarkMetrics(this.benchmarkTruth,name,this.sequenceGroupFit&&(this.result?.annotations?.find(a=>a.name===name)?.cuts?.length||1)<2?undefined:target,!!this.result?.joint,!!this.sequenceGroupFit):null;}
+ get truthProfile(){return this.truthFor(this.resultReferences[this.selectedAmplicon]?.name||'',this.selectedTargetIndex);}
+ truthLabel(expected:number,estimated:number|null|undefined){const delta=estimated==null?'':` · Δ ${estimated>=expected?'+':''}${((estimated-expected)*100).toFixed(2)} pp`;return `GT ${(expected*100).toFixed(2)}%${delta}`;}
+ exportBenchmark(){if(this.comparison.length)this.download('CasSago_comparison.csv',benchmarkCsv(this.comparison),'text/csv');}
+ exportJson(){if(this.result)this.download('CasSago_result.json',JSON.stringify({format:'casmango-sanger-result-v2',createdAt:new Date().toISOString(),execution:{elapsedSeconds:this.elapsedSeconds,stages:this.stageHistory},input:this.submitted,syntheticTruth:this.syntheticTruth,benchmark:{enabled:this.benchmarkEnabled,truthFile:this.truthName,comparison:this.comparison,assessment:this.assessmentResult===this.result?this.benchmarkAssessment:null},view:{window:this.window,indelThreshold:this.indelThreshold},bestPositions:(this.result.annotations||[]).map(a=>exactDisplayView(a,0,Math.floor(this.viewWindow/2),this.result!.exactAlternatives?.find(s=>s.reference===a.name))).flatMap(a=>a.rows.map(row=>({reference:a.name,pattern:row.patternLabel,sequenceKey:row.sequenceKey,sequenceState:row.sequenceState,size:row.size,fraction:row.fraction,fractionRange:row.fractionRange,position:row.positionLabel,events:row.representative?.events||[]}))),result:{...this.result,plots:this.displayedPlots}},null,2),'application/json');}
+ exportCsv(){
+  const r=this.result;if(!r)return;
+  if(r.annotations?.some(a=>(a.cuts?.length||1)>1)){const records:any[][]=[['Reference','Target','Reference share (%)','Group','Within-target fraction (%)','Indel (bp)','Sequence state','Events (0-based half-open)','Sequence key']];for(const annotation of r.annotations)for(let target=0;target<(annotation.cuts?.length||1);target++){const view=exactDisplayView(annotation,target,Math.floor(this.viewWindow/2),r.exactAlternatives?.find(s=>s.reference===annotation.name));let group=0;for(const row of view.rows)records.push([annotation.name,'T'+(target+1),100*annotation.share,++group,row.fractionRange?exactFractionLabel(row):100*row.fraction,row.size,row.sequenceState,JSON.stringify(row.representative?.events||[]),row.sequenceKey||'']);}this.download('CasSago_target_profiles.csv',records.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv');return;}
+  const records:any[][]=[['Reference','Reference share (%)','Net indel (bp)','Within-reference fraction (%)','Length evidence','Held-out block prediction','Best-fit breakpoint','Fitted placements (0-based half-open; not confirmed edit sites)','Group','Target size pattern','Sequence state','Inserted sequence(s)','Sequence key']];
+  const views=(r.annotations||[]).map(a=>exactDisplayView(a,0,Math.floor(this.viewWindow/2),r.exactAlternatives?.find(s=>s.reference===a.name))),refs=r.pooled?.amplicons||[{name:r.referenceName,share:1,components:r.mixture?.components||[]}];
+  for(const ref of refs){const view=views.find(v=>v.name===ref.name);let group=0;
+   for(const row of view?.rows||[]){const events=row.representative?.events||[];records.push([ref.name,100*ref.share,row.size,row.fractionRange?exactFractionLabel(row):100*row.fraction,row.size===0?'No net indel':row.support?.status==='supported'?'Conditional length evidence':'Length evidence unresolved',row.support?.prediction?JSON.stringify(row.support.prediction):'Not assessed: residual/control evidence insufficient',row.positionLabel,JSON.stringify(events.length?[{fraction:row.fraction,events}]:[]),++group,row.patternLabel||'',row.sequenceState,events.filter(e=>e.inserted).map(e=>e.insertedSequence).join('; '),row.sequenceKey||'']);}
+   for(const c of ref.components){if(c.fraction>0&&view?.rows.some(row=>row.size===c.size))continue;records.push([ref.name,100*ref.share,c.size,100*c.fraction,c.fraction<=0?'No retained signal':'Length evidence unresolved','Not assessed: residual/control evidence insufficient','Position not estimated','[]',++group,'','unresolved','','']);}
+  }
+  this.download('CasSago_result.csv',records.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv');
+ }
+ private download(name:string,text:string,type:string){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+}

@@ -1,0 +1,121 @@
+{
+  "template": {
+    "format": "casmango-sanger-analysis-v1",
+    "primer": "CAGGGCAGCATCGGGTATTCAGTAT",
+    "amplicons": [
+      {
+        "name": "A_1068-1282",
+        "sequence": "TCGAGAGAGGGAGGACCTGAAGTCCGGAAAAGAAGTTGGCTTCCCACACTACAGCGGTGGATCTTTTCAATCTGGCAGCCTACGTGATTCGGCCTTCCCTAAACAGCCGCGGAAGTAATCCCTAGTACTTCTGAGTACGCTTTATCTAGCGAGGCCTGAGCCACTGCCATACTATCACCTGGAGGTCCGGATACTGAATACCCGATGCTGCCCTG",
+        "forwardPrimer": "TCGAGAGAGGGAGGACCTGAAGTC",
+        "reversePrimer": "CAGGGCAGCATCGGGTATTCAGTAT",
+        "cuts": [
+          83
+        ],
+        "sourceReference": "A",
+        "start": 1067,
+        "end": 1282
+      }
+    ],
+    "settings": {
+      "scope": "single",
+      "editStartRadius": 5,
+      "readStart": 35,
+      "readEnd": 700,
+      "method": "mixture",
+      "maxIndel": 10,
+      "window": 90,
+      "controlPhred": 15,
+      "direction": "reverse",
+      "joinNearby": 3,
+      "signalModel": "calibrated",
+      "checkWiderRange": true,
+      "analysisPolicy": "automatic",
+      "maxDeletion": 10,
+      "maxInsertion": 10
+    },
+    "scopeNote": "Predicted PCR products. Confirm actual submitted amplicons after sequencing; no trace data or experimental validation included."
+  },
+  "files": {
+    "control": "prediction-null-control.ab1",
+    "sample": "prediction-null-sample.ab1"
+  },
+  "truth": {
+    "id": "independent-0",
+    "references": [
+      {
+        "name": "A_1068-1282",
+        "share": 1,
+        "controlShare": 1,
+        "alleles": [
+          {
+            "fraction": 0.35,
+            "events": []
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 106,
+                "end": 107,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 103,
+                "end": 110,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.22,
+            "events": [
+              {
+                "start": 105,
+                "end": 105,
+                "inserted": "AG"
+              }
+            ]
+          },
+          {
+            "fraction": 0.03,
+            "events": [
+              {
+                "start": 105,
+                "end": 105,
+                "inserted": "ATCATA"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.35
+          },
+          {
+            "size": -1,
+            "fraction": 0.2
+          },
+          {
+            "size": -7,
+            "fraction": 0.2
+          },
+          {
+            "size": 2,
+            "fraction": 0.22
+          },
+          {
+            "size": 6,
+            "fraction": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  "provenance": "First-ranked designed-primer case from seed 2720143061. Initially independent; promoted to regression after discovering a nonpredictive +4 group."
+}

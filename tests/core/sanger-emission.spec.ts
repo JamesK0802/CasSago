@@ -1,0 +1,31 @@
+import {describe,it,expect} from 'vitest';
+import {contrastPeaks,simplexFit} from '../../src/app/workers/core/sanger-signal';
+import {emissionVector,fitContextEmission,fitEmissionMixture,screenEmissionSupport} from '../../src/app/workers/core/sanger-emission';
+import {TRACE_BASES,SangerTrace} from '../../src/app/models/sanger-analysis';
+describe('fluorescence contrast and emission model',()=>{
+ it('retains a weak 2% channel and is invariant to additive dye baseline and linear drift',()=>{const n=130,peaks=Uint32Array.from({length:n},(_,i)=>14+i*12),channels=Object.fromEntries(TRACE_BASES.map(b=>[b,new Float32Array(n*12+40)]))as SangerTrace['channels'];for(let i=0;i<n;i++)for(let d=-5;d<=5;d++){channels.A[peaks[i]+d]+=980*Math.exp(-d*d/6);channels.C[peaks[i]+d]+=20*Math.exp(-d*d/6);}const trace:SangerTrace={name:'test',sampleName:'test',sequence:'A'.repeat(n),peaks,quality:null,channels},first=contrastPeaks(trace),drift=structuredClone(trace);TRACE_BASES.forEach((b,k)=>{for(let p=0;p<drift.channels[b].length;p++)drift.channels[b][p]+=50*(k+1)+.04*p;});const second=contrastPeaks(drift);for(let i=3;i<n-3;i++){expect(first.vectors[i][1]).toBeCloseTo(.02,4);expect(second.vectors[i][1]).toBeCloseTo(first.vectors[i][1],4);expect(second.vectors[i].reduce((a,b)=>a+b,0)).toBeCloseTo(1,8);}});
+ it('learns bounded categorical context from unedited control with held-out improvement',()=>{let seed=9441;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;},sequences=Array.from({length:3},()=>Array.from({length:400},()=> 'ACGT'[Math.floor(random()*4)]).join('')),shares=[.5,.3,.2],theta=[.04,-.03,.01,-.02,.02,-.01,.03,-.04],observed=Array.from({length:400},(_,p)=>{const v=[0,0,0,0];sequences.forEach((s,h)=>emissionVector(s,p,.025,theta).forEach((x,b)=>v[b]+=shares[h]*x));const total=v.reduce((a,b)=>a+b,0);return v.map(x=>x/total);}),fit=fitContextEmission(sequences,Array.from({length:370},(_,i)=>i+2),observed,shares,.025);expect(fit.used).toBe(true);expect(fit.validationMse).toBeLessThan(fit.rawValidationMse*.05);expect(fit.theta.every(v=>Math.abs(v)<=.25)).toBe(true);});
+ it('fits normalized emission mixtures and retains a supported rare component during screening',()=>{const n=140,columns=Array.from({length:3},(_,h)=>Array.from({length:n},(_,p)=>{const vector=Array(4).fill(0);vector[(h+p)%4]=1+.1*Math.sin(p+h);return vector;}).flat()),weights=[.98,.01,.01],observed=Array.from({length:n},(_,p)=>{const v=Array.from({length:4},(_,b)=>columns.reduce((s,c,h)=>s+c[p*4+b]*weights[h],0)),t=v.reduce((a,b)=>a+b,0);return v.map(x=>x/t);}).flat(),fit=fitEmissionMixture(columns,observed),screen=screenEmissionSupport(columns,observed,fit,[0]);expect(fit.weights[1]).toBeCloseTo(.01,4);expect(screen.fit.weights[1]).toBeGreaterThan(.009);expect(screen.fit.weights.reduce((a,b)=>a+b,0)).toBeCloseTo(1,9);});
+});
+
+it('converges on unequal-length products without treating early molecule termination as a lower initial share',async()=>{const {fitNormalizedEmissionMixture}=await import('../../src/app/workers/core/sanger-emission');let seed=19347;const dna=(n:number)=>Array.from({length:n},()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return 'ACGT'[seed>>>30];}).join(''),sequences=[dna(520),dna(190),dna(520)],truth=[.25,.45,.30],columns=sequences.map(s=>Array.from({length:480},(_,p)=>'ACGT'.split('').map(b=>Number(s[p]===b))).flat()),observed=Array.from({length:480},(_,p)=>{const values='ACGT'.split('').map((_,b)=>columns.reduce((sum,c,h)=>sum+truth[h]*c[4*p+b],0)),total=values.reduce((a,b)=>a+b,0);return values.map(v=>v/total);}).flat(),fit=fitNormalizedEmissionMixture(columns,observed);expect(fit.converged).toBe(true);fit.weights.forEach((w,h)=>expect(w).toBeCloseTo(truth[h],4));expect(fit.r2).toBeGreaterThan(.99999);});
+
+it('retains a true 0.5% length when many independent cycles support it',()=>{
+ const n=280,columns=Array.from({length:3},(_,h)=>Array.from({length:n},(_,p)=>Array.from('ACGT',(_,b)=>Number(b===(p+h)%4))).flat());
+ const truth=[.975,.02,.005],observed=columns[0].map((_,k)=>columns.reduce((s,c,h)=>s+truth[h]*c[k],0)+.00001*Math.sin(k*1.71));
+ const fit=fitEmissionMixture(columns,observed),screen=screenEmissionSupport(columns,observed,fit,[0],undefined,[[0],[1],[2]],[1,20,20]);
+ expect(screen.fit.weights[2]).toBeGreaterThan(.0049);expect(screen.scores!.find(s=>s.group.includes(2))!.score).toBeGreaterThan(screen.scores!.find(s=>s.group.includes(2))!.threshold);
+});
+it('keeps support scores invariant when precision weights change units',()=>{
+ const n=140,columns=Array.from({length:3},(_,h)=>Array.from({length:n},(_,p)=>Array.from('ACGT',(_,b)=>Number(b===(p+h)%4))).flat()),truth=[.8,.15,.05],observed=columns[0].map((_,k)=>columns.reduce((s,c,h)=>s+truth[h]*c[k],0)+.002*Math.sin(k*1.71)),fit=fitEmissionMixture(columns,observed),groups=[[0],[1],[2]],a=screenEmissionSupport(columns,observed,fit,[0],Array(n).fill(1),groups,undefined,{refit:false}),b=screenEmissionSupport(columns,observed,fit,[0],Array(n).fill(.1),groups,undefined,{refit:false});
+ expect(a.fit).toBe(fit);expect(b.fit).toBe(fit);a.scores!.forEach((s,i)=>expect(s.score).toBeCloseTo(b.scores![i].score,8));
+});
+it('does not invent evidence for indistinguishable reference allocations',()=>{
+ const n=100,wt=Array.from({length:n},()=>[1,0,0,0]).flat(),edited=Array.from({length:n},()=>[0,1,0,0]).flat(),columns=[wt,edited,edited],weights=[.8,.1,.1],observed=wt.map((v,k)=>.8*v+.2*edited[k]),fit={weights,r2:1,rmse:0,converged:true},screen=screenEmissionSupport(columns,observed,fit,[0],undefined,[[1],[2]],undefined,{refit:false});
+ expect(screen.scores||[]).toEqual([]);expect(screen.fit.weights).toEqual(weights);
+});
+
+it('does not turn WT-control template error into confident editing evidence when sample residual is tiny',()=>{
+ const n=160,columns=[Array.from({length:n},()=>[1,0,0,0]).flat(),Array.from({length:n},()=>[0,1,0,0]).flat()],weights=[.995,.005],observed=columns[0].map((v,k)=>.995*v+.005*columns[1][k]),fit={weights,r2:1,rmse:0,converged:true},templateResidual=Array.from({length:n},()=>[-.01,.01,0,0]).flat(),screen=screenEmissionSupport(columns,observed,fit,[0],undefined,[[0],[1]],undefined,{refit:false,templateResidual});
+ expect(screen.fit.weights).toEqual(weights);expect(screen.scores![0].score).toBeLessThan(screen.scores![0].threshold);
+});

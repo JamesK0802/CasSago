@@ -1,0 +1,5 @@
+export type EnsemblDivision='EnsemblPlants'|'EnsemblVertebrates'|'EnsemblMetazoa'|'EnsemblFungi'|'EnsemblProtists';
+export interface LibrarySpecies {name:string;display_name:string;assembly:string;strain?:string;release?:number;division?:string;accession?:string;aliases?:string[]}
+export interface LibraryGene {id:string;display_name?:string;description?:string;species:string;assembly_name:string;seq_region_name:string;start:number;end:number;strand:1|-1;version?:number;object_type:string;lookupNote?:string;taxonomyId?:string}
+export interface ReferenceSource {provider:'ensembl'|'ncbi';division:EnsemblDivision;species:string;speciesLabel:string;strain?:string;release?:number;geneId:string;geneVersion:number|null;assembly:string;chromosome:string;geneStart:number;geneEnd:number;strand:1|-1;sequenceStart:number;sequenceEnd:number;upstream:number;downstream:number;retrievedAt:string;sha256:string;lookupUrl:string;sequenceUrl:string;viewUrl:string}
+export interface LibraryReference {name:string;sequence:string;source:ReferenceSource}

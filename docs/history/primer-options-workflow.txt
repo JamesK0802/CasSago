@@ -1,0 +1,70 @@
+CasMango primer selection workflow — 28 October 2026
+
+Inputs: full reference sequences (manual, FASTA, existing analysis form or live
+library import), SpCas9 spacer(s) or explicit cut boundaries, minimum included
+window, co-amplification / homeolog-specific / single-reference mode, and platform.
+gRNA discovery itself is unchanged. Non-SpCas9 nucleases use explicit cuts.
+
+Co-amplification searches one exact common primary and opposite PCR oligo with
+unique exact sites per supplied reference. It does not require different target
+distances. The separate optional offset-start setting retains the experimental
+one-primer mixed-Sanger assay. Homeolog-specific design retains aligned diagnostic
+3′ variants or configurable mismatch screening. All specificity claims apply to
+the supplied references only; they are not whole-genome checks or PCR guarantees.
+
+Ordering: ascending maximum cut distance after the primary primer 3′ end across
+all included references/targets; then distance from 60°C Tm, maximum product length
+and deterministic ID. Each primary may have three different opposite-primer
+options. The list shows both oligos and product lengths so alternatives are
+visible. Load 10 more reveals the next ten without discarding earlier selection.
+Shared/single searches check at most 600 ranked primary primers, returning up to
+300 pairs. Specific searches check 240 primers per side/direction, retain up to
+100 pairs per reference, and mark the result as bounded when capped. Input
+binding searches still cover the entire supplied sequence. Negative results are
+not proofs that no experimentally useful primer exists.
+
+Sanger: use a configurable usable start and read limit after the sequencing
+primer 3′ end, default 35–700 bp. The entire requested window PLUS the indel
+allowance must fit within that range, in forward or reverse orientation. PCR
+partners lie outside the window plus allowance. The PCR product itself may be
+longer than the Sanger read limit: it is the distance to required information
+that matters. Sequencing providers/chemistries have different quality limits;
+700 bp is a design default, not a guarantee. NGS / PCR-only mode does not enforce
+the Sanger start/end bounds but still requires complete PCR window coverage and
+all oligo/product constraints. It cannot select the Sanger-only offset workflow.
+
+Exports: selected predicted PCR product sequences in original input orientation,
+cut coordinates relative to those products (boundary after base N), paired-oligo
+FASTA, full candidate CSV, and resumable design JSON. Analysis references are also
+shown under the selected pair. Sanger template JSON preserves product sequence,
+relative cut, sequencing primer, direction and analysis/read-range settings.
+A matching import button in Sanger Analysis and a direct handoff button use the
+same validation. No actual sample/control chromatograms are synthesized or kept
+when changing to a new design; user confirms that these are the products actually
+submitted. Import is validated before state mutation. Unsupported dimensions
+(>4 products, >1 cut per product, out-of-range analysis settings) do not silently
+flatten targets; FASTA/Targets CSV remain available for such designs.
+
+Several allele sizes at ONE cut: supported by the existing trace-mixture model.
+Several separate mutation events on ONE molecule: not equivalent to several
+alleles. Equal net-size changes, canceling insertions/deletions, different
+junctions and multi-cut combinations may be non-identifiable from one mixed
+trace. This workflow does not claim to resolve those combinations. Real trace
+coverage, rank/conditioning and fit checks remain necessary after sequencing.
+
+Primary references consulted
+CHOPCHOP: https://doi.org/10.1093/NAR/GKU410
+  Primer3 candidate pairs followed by genome mapping; CasMango does not run
+  Primer3 or reproduce CHOPCHOP's whole-genome mapping in this browser feature.
+Primer3 manual: https://primer3.org/manual.html
+Sanger facility guidance: https://www.biotech.cornell.edu/core-facilities-brc/facilities/genomics-facility/qc-troubleshooting/sanger-sequencing-primer-design
+Sanger instrument/read quality: https://sequencing.ubc.ca/our-services-equipment/sanger-sequencing/sanger-faq
+TIDE: https://doi.org/10.1093/nar/gku936
+
+Validation: 511 tests across 52 files passed; production build passes with the
+existing initial-bundle budget warning (~2.35 MB versus 2 MB).
+New cases cover co-amplification without offsets; extra pair choices; nearest
+ordering; complete Sanger-window and indel-reserve limits on both strands;
+NGS exemption; input-to-product coordinate export in both directions; JSON
+round trips; unsupported multiple cuts; ten-at-a-time browsing; selected-pair
+handoff; atomic import and required submitted-product confirmation.

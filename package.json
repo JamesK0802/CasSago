@@ -1,0 +1,35 @@
+{
+  "name": "cassago",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "ng serve --host 0.0.0.0",
+    "build": "ng build --configuration production",
+    "test": "vitest run --config vitest.release.config.ts",
+    "test:all": "vitest run",
+    "build:pages": "ng build --configuration production --base-href /CasSago/"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/compiler": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@angular/forms": "^21.2.0",
+    "@angular/platform-browser": "^21.2.0",
+    "chart.js": "^4.5.1",
+    "exceljs": "^4.4.0",
+    "fflate": "^0.8.3",
+    "file-saver": "^2.0.5",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.2.7",
+    "@angular/cli": "^21.2.7",
+    "@angular/compiler-cli": "^21.2.0",
+    "@types/file-saver": "^2.0.7",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8"
+  }
+}

@@ -1,0 +1,4 @@
+<section class="wt-preview" *ngIf="references.length" aria-label="Ideal WT chromatogram preview">
+ <div class="preview-tabs" *ngIf="references.length>1" role="group" aria-label="WT reference signal"><button type="button" [class.active]="choice===-1" [attr.aria-pressed]="choice===-1" (click)="choose(-1)">All</button><button type="button" *ngFor="let ref of references;let i=index" [class.active]="choice===i" [attr.aria-pressed]="choice===i" (click)="choose(i)">{{ref.name}}</button></div>
+ <app-sanger-chromatogram *ngIf="plot" [plot]="plot" [showCut]="false" [fitWidth]="false" [compact]="true" />
+</section>

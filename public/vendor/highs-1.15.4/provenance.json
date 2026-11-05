@@ -1,0 +1,7 @@
+{
+  "package": "highs",
+  "version": "1.15.4",
+  "source": "https://github.com/lovasoa/highs-js",
+  "license": "MIT",
+  "purpose": "Local worker-only linear and discrete sequence optimization; no remote requests."
+}

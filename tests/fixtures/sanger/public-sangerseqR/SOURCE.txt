@@ -1,0 +1,10 @@
+Public real sibling chromatograms from Bioconductor sangerseqR, GPL-2.
+https://bioconductor.org/packages/sangerseqR/
+Source repository https://git.bioconductor.org/packages/sangerseqR
+Paths: inst/extdata/{heterozygous.ab1,heterozygous.scf,homozygous.scf}
+Retrieved 29 October 2026. Exact source revision/hash recorded in validation artifact.
+Vignette identifies heterozygous and homozygous siblings of the same region.
+The SCF and AB1 heterozygous files contain identical channels, peak coordinates
+and sequence. SCF examples contain no nonzero quality estimates, so quality is
+reported as absent, never fabricated. Scientific test data only, not app assets.
+SCF implementation is independently written from the Staden format specification.

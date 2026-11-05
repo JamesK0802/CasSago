@@ -1,0 +1,72 @@
+CasMANGO gRNA Design — 28 October 2026
+
+Workflow
+Choose the intended editing region and one or more SpCas9 spacers first. Then
+choose PCR/sequencing primers that cover the required cut window. Shared Sanger
+has additional primer-axis separability requirements, so guide and primer choice
+can be revisited together. The gRNA page transfers source references and explicit
+cut boundaries to Primer Design. One reference uses single-reference PCR; several
+use shared-primer design, with separate-homeolog PCR still available there.
+The main CRISPR analysis state and existing samples are not overwritten.
+
+Implemented modes
+Single: exactly one selected reference; other supplied references are backgrounds.
+Shared: one identical spacer in every selected reference, potentially different
+PAM nucleotides or orientations. No positional homology is inferred from FASTA.
+Reference-specific: separate spacers with no other PAM-valid input match within
+the chosen mismatch range, including duplicate own-reference sites.
+Uniqueness, optional cut-region bounds, GC interval and optional TTTT exclusion
+are explicit filters. TTTT is a context-dependent expression concern, not a claim
+of universally inactive guide RNA. The optional wheat example includes noncoding
+sequence. Raw FASTA is not enough to infer CDS or functional knockout position.
+
+Coordinates and scope
+Canonical SpCas9 only, 20-nt DNA spacer without PAM, NGG on either strand. Internal
+intervals are zero-based half-open; UI/CSV use 1-based inclusive spacer/PAM bounds.
+Cut N means the boundary after base N in the input 5′→3′ strand, at 3 bp upstream
+of PAM. Reverse-strand spacers are exported in oligo orientation; context displays
+the input strand. Other nucleases/base-editing windows are not yet implemented.
+
+Near-site search
+Scan all supplied references and optional background FASTA for canonical PAM-valid
+sites. Partition the 20-nt spacer into m+1 disjoint seeds for m=0–3. Every ungapped
+alignment with ≤m substitutions contains at least one unchanged seed, so the index
+retrieves all qualifying sites. Verify whole-spacer Hamming distance, exclude only
+declared intended sites, and count other sites by mismatch count. Examples show
+the first 20 locations; counts retain all hits. N-containing sites are skipped.
+Bulges and noncanonical PAMs are not screened. No genome-wide database is bundled.
+Zero other sites means only the defined supplied-sequence screen returned none.
+
+Ranking, performance and transparency
+Candidate enumeration is complete in supplied references before the shortlist.
+Apply filters, sort by distance to optional cut-region centers, distance of GC
+from 50%, TTTT flag and deterministic lexicographic ties. Screen the first 1–2,000
+candidates (default 1,000), rank those by other-site count then region/GC rules.
+These are transparent engineering sort rules, not trained activity models, CFD,
+Doench scores or experimental cut-rate predictions. A bounded negative is labelled
+incomplete. Inputs are limited to 500 kb each / 2 Mb total including backgrounds.
+Search runs in a cancellable browser worker; optional draft storage is session
+local. Downloads and wheat example loading do not transmit sequence to a server.
+
+References
+IDT, gRNA Design Considerations:
+https://www.idtdna.com/page/support-and-education/decoded-plus/guide-rna-design-be-on-target/
+CRISPOR manual (comparison of full-genome specificity/efficiency capabilities):
+https://github.com/maximilianh/crisporWebsite/blob/master/manual/manual.md
+WheatCRISPR / TaPDS gene identifiers:
+https://pubmed.ncbi.nlm.nih.gov/31694550/
+The implementation runs neither CRISPOR nor its published predictive models.
+
+Validation
+Core tests check both strand coordinate conventions, exact shared targets,
+canonical PAM rejection, 0–3 mismatch retrieval, declared-target exclusions,
+reference-specific rejection, cut regions, ambiguous sequence, repeated sites and
+bounded shortlist reporting. Integration tests check single/shared handoff and
+preservation of analysis state. Real Chinese Spring TaPDS A/B/D example returns
+120 common candidates at 35–65% GC and ≤2 mismatches under default filters.
+
+Live Ensembl reference import (28 October 2026)
+Both gRNA Design and Primer Design now support on-demand genomic reference imports.
+Selected species/cultivar, assembly, genomic coordinates, retrieval date and SHA-256
+travel with imported references. Check latest stages source changes for explicit
+replacement and resets old target coordinates. See docs/reference-library.txt.

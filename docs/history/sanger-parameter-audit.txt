@@ -1,0 +1,57 @@
+미달 원인 및 파라미터 감사 — 2026-10-31
+
+통과의 의미
+벤치마크 통과는 정답 대비 허용 오차와 검출/허위 호출 기준을 만족했다는 뜻이다. 완전히 정답이라는 뜻은 아니다.
+앱의 Signal QC는 잔차·분할 안정성·모델 구분 가능성 검사다. 알 수 없는 실제 정답과의 일치를 보증하지 않는다. 기존 Passed 표시는 No QC flags로 수정했다.
+
+미달 두 사례
+primary case21: A의 -3/+2는 작게, -7/+6는 크게 추정됐다. A share25→25.3679%, A +2는7.4003→4.8482%, A +6는14.3961→17.6326%. 최대 conditional TV5.7603pp.
+local-marker case11: A share25→26.0735%, A +2는26.2509→21.1251%, A -3은30.1955→33.2128%. 최대 conditional TV5.3973pp.
+필요한 indel 종류는 모두 검출했고, 없는 클래스의 1% 이상 호출은 없다. 주된 미달은 homeolog 내부 비율의 누적 오차다. parameter 비교의2개 실패와 unit1개 실패는 primary case21의 반복이다.
+
+원인 개입 실험
+DNA, 실제 indel 구간, 삽입 서열, 혼합 비율, control/sample share는 고정했다. 원본 두 AB1 쌍을 byte 단위로 재현한 후, 형광 효과만 하나씩 제거했다. 추론기는 동결했으며 정답을 입력하지 않았다. 분석 cycle을 제거하거나 통과 기준을 바꾸지 않았다.
+28회는 알려진 실패의 진단 실험이며, 새 독립 검증 사례가 아니다. 상세 수치는 causal/frozen-scores.json, baseline 재현 hash는 causal/protocol.json에 있다.
+
+해석
+무작위 측정 잡음이 주요 원인이다. 잡음만 제거하면 primary5.76→0.875pp, local5.40→2.819pp로 개선된다. 배경만 제거해서는 해결되지 않는다. 문맥별 형광 수율의 모델 오차도 기여한다(효과 제거 시 각각4.669/3.973pp).
+primary의 coarse reference×size 모델 condition은73.86, 최소 차이는12cycle이다. local-marker는 최소5cycle 차이여서 reference QC가 경고한다. 대부분 공유되는 파형에서 reference를 구분하는 약한 차이에 잡음과 보정 오차가 크게 작용하는 것으로 해석한다.
+전체 R²는0.99887/0.99912지만, 약한 homeolog 분리 성분의 정확도를 보증하지 않는다. 실제 primary는 QC 경고가 없는데5pp 정확도 기준을 넘는다.
+여섯 교란 효과를 제거하면0.062/0.281pp로 작아진다. 따라서 정답의 분포를 모델이 표현할 수 없어서 생긴 고정적 실패라는 설명은 맞지 않는다. 이것이 전역해의 유일성이나 모든 실제 자료의 식별 가능성을 증명하지는 않는다.
+개입 효과는 서로 상호작용한다. 개선량을 더해서 원인별 기여율로 해석하면 안 된다. 잡음을 줄이는 실제 자료 전처리/모델 추정 개선은 후속 문제이며, 정답을 보고 후보를 삭제하는 방법은 쓰지 않았다.
+
+파라미터 판단과 변경
+largeDeletions/maxDeletion/maxInsertion: 유효. single reference·single target에서 -D..+I의 모델을 생성한다. D1–500, I1–30. large의 기본 D200, I는maxIndel 상속. 이때 쓰이지 않는 일반 maxIndel 중복 입력은 감췄다.
+editStartRadius: 유효. 길이L deletion의 시작점은 cut-L-r..cut+r, insertion은cut-r..cut+r. deletion 전체가cut±r 안에 있어야 한다는 뜻이 아니다. 관측 cycle 선택에는 쓰지 않는다. 기본5, 범위0–100bp. 일반 single/homeolog에서도 조절하도록 노출하고 범위를 검증했다.
+window: 일반 single-target single/homeolog mixture 비율 적합에는 쓰이지 않는다. 해당 분석/결과 화면의 window 입력과 window budget 표시를 제거했다. consensus 변이 표시와 실험적 joint target association에는 쓰이므로 그 모드에만 남겼다. JSON 호환성을 위해 settings.window 필드와 기본200은 유지한다. 일반 mixture에서는 fit 제한으로 해석하면 안 된다.
+readStart/readEnd: 실제 cycle 범위이므로 유효. 기본35–700. 일반 single에서도 입력을 표시하고, 0–1000 및 시작<끝을 검증한다.
+Control Phred: 품질 경고와 upstream registration 영역 선택에 쓰인다. fit cycle을 잘라내는 임계값은 아니다.
+Classic에서 UI상 비활성인 wider-range check가 single 코드에서 실행되던 불일치를 수정했다.
+pooled/homeolog에서 large deletion을 켜면 기존 실험적 joint engine으로 전환한다. 이번 single-target homeolog 검증 수치를 그 engine의 성능으로 확대 해석하면 안 된다. 삭제 상한 자체는 실제 쓰이므로 유지했다. 이 staged joint engine은 editStartRadius를 쓰지 않으므로 해당 입력은 표시하지 않는다. signal path의 origin limit은 실제 쓰이며 그 모드에서만 표시한다.
+
+현재 입력 목록 — 모드별 조건부 표시
+데이터: sample AB1/ABI/SCF, unedited control(분해에 필수, consensus에는 불필요).
+대상: single 또는 mixed2–4, reference 이름/서열(직접 또는FASTA), reference별cut position 또는SpCas9 spacer, 공통sequencing primer(mixed/joint), 실제amplicon 확인. mixed의PCR forward/reverse primer는 선택적 product bounds metadata.
+분석 선택: trace decomposition/consensus(single), calibrated/classic, single read auto/forward/reverse.
+분해 범위: maximum indel 기본10(single1–30, 일반homeolog1–15), large deletion on/off와D/I상한, junction radius 기본5(0–100), 실제 readStart35/readEnd700.
+신호 검사: single-control Phred15(0–60), calibrated의 wider-range check 기본on(자동범위변경이 아닌 재분석 권고).
+표시: indel threshold 기본2%는 표시만 바꾸고 분모/추정 비율은 바꾸지 않는다. consensus의 variant reporting window 기본200(60–500), joinNearby 기본3(0–10 matchedbp).
+실험적 joint/signal path: inference engine(staged/local/hybrid/path), target association window, deletion/insertion bounds, signal path의 origin limit on/off와cut proximity. 이들은 현 single-target benchmark와 별개의 기능이다.
+
+진단 수치 (max conditional TV, pp):
+Intervention | primary21 | local11
+baseline | 5.7603 | 5.3973
+no-random-noise | 0.8753 | 2.8195
+no-background | 5.5149 | 5.5139
+no-context | 4.6689 | 3.9726
+no-phase | 4.2098 | 5.2540
+no-crosstalk | 5.9588 | 5.4008
+no-dye-gain | 6.3939 | 4.6891
+no-channel-offset | 6.0955 | 5.5129
+ideal | 0.0621 | 0.2806
+
+추가 잡음 실현(각 control/sample에 독립 seed):
+homeo-481903427-21: 2.0966, 1.8409, 1.7118, 5.6639pp
+junction-homeolog-1673048119-11: 3.6550, 3.7651, 2.3287, 3.7296pp
+
+최종 검증: 전체632개 중631개 통과, 기존 primary21의5.76pp 정확도 미달1개 실패를 유지. 추가 반경 검증 포함 집중59개 통과. app/worker TypeScript 및 production build 통과(기존 bundle budget 경고).

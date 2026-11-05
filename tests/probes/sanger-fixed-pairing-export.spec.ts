@@ -1,0 +1,13 @@
+import '@angular/compiler';
+import{it}from'vitest';import{readFileSync,writeFileSync,mkdirSync}from'node:fs';
+import{parseSangerTrace}from'../../src/app/utils/sanger-trace';import{pairedReferencePeaks,correctGain}from'../../src/app/workers/core/sanger-signal';
+import{targetEvents}from'../../src/app/utils/sanger-target-profile';import{sangerEditedSequence}from'../../src/app/utils/sanger-sequence-groups';
+(process.env.CASSAGO_FIXED_PAIRING==='1'?it:it.skip)('exports blind measured pairing coefficients for a discrete sequence update',()=>{
+ const target=Number(process.env.CASSAGO_FIXED_TARGET||1),folder=process.env.CASSAGO_FIXED_INPUT!,out=process.env.CASSAGO_FIXED_OUTPUT!;mkdirSync(out,{recursive:true});const r=JSON.parse(readFileSync(folder+'/result.json','utf8')),trace=(file:string)=>{const b=readFileSync(folder+'/'+file);return parseSangerTrace(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),file);},refs=r.annotations.map((a:any)=>a.reference.slice(20)),peaks=pairedReferencePeaks(trace('control.ab1'),trace('edit.ab1'),refs,r.pooled.controlTrim,r.pooled.sampleTrim,Math.min(...r.annotations.flatMap((a:any)=>a.cuts.map((c:number)=>c-20)))).sample.vectors;
+ for(let h=0;h<r.annotations.length;h++){
+  const a=r.annotations[h],groups:any[]=[],bySeq=new Map<string,number>();
+  for(const c of a.components){const es=targetEvents(c.events,target),sequence=sangerEditedSequence(a.reference,es).slice(20);let id=bySeq.get(sequence);if(id===undefined){id=groups.length;bySeq.set(sequence,id);groups.push({sequence,events:es.map((e:any)=>({start:e.start-20,end:e.end-20,inserted:e.insertedSequence||''})),size:es.reduce((s:number,e:any)=>s+(e.insertedSequence||'').length-e.end+e.start,0),weights:{}});}const shift=(target===0?[]:targetEvents(c.events,0)).reduce((s:number,e:any)=>s+(e.insertedSequence||'').length-e.end+e.start,0);groups[id].weights[shift]=(groups[id].weights[shift]||0)+c.fraction*a.share;}
+  const cut=a.cuts[target]-20,shifts=groups.flatMap(g=>Object.keys(g.weights).map(Number)),lo=cut-4+Math.min(...shifts),hi=cut+14+Math.max(...shifts),positions=Array.from({length:hi-lo},(_,i)=>lo+i),observed=positions.map(p=>{const row=correctGain(peaks[p-r.pooled.sampleTrim],r.diagnostics.sampleCalibration.gains);r.annotations.forEach((b:any,k:number)=>{if(k===h)return;for(const c of b.components){const s=sangerEditedSequence(b.reference,c.events).slice(20),base='ACGT'.indexOf(s[p]);if(base>=0)row[base]-=b.share*c.fraction;}});return row;});
+  writeFileSync(out+'/reference-'+h+'.json',JSON.stringify({reference:{sequence:refs[h],cuts:a.cuts.map((c:number)=>c-20)},groups,positions,observed}));
+ }
+});

@@ -1,0 +1,6 @@
+import '@angular/compiler';import{it}from'vitest';import{readFileSync,writeFileSync}from'node:fs';import{sharedShapePeaks}from'../../../benchmarks/conditional-refinement-20261105/peak-audit';import{parseSangerTrace}from'../../src/app/utils/sanger-trace';import{contrastPeaks}from'../../src/app/workers/core/sanger-signal';
+(process.env.CASSAGO_PEAK_AUDIT==='1'?it:it.skip)('measures signal extraction error after learning peak shape without truth',()=>{
+ const folder=process.env.CASSAGO_PEAK_INPUT!,read=(name:string)=>{const b=readFileSync(folder+'/'+name);return parseSangerTrace(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),name);},ctl=read('control.ab1'),edit=read('edit.ab1'),old=contrastPeaks(edit).vectors,shared=sharedShapePeaks(edit,ctl),truth=JSON.parse(readFileSync(folder+'/truth.json','utf8')).truth;
+ const expected=Array.from({length:edit.peaks.length},(_,p)=>[...'ACGT'].map(b=>truth.reduce((s:any,t:any)=>s+(t.inputSequence[p+20]===b?t.totalPercent/100:0),0)));
+ const score=(vectors:number[][])=>Math.sqrt(vectors.slice(30,650).reduce((s,row,i)=>s+row.reduce((s,x,b)=>s+(x-expected[i+30][b])**2,0),0)/(620*4));writeFileSync(process.env.CASSAGO_PEAK_OUTPUT!,JSON.stringify({contrast:score(old),shared:score(shared.vectors),shape:shared.shape,truth0:truth[0]},null,2));
+});

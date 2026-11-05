@@ -1,0 +1,170 @@
+{
+  "id": "homeo-481903427-0",
+  "amplicons": [
+    {
+      "name": "A",
+      "sequence": "ACGTGATCTAGCTGACTGACTCATTCGATTCGCTCTAAGAACGCGTGAACGCTTGCTTCCGAATAAACTGTATTACAATCGACTCATCCTATTGCTTGCGCTAGAATCGTCGCATCAACGATCTGCCAACCCTATCGAATAAGTAACGAATAAATTATACCGCCTATCTCACTTATACGTCTACGTTATACAGTCCTCTTATCAACCTGGACTAGGTTTATGTCGTCGAGCTTTGTCTAGTAAACACATGTAGCTCCTATTCCGCAATCAGATTAATTGAAAAATGTTTGTCCTATCCACATGCTGTTTAGCTACAGGCTAAACCTTCTTTATCGAGTCAGGAAGCATATAATCGGGCCATTTACAATTAATACTCTTACAATAATTCAGAGAGATTATCCGCTGTTAAGTGTTTTACTAGATCACTTAGCATCAGCTCATTTATTGACATATACTTGATTTTGTAAGATAGATCTTATGGACAAGTAGTCTTTATAGTTTTTGAAGTGTTAAGATATATCTAAAGGCAGCTGCGTTCCTCCGTTACGGCAATCACCATCGTGCAAGACTAGCGAAGATTTACAAAGTTGTTGGGACATCATCATAATACGGCTATAAGCTACGTTGCGCATGCCTACTAGATCTTAATTACCATCTTGCCAAAACGTAATAAATCTATAATTATTAACTCAATTAAAAAGTTGAAGTATGGAGCACGGAAACTTTTTGTTCGAGTAAACCGCATAGCTACTTATGGATAGAATAGAGCATTCTCAACTATAAATTCAAATGATATTCATAAGGTACCACAATAGTCAGGTGTCCGGCACAGTACAAGCACCCGGGTTATAGCTTTTAATTTAATTAGAACTCAACCACTTTAAACTGGTTCGTGATACGATAAATGATCAAAACTTCAAGCACAGCTGCACCCATTGGAGTAAGTTAGATTAAAAATAATAGTATCAATCACTTCAGAATTTGATGATTTGTAACCCGAGAGGCAGTATTTTGTTACAAGACGCTTAAGGGAAGTCGGGCTACATATATAAATTTAAAAGAAAGTAAAATACAAATACGCAACAAATTTGTGTACACATAAAAGGGCGAATGTAAAATCATACGTTGGACACTACATGACAGTAGTCGCAAAGCCCCAAATTCACTTAATAATTTATCTGCGCTGATCGACACATACTCTTATTCACGAATCTTACTCT",
+      "cut": 299,
+      "cuts": [
+        299
+      ]
+    },
+    {
+      "name": "B",
+      "sequence": "ACGTGATCTAGCTGACTGACTCATTCGATTCGCTCTAAGAACGCGTGAACGCTTGCTTCCGAATAAACTGTATTACAATTGACTCATCCTATTGCTTGCGCTAGTATCGTCGCATCAACGATCTGCCAACCCTATAGAATAAGTAACGAATAAATTATACCGCCTATCTCACTTATACGTCTACGTTATACAGTCCTCTTATCAACCTGGACTAGGTTTATGTCGTCGAGCTTTGTCTAGTAAACACATGTAGCTCCTATTCCGCAATCAGATTAATTGAAAAATGTTTGTCCTATCCACATGCTGTTTAGCTACAGGCTAAACCTTCTTTATCGAGTCAGGAAGCATATAATCGGGCCATTTACAATTAATACTCTTACAATAATTCAGAGAGATTATCCGCTGTTAAGTGTTTTACTAGATCACTTAGCATCAGCTCATTTATTGACATATACTTGATTTTGGAAGATAGATCTTATGGACAAGTAGTCTTTATAGTTTTTGAAGTTTTAAGATATATCTAAAGGCAGCTGCGTTCCTCCGTTACGGCAATCACCATCGTGCAAGACTAGCGGAGATTGACAAAGTTGTTGGGACATCATCATAATACGGCTATAAGCTACGTTGCGCATGCCTACTAGATCTTAATTACCATCTTGCCAAAACGTAATAAATCTATAATTATTAACTCAATTAAAAAGTTGAAGTATGGAGCACGAAAACTTTTTGTTCGAGTAAACCGCATAGCTACTTATGGATTGAATAGAGCATTCTCAACTATAAATTCAAATGATATCCATAAGGTACGACAATAGTCAGGCGTCCGGCACAGTACAAGCACCCGGGTTATAGCTTTTAATTTAATTAGAACTCAACCACTTTAAACTGGTTCGTGATACGATAAATGATCAAAACTTCAAGCACAGCTGCACCCATTGGAGTAAGTTAGATTAAAAATAATAGTATCAATCACTTCAGAATTTGATGATTTGTAACCCGAGAGGCAGTATTTTGTTACAAGACGCTTAAGGGAAGTCGGGCTACATATATAAATTTAAAAGAAAGTAAAATACAAATACGCAACAAATTTGTGTACACATAAAAGGGCGAATGTAAAATCATACGTTGGACACTACATGACAGTAGTCGCAAAGCCCCAAATTCACTTAATAATTTATCTGCGCTGATCGACACATACTCTTATTCACGAATCTTACTCT",
+      "cut": 299,
+      "cuts": [
+        299
+      ]
+    }
+  ],
+  "primer": "ACGTGATCTAGCTGACTGAC",
+  "files": {
+    "control": "similar-99-control.ab1",
+    "sample": "similar-99-sample.ab1"
+  },
+  "copies": 2,
+  "divergence": 0.01,
+  "family": "gaussian",
+  "ratio": "equal",
+  "type": "primary",
+  "nonWtAlleles": 6,
+  "settings": {
+    "scope": "pooled",
+    "method": "mixture",
+    "maxIndel": 10,
+    "window": 200,
+    "controlPhred": 15,
+    "readStart": 35,
+    "readEnd": 860,
+    "direction": "auto",
+    "signalModel": "calibrated",
+    "checkWiderRange": false,
+    "jointEngine": "staged",
+    "largeDeletions": false,
+    "editStartRadius": 5
+  },
+  "truth": {
+    "id": "homeo-481903427-0",
+    "references": [
+      {
+        "name": "A",
+        "share": 0.5,
+        "controlShare": 0.6,
+        "alleles": [
+          {
+            "fraction": 0.4300967487390153,
+            "events": []
+          },
+          {
+            "fraction": 0.21734386352713722,
+            "events": [
+              {
+                "start": 284,
+                "end": 285,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.13627847418370756,
+            "events": [
+              {
+                "start": 277,
+                "end": 284,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.21628091355013995,
+            "events": [
+              {
+                "start": 279,
+                "end": 279,
+                "inserted": "GA"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.4300967487390153
+          },
+          {
+            "size": -1,
+            "fraction": 0.21734386352713722
+          },
+          {
+            "size": -7,
+            "fraction": 0.13627847418370756
+          },
+          {
+            "size": 2,
+            "fraction": 0.21628091355013995
+          }
+        ]
+      },
+      {
+        "name": "B",
+        "share": 0.5,
+        "controlShare": 0.4,
+        "alleles": [
+          {
+            "fraction": 0.6450357903842814,
+            "events": []
+          },
+          {
+            "fraction": 0.1499218601726183,
+            "events": [
+              {
+                "start": 284,
+                "end": 285,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.11933303167018414,
+            "events": [
+              {
+                "start": 280,
+                "end": 287,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.08570931777291615,
+            "events": [
+              {
+                "start": 284,
+                "end": 284,
+                "inserted": "TA"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.6450357903842814
+          },
+          {
+            "size": -1,
+            "fraction": 0.1499218601726183
+          },
+          {
+            "size": -7,
+            "fraction": 0.11933303167018414
+          },
+          {
+            "size": 2,
+            "fraction": 0.08570931777291615
+          }
+        ]
+      }
+    ]
+  }
+}

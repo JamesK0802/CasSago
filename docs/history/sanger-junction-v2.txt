@@ -1,0 +1,111 @@
+Sanger junction model v2 — single reference and homeolog pools
+
+Public inputs are edited trace, WT control, reference amplicon(s), sequencing
+primer for a pool, and deletion/insertion limits. Direction, fluorescence
+calibration and fitting are automatic. There is no additional user mode, signal
+processing switch, group-display cutoff or position-selection option.
+
+Observation and calibration
+---------------------------
+Every covered, measured edited-read cycle enters the final fit. Changing indel
+limits changes candidate DNA, never the observed cycles or a cut-site mask.
+Absolute integrated A/C/G/T areas are used consistently for one or several
+references. Unedited control data identify nonnegative triplet responses on the
+actual read-cycle axis, plus a smooth nuisance brightness envelope. WT-only
+blocked validation chooses response detail and ridge strength; added detail must
+also preserve prediction at informative WT homeolog-marker cycles. No edited truth
+or generated-allele fractions enter calibration.
+
+An unchanged WT context at the same read cycle can reuse its measured response.
+For a mixed control the smallest nonnegative response correction consistent
+with the fitted WT shares is used. A changed junction or context uses the
+learned control response at its actual read cycle, rather than copying a donor
+at a different pre-edit coordinate. This makes equivalent deleted DNA have the
+same fluorescence model. Ambiguous reference bases with measured WT signal
+retain that measurement on the unchanged WT cycle. Beyond control coverage,
+known reference DNA and the learned response are used; the sample is retained.
+The full mixed control and sample are used after a shorter reference ends. Each
+molecule terminates at its own DNA length; absent DNA emits no fluorescence.
+WT reference geometry is tested on the normalized-mixture tangent space, so
+zero-versus-alive intensity alone cannot certify reference abundance.
+
+Relative sample/control dye gains are also learned from absolute pre-cut WT
+areas, which retain gain information absent from normalized pure WT colours.
+A smooth brightness envelope is a nuisance term. Blocked WT validation must
+improve raw-area error and not worsen colour error before this transfer is used.
+
+Shared inference
+----------------
+For a candidate emission E[h,k,p,b] and molecule fractions w[h,k], the predicted
+channel proportion is
+
+  P[p,b] = sum(w E[p,b]) / sum_b(sum(w E[p,b])).
+
+The regression minimizes weighted squared error of these normalized emissions.
+Gauss–Newton includes the derivative of the denominator, with a line search on
+the actual objective. Individually normalized columns provide an initializer;
+they do not replace the molecule-dependent totals in the fitted model. Warm
+starts, pairwise simplex coordinate updates with exact line minimization, and
+an initial simplex dual-gap check speed the same regression. All
+candidates remain subject to the solver's global working-set checks.
+
+For a deletion of length L, origins include [cut-L-radius, cut+radius], clipped
+to physical sequence bounds. Insertions include both sides of the cut. Origins
+that produce identical deleted DNA are represented once internally. Insertion
+base marginals and origin mixtures are optimized in the same fluorescence
+model. They are factorized mixture parameters, not phased insertion haplotypes
+or probabilities that a reported biological edit is true. Candidate updates
+are retained only when the normalized objective does not worsen.
+
+Selection and output
+--------------------
+Length evidence is evaluated across references. Weak attribution to one
+homeolog is not, by itself, a reason to erase a length observed in the pool.
+Within-reference precision is recorded separately. Selected lengths are
+refitted, including origins and insertion marginals, on all observations.
+
+Two complementary contiguous-cycle prediction folds relearn the same junction
+model, without reusing fitted insertion bases or origins. A training-only null
+refits fractions after removing one class. This is a conditional predictive
+comparison; it is not a calibrated probability or exhaustive null search.
+The null removes an observable emission family, retaining WT alternatives.
+Length-level evidence removes all references of a net size together. A length
+is removed when neither fold improves beyond numerical precision and either a
+fold is worse or global precision is inadequate. Reference attribution is
+removed only when reference precision is inadequate and neither reference fold
+improves. This separation prevents withholding local junction bases from erasing
+an independently precise allocation of a real length. One-sided information is
+retained conservatively; consequently small false allocations can remain.
+The numerical tolerance is 1e-8 times measured cycles, not a fraction cutoff.
+Remaining classes are refitted on all measured cycles. Removed classes and
+original coefficients remain in diagnostics, including rejected fold gains.
+
+QC checks exact deleted DNA over the measured span as well as fitted columns.
+Different origin mixtures cannot disguise an indistinguishable alternative
+length in a repeat. Neighbouring contexts are included; observing molecule ends
+can resolve an alias. Ambiguity produces a warning while retaining the fitted
+numerical spectrum. The existing 1% active-mass QC screen is internal; it is
+neither a biological detection limit nor a user display cutoff.
+
+The main view has one representative position per reference x net-size class.
+Exactly DNA-equivalent deletions are combined before selecting the largest
+fitted event allocation. Fitted insertion marginals are pushed through
+sequence-equivalent normalization without guessing a resolved inserted string.
+Ties are deterministic. The representative is an estimate, not a confidence
+statement. Full fitted allocations remain available in exports. All-zero or
+absent WT Phred is unavailable metadata; the edited read's Phred is never used
+to suppress overlapping real alleles.
+
+Validation scope
+----------------
+Truth-based group recovery, false groups, within-reference distribution error,
+reference shares and representative-position accuracy are separate metrics.
+A numerical estimate or QC pass is not proof of an edited allele. Positions in
+repeats are scored as equivalent only when they produce the same edited DNA;
+insertion identity remains unphased. The strict pre-existing 5 pp distribution
+assertions are retained. Real WT comparisons and public edited traces supplement
+synthetic tests but do not establish wet-lab homeolog accuracy.
+
+No alternative physical-DNA enumeration engine, waveform-position engine,
+anchor interpolator or sparse-allele penalty from development experiments is
+included in this release.

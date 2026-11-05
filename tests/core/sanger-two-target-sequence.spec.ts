@@ -1,0 +1,12 @@
+import '@angular/compiler';
+import {it,expect} from 'vitest';
+import {sangerDesignExample} from '../../src/app/utils/sanger-design.utils';
+import {exactBindingSites} from '../../src/app/workers/core/sanger-primer-designer';
+import {SANGER_DEFAULTS,SangerCandidate,SangerDesignResult} from '../../src/app/models/sanger-design';
+import {synthReferences,generateSangerSynth,compareSangerSynth} from '../../src/app/utils/sanger-synthetic-benchmark';
+import {analyzeAutomaticSanger} from '../../src/app/workers/core/sanger-automatic';
+it.each([false,true])('uses only raw traces to recover two target-local edits on a whole molecule, reverse=%s',reverse=>{
+ const references=[sangerDesignExample(2)[0]],p='CCGGCGGGTACGACCATAAC',q='CAGCGACTCCTTGAGTGACG',sites=(seq:string)=>references.map(r=>{const hit=exactBindingSites(seq,r)[0];return {...hit,reference:r.name,cutOffsets:r.cuts.map(c=>hit.direction==='forward'?c-hit.end:hit.start-c),extension:hit.direction==='forward'?r.sequence.slice(hit.end):''};}),primary=sites(reverse?q:p),other=sites(reverse?p:q),candidate={id:'two-target',sequence:reverse?q:p,direction:reverse?'reverse':'forward',sites:primary,partner:{sequence:reverse?p:q,sites:other,products:references.map((_,i)=>Math.max(primary[i].end,other[i].end)-Math.min(primary[i].start,other[i].start))}}as SangerCandidate,result={references,candidates:[candidate],settings:{...SANGER_DEFAULTS,readEnd:1000,primerMin:20,primerMax:20}}as SangerDesignResult;
+ const refs=synthReferences(result,candidate),r=refs[0],start=r.cuts[1],before=r.sequence[start],sequence=before==='A'?'C':'A';r.alleles=[{id:1,percent:15,events:[{kind:'deletion',target:0,offset:0,length:3,sequence:''}]},{id:2,percent:20,events:[{kind:'substitution',target:1,offset:0,length:1,selectionStart:start,before,sequence}]}];
+ const d=generateSangerSynth(result,candidate,refs),analysis=analyzeAutomaticSanger({...d.input,groupRecovery:true});expect(analysis.diagnostics?.algorithmVersion).toBe('sanger-sequence-groups-v4');expect(analysis.warnings.some(s=>s.includes('Length-mixture'))).toBe(false);expect(analysis.annotations![0].components.every(c=>c.pathSizes?.length===2)).toBe(true);for(const row of compareSangerSynth(d,analysis).filter(r=>r.scope==='group'&&(r.truth??0)>0))expect(Math.abs(row.delta??100),row.group).toBeLessThan(1);const events=analysis.annotations![0].components.flatMap(c=>c.events||[]);expect(events.some(e=>e.target===1)).toBe(true);expect(events.some(e=>e.target===2&&e.inserted===e.end-e.start)).toBe(true);
+},60000);

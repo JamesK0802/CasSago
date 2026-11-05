@@ -1,0 +1,47 @@
+2026-10-30 STATUS CORRECTION
+Earlier single-stage pass claims below were revoked for bulk-mixture readiness.
+Use sanger-bulk-validation.txt for the current single-reference, single-target bulk benchmark.
+This file is retained as a historical validation record, not evidence of readiness for homeolog or multitarget analysis.
+
+Single-first Sanger validation (2026-10-29)
+
+Stage order: single reference / single target -> homeolog / single target ->
+homeolog / multiple targets. Do not advance solely on a high reconstruction R2
+or a low error among a small subset of accepted cases. The overall single-stage
+gate remains open because complete allele-sequence reconstruction is not yet
+reliably resolved for some multi-allelic single-locus mixtures.
+
+Implemented single net-spectrum corrections:
+* Filter weak or impure WT-template cycles using a 25-cycle called-base signal
+  check, including traces without quality values. Never apply this purity test
+  to the edited trace: genuine mixtures naturally have secondary peaks.
+* Use positive sparse WT-contrast fitting, standardized by each column's
+  contrast norm and upstream noise, with an unpenalized support refit.
+* Replace the arbitrary 60/82-row floor with a 30-cycle floor and a conservative
+  observations-to-parameter bound. Retain all requested indel classes; also
+  require numerical identifiability and stability of the entire net spectrum.
+* A few isolated discordant cycles remain in the objective and raw R2. Dense
+  or sustained mismatch still withholds quantitative estimates. This is a
+  net-size gate and does not certify individual allele sequences.
+* Annotation estimability follows quantitative QC instead of always being true.
+* Target window is a reporting setting, not the fluorescence decomposition span.
+
+Evidence and reproducibility:
+/Users/james/Desktop/CasMango_Sanger/04_개발기록/CasMANGO_Sanger_SingleFirst_20261029
+Source freeze, all failed variants, independent raw-signal simulators, input
+chromatograms, published raw traces, comparator outputs and per-case errors are
+retained there. Synthetic molecules are not biological ground truth for a real
+sample. Public genotypes do not certify exact Sanger signal fractions. A known
+SNP negative for net indels does not demonstrate SNP-frequency recovery.
+
+The single sequence-discovery prototype was NOT promoted. In particular, good
+net-size fractions and good reconstruction may coexist with an incorrect
+inserted sequence. Do not count a quantitative net-spectrum pass as an exact
+haplotype pass, and do not use the experimental prototype to justify homeolog
+advancement. Existing homeolog features remain unchanged in this phase.
+
+Primary methodological references:
+TIDE: https://pmc.ncbi.nlm.nih.gov/articles/PMC4267669/
+ICE comparator: https://github.com/synthego-open/ice
+DECODR: https://pmc.ncbi.nlm.nih.gov/articles/PMC7898406/
+Public validation traces: https://doi.org/10.5281/zenodo.13756482

@@ -1,0 +1,71 @@
+Sanger group recovery optimisation — 29 October 2026
+
+Problem: in the random-homeolog experiment, rare -5/-10 groups were underestimated
+and small +6/+9 components appeared. Reference signal shares were close to truth,
+which alone did not establish group accuracy.
+
+Causal diagnostics
+- Freeze the deployed v2 engine before changes and retain every attempted update.
+- Noiseless traces still had ~2 pp component bias. Removing inter-peak median
+  subtraction in a diagnostic ablation reduced the representative worst error
+  2.10 ->0.015 pp. Thus assignment competition alone could not explain the error.
+  Inter-peak valleys contain fluorescence peak tails, especially when a mixture
+  occupies several dye channels; treating these as background suppresses weak peaks.
+- Constrain each reference's total mass to its true share in a diagnostic fit.
+  This does NOT force the allele spectrum or resolve all cross-reference ambiguity.
+  Original true-indel-bin MAE over four diagnostic cases was ~0.429 pp; with true
+  total shares fixed, ~0.444 pp. Total reference abundance is not the dominant issue.
+- Generate oracle reference-separated chromatograms from the known molecule
+  populations, keeping migration length, trim, simulator settings/seed and matched
+  fit positions. These are synthetic oracle controls, not an ability to physically
+  separate an observed chromatogram. Oracle fits reduce the original MAE to ~0.283 pp.
+- Add one-known-edited-reference controls to distinguish leaked signal in other
+  references from wrong-size signal within the source reference. Report leakage as
+  inferred signal, not as a literal per-molecule assignment/confusion matrix.
+
+Rejected v3
+Learning background from upstream reference-certified empty dye positions improved
+the old random assay but increased spurious signal in independent PDS tests.
+Keep its fresh-seed audit under iteration_v3; these became development data for v4.
+Do not describe those files as untouched validation for the final algorithm.
+
+Final v4
+1. Per-cycle peak contrast: regress each dye on the summed fluorescence peak,
+   with intercept, local linear drift and a peak derivative as nuisance terms.
+   Nonnegative normalized slopes estimate channel fractions without treating
+   midpoint peak tails as baseline. No truth fractions or edited-base identities
+   enter this extraction. Missing/collapsed called cycles are not repaired.
+2. Learn bounded categorical effects of the preceding/following DNA base from
+   the UNEDITED control. Eight centered log-yield terms, bound ±0.25, L2 coefficient
+   0.00002. Every third control position is held out. Apply only for >5% relative
+   and >1e-6 absolute held-out MSE improvement; otherwise use neutral emissions.
+   No coefficients from the synthetic generator are passed to inference. A held-out
+   nonlinear-context simulator explicitly tests misspecification of this model.
+3. Repeat upstream gain/phase calibration with the control-derived context basis.
+   Fit normalized fluorescence using positive template emissions, iterating total
+   cycle scale up to eight times. Nonlinear and inner fit convergence are checked.
+4. Screen weak model support using a local mixture-Jacobian / residual scale and
+   sqrt(log(channel-observation count)), keep each reference's zero-size model,
+   then refit unpenalized. No fixed allele-fraction cutoff. This is an engineering
+   support rule, NOT a validated confidence interval or p-value. Full unpruned
+   joint weights and removed identities remain in diagnostic JSON. Small genuine
+   groups can still be missed or underestimated; absence is not proved by zero fit.
+5. Classic processing is retained. Display indel threshold remains display-only;
+   it does not set the support-screen criterion. Inserted identities remain N and
+   deletion junctions remain schematic model annotations, not resolved alleles.
+
+Validation protocol
+Final v4 engine and thresholds were frozen before generating new seeds 2026102919
+and 2027102919. New random-assay set: 285 AB1 pairs; independent PDS sequence/primer
+and changed allele distribution: 57 pairs. Conditions: ideal, moderate, unequal,
+PCR yield weighting, WT-null, background drift, rare signal and nonlinear context.
+Also 42 one-source attribution cases. Ground truth is loaded only after both
+baseline and final engine inference files have been written. Report genuine-bin
+error, false-bin signal, null false edit, reference shares, QC and blocked cases
+separately. All cases remain. A second random family had no qualifying shared
+primer in the bounded input search; that negative design audit is retained.
+
+New source-independent seeds and another assay are consistency checks within the
+forward-simulator family, not wet-lab validation. Two real ABI self-control tests
+are negative controls only, not evidence of edited-trace accuracy. No genome-wide
+primer validation, allele-specific PCR failure or biological knockout claim.

@@ -1,0 +1,51 @@
+Calibrated v5 — real single-Sanger validation, 29 October 2026
+
+Artifact: ~/Desktop/CasMANGO_Sanger_RealValidation_20261029/START_HERE.html
+Actual public ICE ABI traces, independent sangerseqR sibling ABI/SCF traces,
+and official Indigo reference-only example. Tool executions: official ICE 1.2.0,
+TIDE 5.0.6 hosted, official Indigo/Tracy 0.9.1. Exact versions, input hashes,
+failed runs and complete spectra retained. DECODR requires an account and was
+not substituted with a different package. Official ICE is a comparator only;
+no vendor algorithm is embedded in CasMango.
+
+Real fractions generally lack independent certified truth. Compare concordance,
+availability, quality checks and known biological allele structure, not accuracy
+rankings. Heterozygous genomic dosage does not certify a 50% trace signal.
+TIDE significance-filtered efficiency, raw coefficients, ICE scores and raw
+contributions, and Indigo two-allele fractions have different definitions.
+
+Changes
+- Single Phred: keep required central call and >=80% passing shifted donors;
+  weight by donor coverage. Avoid multiplying one isolated poor call into a
+  whole +/-range row loss. Keep minimum row count/conditioning. Classic unchanged.
+- SCF 2.x/3.x, unsigned 8/16-bit, big-endian, v3 modulo double-delta reader.
+  Input detected by signature. Explicit size/offset/version/monotonic checks.
+  All-zero SCF probability fields are absent quality, never invented Phred.
+  Real ABI/SCF channels, positions and sequence match exactly in a paired fixture.
+- Single QC now checks original-dye-space position residuals >0.20, alternating
+  position edit differences >10 pp and upstream held-out R2 <0.80. The numerical
+  thresholds match pooled checks. Shared rawSignalScore does not alter weights.
+- Single wider-range check uses held-out positions: +5/+10 and up to30, train
+  >=model count, valid>=30, held-out R2 gain>=.01, RMSE decrease>=15%, outside
+  range fraction>=3%. Suggest range and fail QC; never silently change user range.
+- Use control sequence for single reference; require target entry after copying.
+  Single no longer demands a full-product assertion, since an aligned reference
+  region is adequate. Pooled still requires complete actual products and primer.
+- Scope insertion marker CSS to avoid a second global pseudo-element label.
+
+Transfer to pooled
+SCF and shared raw-signal scoring work for both. Do not apply WT consensus-Phred
+filtering to a pooled control, whose valid mixed peaks can lower quality calls.
+Re-run all previous342 final pairs +42 attribution controls, compare all groups
+and QC flags, and round-trip3 pooled cases through SCF. Keep v4 weights unchanged.
+Result summary is in the artifact's pooled-regression/equivalence.json.
+
+Representative real results
+ICE normal: old default blocked; v5 80.31% indel (72 usable bases), TIDE77.7%,
+ICE reported77. Unknown truth. Short-window warning retained; +/-20 still blocked.
+Sibling: +10 group49.99%, zero49.68%, small -4 .34%; residual3positions means QC
+Review despite R2 .946. This is not experimental proof of the tiny -4 group.
+Donor-substitution case: default35.37%, matching TIDE fit end29.43% vsTIDE27.4%.
+HDR example: v5 suggests +/-15 from held-out evidence rather than trusting +/-10.
+No donor-aware HDR, inserted base identity, complex allele or molecule-level
+recovery is claimed. Reference-only Indigo example is consensus-only here.

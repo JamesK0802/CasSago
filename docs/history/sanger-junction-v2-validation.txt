@@ -1,0 +1,97 @@
+Sanger junction v2 validation — 2026-11-01
+
+This iteration improves the shared single/homeolog automatic engine; it does
+NOT establish fully robust biological edit identity or qualify multi-target.
+No pass threshold was relaxed. Numerical results remain available under QC
+warnings. Group recovery, false groups, fraction error and placement accuracy
+are reported separately.
+
+Reproducible artifacts
+---------------------
+Desktop/CasMANGO_Sanger_Robustness_20261031 contains frozen-v5.cjs,
+frozen-v5-legacy.cjs, frozen-v5-manifest.json, cohort cases/truth/AB1 paths,
+independent-audit, native-ice, scoring scripts and complete result JSON.
+The final-v5 bundles are immutable. Rejected developmental engines were not
+copied into production. Baseline SHA checks protect pre-existing project edits.
+
+Independent audit: seed 917260443
+--------------------------------
+Four cases were generated using the first ranked valid primer design, actual
+PCR amplicons and exported analysis templates, before inspecting their results.
+Two single-reference cases and two three-homeolog cases each contain WT and
+multiple concurrent indels. Deletion limits are 10 or 61 bp; large-homeolog
+cut offsets are 223/358/498 bp. Deletions have variable physical origins on
+both sides of the cut; selected cases contain two alleles of one net size.
+Noise uses calibrated public negative-control residual blocks, rather than
+arbitrary independent white noise. Those two public controls are not confirmed
+technical replicates; this does not establish every real instrument's noise.
+
+All 40 required reference x net-size groups (including eight WT groups) were
+recovered above 1% conditional fraction; all 32 true edited groups were present.
+No false group reached 1%. Maximum conditional total-variation error was
+1.5363 percentage points; maximum reference-share error was 0.4403 pp.
+One single-reference sample has a true deletion at the requested 61 bp limit;
+its boundary QC warning remains, despite accurate numerical recovery.
+
+This is NOT a clean false-positive result: nine false nonzero allocations
+remained at approximately 0.11–0.76% conditional fraction. All were unresolved
+by the engineering evidence assessment, but they remain numerical allocations
+and cannot be called solved merely because of that label. All 32 true edited
+groups met that evidence assessment. The main representative placement was
+DNA-equivalent to the dominant truth allele in 27/32 groups; maximum mismatch
+was 5 bp. Inserted DNA identity is not certified by these factorized mixtures.
+
+After these outcomes, an exploratory full-null junction refit reduced some
+small allocations but did not resolve the problem and made true-group evidence
+less stable. It was rejected; the conditional-null source was restored exactly
+to frozen-v5. Audit outcomes did not select any subsequent production change.
+
+Legacy regression scope
+-----------------------
+244 retained cases: 156 single and 88 homeolog, including directional and
+large-deletion stress cohorts. All true groups at >=2% were recovered above 1%.
+Single profiles all met the existing 5 pp distribution/share criteria.
+Homeolog profiles met that numerical gate in 87/88 cases; the no-missing/no-false
+>=1% group check passed in 85/88 cases. Three false groups
+above 1% remained across three heterogeneous-homeolog cases (about 1.01%,
+1.85%, 1.71%). Their target offsets overlap (minimum offset zero), unlike the
+required primer-designed audit, but they are retained as failures, not removed
+from the test record. Across all 244 cases, 17 false nonzero allocations remain;
+three small ones (approximately 0.22%, 0.35%, 0.31%) even pass the engineering
+evidence screen. That screen is not a validated biological confidence test.
+A local-marker homeolog profile remains at 5.1971 pp
+conditional TV, above the unchanged 5 pp gate. Numerical-gate success alone
+must not be interpreted as correct group identity.
+
+The original distributed-difficult unit fixture also retains its strict
+5 pp assertion. Its 5.1971 pp failure is recorded in the final complete test log.
+A previous proper-design stress cohort includes real 0.5% classes that are
+not reliably recovered; the >=2% recovery counts do not certify that range.
+
+External/real checks
+--------------------
+Two public negative controls from the same locus were analysed in both
+control/sample orders: both returned WT fraction 1. They differ by run and a
+called SNP; these are not confirmed same-specimen technical replicates.
+Existing public edited-trace and SCF regression tests remain in the suite.
+
+Native local ICE was run on the earlier heldout-final single-reference small
+and large cases (not on the independent audit above). Native-auto and explicit
+windows both returned numerical results. ICE recovered the major lengths,
+but missed the real 3% +6 group in both. Its native candidate ranges were
+D20/I10 and D62/I31, versus our D10/I10 and D61/I30, and its large-case inference
+flank warning remains. Two synthetic comparisons do not establish superiority
+or explain all small false allocations. ICE was not used to claim homeolog
+allocation validation. TIDE web comparison remains deferred as requested.
+
+Engineering checks
+------------------
+Worker TypeScript check and production build passed. The existing initial
+bundle size warning remains (approximately 2.33 MB against a 2 MB budget).
+Exact deletion-alias and beyond-reference deletion-range regressions passed.
+Three integration computations also exceeded the default 5-second budget
+when isolated; only their execution budgets were set to 30 seconds, with every
+correctness assertion unchanged. The isolated default-timeout rerun log is preserved.
+Final complete-suite results are recorded in final-full-tests.log; known
+fraction failures remain failures. The final full run passed 666/667 assertions, with only the unchanged
+5.1971 pp distribution assertion failing. No deployment, commit or homeolog multi-target work was performed.

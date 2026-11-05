@@ -1,0 +1,16 @@
+import{it,expect}from'vitest';
+import{fitJunctionMixture,junctionAnnotationComponents}from'../../src/app/workers/core/sanger-junction-mixture';
+import{fitEmissionMixture}from'../../src/app/workers/core/sanger-emission';
+import{pathBase}from'../../src/app/workers/core/sanger-junction-paths';
+import{sangerAnnotationViews}from'../../src/app/utils/sanger-annotation';
+it('moves the second measured junction by every preceding physical insertion/deletion',()=>{
+ const sequence='GCTACGATCGTACGTAGCAT';for(const size of[-3,2]){const events=[{start:3,size,probabilities:size>0?[[1,0,0,0],[0,1,0,0]]:undefined},{start:12,size:-2}],edited=sequence.slice(0,3)+(size>0?'AC':'')+sequence.slice(3+Math.max(0,-size),12)+sequence.slice(14);for(let p=0;p<edited.length+2;p++)expect(pathBase(sequence,events,p)).toEqual(Array.from('ACGT',b=>Number(edited[p]===b)));}
+});
+it('recovers two homeologs with two targets, including a zero-net edited molecule, without masking cycles',()=>{
+ let seed=51145;const dna=(n:number)=>Array.from({length:n},()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return'ACGT'[seed>>>30];}).join(''),references=[{sequence:dna(520),cut:120,cuts:[120,265]},{sequence:dna(560),cut:160,cuts:[160,305]}],truth=[{h:0,s:[0,0],f:.2},{h:0,s:[-1,1],f:.3},{h:1,s:[0,0],f:.25},{h:1,s:[2,-1],f:.25}],edited=(h:number,s:number[])=>{let seq=references[h].sequence;for(let t=1;t>=0;t--){const start=references[h].cuts[t]-Math.floor(Math.max(0,-s[t])/2);seq=seq.slice(0,start)+(s[t]>0?'G'.repeat(s[t]):'')+seq.slice(start+Math.max(0,-s[t]));}return seq;},positions=Array.from({length:470},(_,i)=>i+10),observed=positions.flatMap(p=>Array.from('ACGT',b=>truth.reduce((sum,t)=>sum+t.f*Number(edited(t.h,t.s)[p]===b),0))),fit=fitJunctionMixture({references,positions,observed,maxDeletion:3,maxInsertion:2,radius:3,lag:0,theta:Array(8).fill(0),fit:fitEmissionMixture});
+ expect(fit.r2).toBeGreaterThan(.9999);for(const t of truth){const id=fit.models.findIndex(m=>m.reference===t.h&&m.sizes?.join('/')===t.s.join('/'));expect(id).toBeGreaterThanOrEqual(0);expect(fit.weights[id]).toBeCloseTo(t.f,3);}expect(fit.columns.every(c=>c.length===observed.length)).toBe(true);
+ const models=fit.models.filter(m=>m.reference===0),weights=fit.weights.filter((_,i)=>fit.models[i].reference===0),components=junctionAnnotationComponents(models,weights,0,references[0].sequence.length),view=sangerAnnotationViews([{name:'A',reference:references[0].sequence,cut:120,cuts:[120,265],direction:'forward',share:.5,estimable:true,components}],0)[0];expect(view.rows.some(r=>r.size===0&&r.edited)).toBe(true);expect(view.rows.some(r=>r.size===0&&!r.edited)).toBe(true);expect(view.rows.find(r=>r.edited)!.representative!.events).toHaveLength(2);
+},30000);
+it('keeps different target patterns separate even when their total net size is identical',()=>{
+ const view=sangerAnnotationViews([{name:'A',reference:'ACGT'.repeat(100),cut:100,cuts:[100,240],direction:'forward',share:1,estimable:true,components:[{size:-2,pathSizes:[-2,0],fraction:.4,events:[{target:1,start:99,end:101,inserted:0}]},{size:-2,pathSizes:[0,-2],fraction:.6,events:[{target:2,start:239,end:241,inserted:0}]}]}],0)[0];expect(view.rows).toHaveLength(2);expect(view.rows.map(r=>r.patternLabel)).toContain('T1: -2 bp · T2: 0 bp');
+});

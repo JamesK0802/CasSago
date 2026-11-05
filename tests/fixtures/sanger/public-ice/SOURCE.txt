@@ -1,0 +1,6 @@
+Official Synthego ICE regression chromatograms.
+https://github.com/synthego-open/ice/tree/master/ice/tests/test_data
+Retrieved 29 October 2026. Research/non-commercial terms in LICENSE.ICE.txt.
+Original, unchanged actual AB1 files. No independently certified editing fraction.
+The official ICE test expects score 77; this is a tool output, not ground truth.
+Only test data, not shipped application assets or an embedded ICE implementation.

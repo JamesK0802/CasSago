@@ -1,0 +1,6 @@
+import '@angular/compiler';
+import {afterEach,it,expect,vi} from 'vitest';
+import {ReferenceLibraryService} from '../../src/app/services/reference-library.service';
+afterEach(()=>vi.unstubAllGlobals());
+it('loads one current genome/assembly without fetching a full species catalogue',async()=>{const fetch=vi.fn().mockResolvedValue(new Response(JSON.stringify({name:'homo_sapiens',display_name:'Human',division:'EnsemblVertebrates',assembly_name:'GRCh38',strain:''}),{status:200}));vi.stubGlobal('fetch',fetch);const species=await new ReferenceLibraryService().genome('homo_sapiens');expect(species).toMatchObject({name:'homo_sapiens',assembly:'GRCh38',division:'EnsemblVertebrates'});expect(fetch.mock.calls[0][0]).toContain('/info/genomes/homo_sapiens');expect(fetch).toHaveBeenCalledTimes(1);});
+it.each([{name:'wrong_species',assembly_name:'A',division:'EnsemblPlants'},{name:'homo_sapiens',division:'EnsemblVertebrates'},{name:'homo_sapiens',assembly_name:'A',division:'Unknown'}])('rejects unverified or mismatched genome metadata',async data=>{vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify(data),{status:200})));await expect(new ReferenceLibraryService().genome('homo_sapiens')).rejects.toThrow(/verified species/);});

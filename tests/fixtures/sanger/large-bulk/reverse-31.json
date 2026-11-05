@@ -1,0 +1,133 @@
+{
+  "id": "large-731904253-3",
+  "reference": "ATAGTCAACGCTAAAACGGGTTTACAGTTAATGGATAAATGAATTTTGTTAGAAATAGGTGCAGATTACTGTTTTTTATTGGAGTATGTTTACATAAATACTTCGTTTTGATATATCTATTAGAAATATTAACTAAAGTTCTTACAAGATTTTCCATAGTACCTTTTAGGATAGCGAGATCGCAAAATAAAGGTTGAAATCAATAGATCGATATAGCAATTATGTAGTATCGCATTAAATCAATTAAGTGATGGGTTCTGTGACTGATGTGATTGTAGGGTTCTTCGAACGACTATCCATTAATATGTCTAAACGAATGGAATCTTATGTTATTTTAAGAAACGTGCACTGGTTAAGTTGATTTATATATCGAATCAGGCCATCTTACCATTAACTTTAAATTTATATTAAATGAGTACTTAATTTGCAATTACAATCTTAATTGAAATGCAGCCTTTGAAATTGAGAAATCGAAAACAGATTTTATCATAACATGAAAGAACATATGACACTGTTCTCTGGTGAATATTTTTCGTAGCCTGGAGTTAGAAGACTAATTTGTAATTATGATTAAAATATTCGTTTAATGACTTGATTATACTTTTGCAGCGAATAATATCATTCACGCAAATAATTTATTAAGTTCTAATTTTGATAATTCGAGATCATAGGTTTACGTTAAACTTTATAATTACATTAATAATTCTTTATTTTATTAGGATTTGACTGAAAGTTCCCCCTAAGATAAATTCATGAGCATGTTATTATTTTCTTGTCTTAAGTGGAAACTTTGTTCGGCTACATAACTAAAGTATTGGCAGCGTTAGAGCCAACGTGGTTTACAGCATTTTGAAAGTAATCTTTGTTTAATTATTACCGATCCCTCAATCCTAAAACCTGTAAAACCTACATAATCTTTTATCCTTAGCCCATCCAGTTCATTTAACCTAAAGATTAATTAAAAAATCTGTAATTGGGTATGTCCACTTAAAACTTAAACTCTAATCATCGATCTAATCAATGTCTTCGTTATAGCGCCATCCAACTAAGCTTCCTAAGACCTTTTACAAGAACCTTCCAAATTCCTATAAAAATATACGATAAACACTTTGACTATTTTTAAGGGTCAGATTAAAAGTAGGATATATTTCCGCTCTCTATAGACTCGGAGTGTTTCGTTGCTATCTATTATTTTAATAATGTTGAATTAGACAATCGACCGGCCCCTTAGCCATGTATACATATATTTAACGTCTCATTCTATGTGAATATATTCAAATACTTCATTTTGTCTTTTTTCTCAGTTAACGATTAGACCACTTGAATATTACTAAAGTGACATATTAGAAGACAATTTTGCAATCCACTAATTGAGAAGAGCCGAATTCCTGATATTAATTACTATGAAGCCCGGTAACTCTAATAAAAATTACTTAAGGACATTATTCTAATAGTCAATATAAGCAATCTTTGCCTAGTATATTCAGCATTGAATTGGACTTATAATACGTTTCACAAATAAGACCACCAAATTTCGCTGACGATGGTTCAAATGGCCGATAGTGTTATGTCGAACTTATAAACCTTAAATTTAGTGAAAAAAACTAGCAACCGTTCGAGCGTGTTGACCTCCCCTCCTTCATCGAAATAAAAGGATTAAATCATGATAATCAAATGATCTGCCAATTACGGCTATAAAAATTACCTACGTTATAGAATAAATTGTATCTCTATCAATATATATTCTCAGCCAGTAACGTTAATTAGAAAATAATTAGGACAAACATATTATCCACATTC",
+  "primer": "",
+  "cut": 1479,
+  "guide": "AATTCAATGCTGAATATACT",
+  "nonWtAlleles": 6,
+  "ratio": "skewed",
+  "family": "difficult",
+  "gc": 0.3,
+  "largeDeletion": 31,
+  "type": "primary",
+  "reverseInputReference": true,
+  "files": {
+    "control": "reverse-31-control.ab1",
+    "sample": "reverse-31-sample.ab1"
+  },
+  "settings": {
+    "scope": "single",
+    "method": "mixture",
+    "readStart": 35,
+    "readEnd": 980,
+    "maxIndel": 20,
+    "window": 200,
+    "controlPhred": 15,
+    "direction": "auto",
+    "signalModel": "calibrated",
+    "checkWiderRange": false,
+    "largeDeletions": true,
+    "maxDeletion": 225,
+    "maxInsertion": 6,
+    "editStartRadius": 5
+  },
+  "truth": {
+    "id": "large-731904253-3",
+    "alleles": [
+      {
+        "fraction": 0.41453846738440914,
+        "events": []
+      },
+      {
+        "fraction": 0.03,
+        "events": [
+          {
+            "start": 323,
+            "end": 354,
+            "inserted": ""
+          }
+        ]
+      },
+      {
+        "fraction": 0.08631852926802822,
+        "events": [
+          {
+            "start": 317,
+            "end": 484,
+            "inserted": ""
+          }
+        ]
+      },
+      {
+        "fraction": 0.10178669507797895,
+        "events": [
+          {
+            "start": 316,
+            "end": 317,
+            "inserted": ""
+          }
+        ]
+      },
+      {
+        "fraction": 0.14303419334872522,
+        "events": [
+          {
+            "start": 325,
+            "end": 332,
+            "inserted": ""
+          }
+        ]
+      },
+      {
+        "fraction": 0.08620531379418031,
+        "events": [
+          {
+            "start": 325,
+            "end": 325,
+            "inserted": "AT"
+          }
+        ]
+      },
+      {
+        "fraction": 0.13811680112667815,
+        "events": [
+          {
+            "start": 322,
+            "end": 322,
+            "inserted": "ATTTTA"
+          }
+        ]
+      }
+    ],
+    "net": [
+      {
+        "size": 0,
+        "fraction": 0.41453846738440914
+      },
+      {
+        "size": -31,
+        "fraction": 0.03
+      },
+      {
+        "size": -167,
+        "fraction": 0.08631852926802822
+      },
+      {
+        "size": -1,
+        "fraction": 0.10178669507797895
+      },
+      {
+        "size": -7,
+        "fraction": 0.14303419334872522
+      },
+      {
+        "size": 2,
+        "fraction": 0.08620531379418031
+      },
+      {
+        "size": 6,
+        "fraction": 0.13811680112667815
+      }
+    ]
+  }
+}

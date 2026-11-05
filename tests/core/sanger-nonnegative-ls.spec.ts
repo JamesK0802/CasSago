@@ -1,0 +1,3 @@
+import{it,expect}from'vitest';import{nonnegativeLeastSquares}from'../../src/app/workers/core/sanger-nonnegative-ls';
+it('solves a bounded convolution with a coefficient on the nonnegative boundary',()=>{const cols=[[1,.5,0,0],[0,1,.5,0],[0,0,1,.5]],truth=[.3,0,.7],y=cols[0].map((_,k)=>cols.reduce((s,c,i)=>s+c[k]*truth[i],0)),fit=nonnegativeLeastSquares(cols,y);expect(fit.converged).toBe(true);fit.weights.forEach((w,i)=>expect(w).toBeCloseTo(truth[i],8));});
+it('reports exhaustion instead of claiming a converged fit',()=>{expect(nonnegativeLeastSquares([[1,1],[0,1]],[.2,.5],0).converged).toBe(false);});

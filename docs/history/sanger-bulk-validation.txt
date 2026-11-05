@@ -1,0 +1,24 @@
+Single-reference, single-target Sanger bulk decomposition (2026-10-30)
+
+Scope: net indel-length composition, not exact allele-sequence reconstruction.
+The inference model remains the existing shifted-control, nonnegative mixture regression.
+A small matchedSingleSignals helper selects contrast or integrated area exclusively from intact upstream control/sample agreement. Area is considered only if contrast fails the existing upstream checks (validation R2 >=0.8 and upstream disagreement <=0.1). For area, local donor information is measured relative to that control's own upstream per-dye dominance; spectral overlap itself does not erase all usable rows. No edited-fit or truth-based representation selection is used.
+
+Validation: 64 developmental cases and 8 frozen-model confirmation cases passed the net-length composition gate. A further 4 fresh cases passed after the evaluator semantic correction, without changing inference. Inputs contain WT plus 3/5/8/12 concurrent edits at different net sizes. All 607 application regression tests passed; app/worker TypeScript and production build passed.
+
+Evaluator correction: the earlier raw-coefficient stress score must not be called an ordinary tool accuracy ranking. ICE 1.2.0 scales and rounds contribution coefficients using R2; 1 minus their sum is not an unknown biological molecule fraction. audit-score.py normalizes conditional composition equally for all tools, retaining raw coefficient sums, detection, R2 and native TIDE significance separately. The former score and frozen contract are preserved for audit.
+
+Independent eight-case audit: ICE 1.2.0 detected every >=2% edited length class in 7/8 and passed composition criteria in 4/8; original TIDE 5.0.6 detected every class in 8/8 and passed in 6/8; CasMANGO passed 8/8. On the six non-empirical cases, both comparators detected all classes, TIDE passed 6/6, and ICE passed 4/6. Artificial empirical-kernel stress traces are reported separately and do not establish superiority on real experimental data. TIDE's native significance gate qualifies every truth class in 7/8; this differs from shared coefficient-based detection.
+The original TIDE service completed all 64 development cases, but its 64-case export disconnected; do not claim a quantitative 64-case TIDE ranking. The independent eight-case native CSV is retained in the Desktop validation bundle. ICE is pinned public source 1.2.0, not the current hosted ICE 4.2 engine. DECODR was not run.
+
+Composition gate: normalized full-vector TV <=5 pp; max per-class error <=5 pp; every truth non-WT class >=2% must have a fitted coefficient >=1%; called false-positive mass <=2 pp; CasMANGO must pass existing QC. Native tool execution success is distinct from this validation gate. Raw coefficients and signal quality must accompany normalized composition.
+
+Settings: CasMANGO maxIndel20/readStart35/readEnd780/Phred15/calibrated; native TIDE range20/default maximum decomposition end685/p0.001; ICE original automatic windows with indel_max_size20. Truncating CasMANGO to TIDE's end685 retained 8/8 on the same confirmation inputs. This is window sensitivity, not an additional independent dataset.
+
+Limits: no proof of exact sequence identities, same-size allele separation, known-ratio wet-lab bulk robustness, homeolog or multitarget performance. Existing public real-trace regressions remain tests, not a substitute for an experimental bulk benchmark. No hosted site deployment is implied.
+
+Detailed report and reproducibility:
+/Users/james/Desktop/CasMango_Sanger/04_개발기록/CasMANGO_Sanger_BulkSingle_20261030/결과_보고서.txt
+Native ICE: https://github.com/synthego-open/ice (commit310495fe536b7d2eafcee80f145c55f7c65d947c)
+Native TIDE: https://apps.datacurators.nl/tide-batch/
+TIDE methods/quality assumptions: https://doi.org/10.1093/nar/gku936

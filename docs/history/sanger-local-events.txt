@@ -1,0 +1,50 @@
+Sanger local consensus events — 28 October 2026
+
+One guide establishes one intended cut boundary, not a claim that every repair
+change lies at one nucleotide. A cut-proximal replacement can span substitutions,
+short exact matches, insertions and deletions. Grouping below is a representation
+policy; it does not prove a single biological repair mechanism or allele phasing
+in a mixed chromatogram.
+
+Consensus-only alignment now uses local affine-gap scoring: match +3, mismatch
+−4, gap opening −7, extension −1, with free unaligned ends. A length-k gap costs
+7+(k−1), so a longer gap need not be represented as many scattered mismatches.
+Trace registration, upstream calibration, reference-guided mixed-trace fitting,
+primer alignment and previously frozen benchmarks retain their original policies.
+
+After alignment, contiguous differences remain primitive calls. Neighboring calls
+can be displayed together if BOTH lie wholly within cut ±20 bp and their exact
+matched bridge has at most joinNearby bases (default 3, configurable 0–10 in Signal
+settings for consensus). Every bridge base is retained in the displayed ref/alt
+allele. Primitive calls and coordinates remain nested in JSON, in expandable UI
+details, and in CSV columns. Zero disables joining. The policy cannot chain past
+the ±20-bp region, join over N/IUPAC ambiguity, or discard a long exact match.
+Changes outside the local region remain separate. Window-edge display retains
+whole events that overlap that window. Reverse-oriented calls are converted to
+the input reference orientation, including each primitive component.
+
+A consensus event containing insertion/deletion plus a substitution, or both an
+insertion and deletion, is labeled Complex replacement. Zero total size change
+does not make it WT. Pure substitutions remain Substitution, including grouped
+nearby substitutions. Ambiguous base calls remain Ambiguous call. Individual gap
+locations in repeats can still have equally good representations; this is not a
+claim of experimentally resolved junctions.
+
+Mixed-trace model fractions are unchanged. Their zero-size component is now
+labeled No net indel / 0 bp / No net indel model instead of asserting WT. This
+component cannot exclude local substitutions or compensating insertions/deletions.
+Legacy JSON 'wt' fields are retained for compatibility and mean the zero-shift
+model fraction. No exact nucleotide/allele frequencies are added to mixed traces.
+Consensus base calls cannot resolve individual alleles in overlapping peaks.
+
+Reproduction: select Single → Base-call alignment → Load demo → Analyze Sanger.
+The labelled synthetic demo has two substitutions separated by three matching
+bases near the configured cut. One grouped event retains both primitive calls.
+Signal settings → Join nearby changes = 0 restores separate calls on reanalysis.
+
+Primary background
+Gotoh 1982: https://doi.org/10.1016/0022-2836(82)90398-9
+CRISPR complex repair: https://doi.org/10.1038/ncomms15464
+TIDE scope: https://tide.nki.nl/
+The 3-base join and ±20-bp context are explicit display defaults, not an inferred
+biological boundary or validated repair-event threshold.

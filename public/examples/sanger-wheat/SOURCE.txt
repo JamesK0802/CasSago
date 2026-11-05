@@ -1,0 +1,1 @@
+Synthetic forward chromatograms from the 28 October 2026 wheat validation. Known within-reference editing: A 60%, B 45%, D 70%. Source and limitations in config.json and docs/sanger-optimisation.txt. No measured biological data.

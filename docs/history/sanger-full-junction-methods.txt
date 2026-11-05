@@ -1,0 +1,58 @@
+Full-junction single-target Sanger model — 31 October 2026
+
+Supersedes the junction masking, shifted-donor cropping and quality-gated
+withholding rules in historical method notes. Applies to single reference and
+single-target pooled/homeolog analysis. No multi-target development in this change.
+
+Observations and configurable search range
+The measured sample read axis is selected by readStart/readEnd, registration and
+actual available signal. Neither maxIndel, maxDeletion nor maxInsertion removes
+junction cycles or shortens the read tail. Every retained position is exported in
+diagnostics.junctionFit.positions. Increasing a bound adds hypotheses; it does not
+change which measurements they explain. Ordinary maxIndel is a parameter, not 10.
+Phred is advisory for decomposition. Missing/unmeasured control donors use known
+reference sequence plus control-learned WT responses, with an explicit warning.
+Invalid input, absence of a usable registration or actual coverage can still error.
+
+One physical model
+A deletion is an interval [start,start+length). Candidate starts range from
+cut-length-radius through cut+radius, bounded by reference coverage. This includes
+left-ending, cut-spanning and right-starting deletions. Insertions start within
+cut±radius. The edited sequence predicts all measured cycles, including junctions.
+One nonnegative fraction is estimated for each (reference, net size), with a
+simplex distribution over junction origins. Thus multiple molecular origins with
+the same length need not be collapsed to a single forced breakpoint. Unknown
+insertion bases are four-base probability distributions; annotation uses N, not a
+fabricated resolved sequence. Fractions are molecular mixture estimates under the
+fluorescence model, not observed read counts or significance tests.
+
+Homeologs whose local WT sequence and read-axis cut are identical share the
+observable origin/base marginal. Distant SNPs alone do not phase a local junction
+origin. Different local WT contexts have separate marginals. Do not interpret the
+reported marginal as an experimentally resolved homeolog-specific haplotype.
+
+Control fluorescence and optimization
+Single-reference analysis retains measured WT donor responses where the edited
+triplet matches. Changed or unmeasured contexts use WT triplet/base responses.
+Pooled analysis can learn a 16 previous/current base response table from WT control
+only; recurrence-held-out and informative-marker-held-out control errors must
+improve before adoption. It is then used with bounded sample gain/phase calibration.
+No truth fractions, test IDs or synthetic simulator parameters enter inference.
+Class fractions, origin distributions and insertion probabilities are updated by
+coordinate fitting. Ordered deletion origins use a cumulative distribution with
+isotonic projection: this solves the same least-squares objective without a dense
+ill-conditioned matrix of near-identical whole-read templates. Maximum 12 outer
+rounds. Other emissions retain the normalized-emission mixture solver.
+Annotation maps actual fitted intervals into submitted reference coordinates,
+including reverse reads. Alternative rows are model components, not observed alleles.
+
+Validation and limitations
+See Desktop/CasMANGO_Sanger_Junction_20261030/검증_결과.txt and raw per-case JSON.
+Numeric accuracy and internal QC are scored separately. A QC warning never hides
+a computable spectrum. Original 5 pp composition criteria remain unchanged.
+There is an acknowledged regression in unstable-three (primary homeolog case21):
+conditional TV about5.76 pp versus the 5 pp gate. Its original accuracy assertion
+remains a failing regression test; its tolerance is not widened.
+The former heterogeneous case8 improves from5.14 to about4.57 pp. Therefore an
+all-homeolog robustness claim is not justified. Synthetic checks do not replace
+independent experimental mixtures or a completed native-tool comparison.

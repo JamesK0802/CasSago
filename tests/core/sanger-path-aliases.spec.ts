@@ -1,0 +1,10 @@
+import{it,expect}from'vitest';
+import{findPathAliases}from'../../src/app/workers/core/sanger-path-aliases';
+import{jointPathColumn}from'../../src/app/workers/core/sanger-junction-paths';
+import{reverseComplement}from'../../src/app/utils/biology.utils';
+import type{JunctionInput,JunctionFit,JunctionModel}from'../../src/app/workers/core/sanger-junction-mixture';
+function fixture(paired:boolean){let state=290317;let sequence=Array.from({length:480},()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return'ACGT'[state>>>30]}).join('');sequence=sequence.slice(0,237)+'AAAAAAA'+sequence.slice(244);const reference={sequence,cut:90,cuts:[90,240]},rows=Array.from({length:450},(_,i)=>i+10),forward={references:[reference],positions:rows,rowIds:rows,mappings:[{reverse:false,offset:0}],lag:0,theta:[]},reverse={references:[{sequence:reverseComplement(sequence),cut:240,cuts:[390,240]}],positions:rows,rowIds:rows.map(p=>p+500),mappings:[{reverse:true,offset:480}],lag:0,theta:[]};
+ const input:JunctionInput={references:[reference],reads:paired?[forward,reverse]:undefined,positions:paired?[...rows,...reverse.rowIds]:rows,observed:[],maxDeletion:2,maxInsertion:2,radius:3,lag:0,theta:[],fit:()=>{throw Error('No regression is needed for an exact physical alias proof');}};
+ const models:JunctionModel[]=[{reference:0,size:0,sizes:[0,0],start:90,inserted:'',path:[]},{reference:0,size:1,sizes:[1,0],start:90,inserted:'G',path:[{target:1,size:1,origins:[{start:90,weight:1,probabilities:[[0,0,1,0]]}]}]}],columns=models.map(m=>jointPathColumn(input,m)),fit={models,columns,weights:[.5,.5]}as JunctionFit;return{input,fit};}
+it('finds a physically exact one-way alias changing target2 from0% to100%, without changing the point result',()=>{const{input,fit}=fixture(false),before=JSON.stringify(fit);const aliases=findPathAliases(input,fit);expect(aliases).toEqual([{reference:0,target:2,shiftableJointFraction:1}]);expect(JSON.stringify(fit)).toBe(before);});
+it('the opposite-direction observations break that alias',()=>{const{input,fit}=fixture(true);expect(findPathAliases(input,fit)).toEqual([]);});

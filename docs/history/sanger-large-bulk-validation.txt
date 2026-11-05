@@ -1,0 +1,45 @@
+CasMANGO single-reference / single-target large-deletion validation — 2026-10-30
+
+범위와 판정
+WT + 여러 small indel + 둘 이상의 큰 deletion이 동시에 존재하는 bulk 혼합을 검증했다.
+주요 deletion 길이는 31, 50, 80, 120, 200 bp. 모든 주요 사례에 동일한 탐색 범위 [-225,+6]를 사용했다.
+서열, cut 위치, GC, 혼합 비율, waveform을 바꾸었고 일부 reference는 역방향으로 입력했다.
+Decoder에는 AB1, reference, cut, 설정만 전달하며 정답 혼합 비율은 별도로 보관했다.
+통과 기준: QC 통과, 전체 조성 TV <=5 pp, 각 길이 비율 오차 <=5 pp,
+정답 비율 >=2%인 편집 길이는 >=1%로 검출, 거짓 길이 호출 비율 합 <=2 pp.
+
+결과
+- 개발 30/30: 평균 TV 0.93 pp, 최대 3.01 pp.
+- 소스 고정 후 새 seed/새 reference/target 확인 8/8: 평균 TV 0.74 pp, 최대 1.72 pp.
+- 기존 small-indel 회귀 76/76: 평균 TV 0.81 pp, 최대 4.35 pp.
+- 공통 범위 웹 비교 준비 사례 6/6 (CasMANGO만 실행).
+- 안전성 8/8: 범위 밖 300/500 bp deletion, 짧은 control, 잘못된 control,
+  경계 225 bp, 반복 reference는 결과 확정 보류/오류. 두 WT control은 편집 없이 통과.
+- 보조 empirical-kernel 스트레스: 10건 중 9건 정량 통과, 1건 보류.
+  실제 장비 신호의 재현성은 검증하지 않았으므로 주 통과 집계와 분리했다.
+- 앱 회귀 615/615, 앱/worker TypeScript 검사 및 production build 성공.
+
+간결한 모델
+1. Control과 sample을 정렬하고 편집 전 구간으로 dye gain / phase를 보정한다.
+2. Control 신호를 각 net-length만큼 이동시켜 후보 열을 만든다.
+3. 비음수·합계 1 회귀로 WT와 각 길이의 비율을 함께 추정한다.
+4. 식별 가능성, control donor 신호 품질, 잔차, 분할 안정성을 검사한다.
+큰 deletion은 이 모델의 범위만 비대칭으로 확장한다. 삽입 junction 이후부터 fit하고,
+최대 deletion만큼 뒤의 실제 control donor가 존재하는 위치까지만 사용한다.
+경계 deletion에 5%를 넘는 비율이 모이면 더 넓은 탐색 전까지 확정을 보류한다.
+별도 대형 deletion 알고리즘이나 정답 길이 기반 후보 추가를 사용하지 않았다.
+
+재현 및 적용
+frozen-before-confirmation.json: 소스/생성기/평가 코드와 frozen bundle SHA-256.
+confirmation-seed.json: 독립 확인 seed. 각 dataset의 cases.json / truth.json은 분리되어 있다.
+large-gate.json, safety-summary.json, 각 dataset/audit-scores.csv에 상세 결과가 있다.
+source의 변경은 작은 indel 엔진의 비대칭 확장, 실제 donor 품질 검사, UI 라우팅/범위 표시,
+회귀 fixture와 테스트에 한정한다. Homeolog 후보 optimizer와 attribution 변경은 포함하지 않는다.
+
+해석의 한계와 다음 단계
+이 gate를 통과하여 homeolog single target 개발/검증에 진입했다.
+이는 합성 데이터에서 net-length 혼합을 복원한 결과이며, 실제 실험 robustness나
+동일 길이의 서로 다른 정확한 DNA allele 복원을 증명하지 않는다.
+API는 deletion limit 최대 500 bp를 허용하지만 주요 정량 검증은 200 bp까지이다.
+ICE/TIDE 웹 비교는 사용자 요청으로 보류했다. 미실행 비교를 경쟁 툴 실패로 세지 않았다.
+이전 ICE 계수 합계/R² scaling 관련 평가 수정도 유지한다.

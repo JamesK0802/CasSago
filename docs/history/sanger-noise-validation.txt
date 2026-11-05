@@ -1,0 +1,171 @@
+GROUP / POSITION UPDATE — 2026-10-31
+See sanger-group-position-validation.txt for the newer phase/evidence checks and
+annotation correction. Numerical accuracy, conditional length evidence and physical
+breakpoint accuracy are separate. The final distinct-spectrum heldout is3/4 on the
+raw5pp gate;28/28 true edited groups>=2% have conditional evidence and12 wrong
+allocations do not. Exact placements remain inaccurate (13/32 top-compatible).
+No multi-target robustness claim is made. Historical results follow unchanged.
+
+DISTRIBUTION / WORKFLOW UPDATE — 2026-10-31 (supersedes the historical component-noise results below)
+
+Cause and changes
+The former generator independently shuffled whole measured pulse-shape residuals.
+This confused coherent context/read-position response drift with additive noise.
+On identical six genotypes/primer products, removing that added residual gives
+6/6 numerical passes, maximum conditional TV2.60pp; also removing context yield
+reduces it to1.51pp. The previous0/6 is not evidence of calibrated real noise.
+The corrected renderer interpolates measured pulse responses coherently and
+separates block-correlated, intensity-scaled residuals estimated from247 matched
+high-quality cycles in two public negative-control runs. They are not certified
+technical replicates. This does not prove a complete real-instrument noise law.
+No alternative engine, truth-specific inference or new user parameter was added.
+
+A real cross-run control diagnostic exposed a separate inference problem: a
+low-Phred WT tail was treated as a precise template. Relative inverse-variance
+weights now account for WT local-context Phred uncertainty. Edited-sample Phred
+is not used, because real mixtures can lower its call quality. Every sample cycle
+remains in fitting and raw R2. Missing/all-zero or uniformly valued WT quality
+leaves the former weighting unchanged. Inverse-variance weights are an operational
+uncertainty model, not a calibrated posterior confidence interval.
+
+Two workflow defects were also fixed: quantitative single-primer candidates need
+72 usable upstream bases, and automatic exported/imported templates preserve
+separate deletion/insertion limits (31bp deletion/30bp insertion tested), rather
+than silently imposing the legacy mixed15bp cap. NGS behavior is unchanged.
+
+Results; original5pp gates retained
+- Same six designed genotypes, corrected component model:6/6,90/90 groups,
+  max conditional TV4.49pp, no extra groups>=1%.
+- Independent frozen8, single/homeolog x forward/reverse x small/31bp deletion:
+  8/8,80/80 groups; max conditional TV4.02pp. One extra single+3 group1.086%;
+  none>=2%. Explicit template limits31/30 survive design/import/analysis.
+- Final separately generated4 after source freeze:4/4,40/40 groups, max3.46pp;
+  no extra groups>=1%. They were not used for tuning.
+- Unedited single/homeolog2:2/2, no extra groups>=1%; homeolog share error1.06pp.
+- Single regression156/156, all required groups recovered, max TV4.37pp.
+- The pooled engine is unchanged in this update: historical87/88 and the known
+  distributed-difficult conditional TV5.85pp remain; its5pp assertion stays red.
+Groups here mean reference x net indel size, including WT, not complete haplotypes.
+The recovery gate is truth>=2% within reference recovered at>=1%; false groups
+are reported separately at1% and2%. A numerical accuracy pass is not a QC pass.
+Most component simulations have unavailable Phred and/or stability warnings;
+all estimates remain numeric and visible. No data are withheld for QC failure.
+
+Real public negative-control diagnostic (same locus, one called SNP, different
+run dates/instruments; not confirmed identical specimens): total inferred indel
+8.754% ->1.912% and8.658% ->0.702%, swapping control/sample. Largest residual
+class+1=1.652%. Native public ICE1.2.0 calls WT100% in both directions. We have
+improved this error, not matched ICE exactly or established experimental truth.
+All330/331 sample cycles retained; raw fit warnings remain. TIDE web comparison
+is deferred at the user's request. No physical edited-mixture truth is claimed.
+
+Full regression:641/642 pass; the sole failure is the retained distributed-difficult
+5pp accuracy assertion. New regression/primer/template tests pass with a60s
+runtime allowance; accuracy criteria are unchanged. Production build passes
+with the pre-existing2.33MB initial-bundle budget warning.
+All original accuracy assertions remain intact. See the Desktop
+CasMANGO_Sanger_DistributionFix_20261031 artifact for source/binary freezes,
+AB1/truth/profile files, causal ablations, calibration provenance and test logs.
+Homeolog multi-target remains unvalidated; automatic analysis still accepts one
+cut per reference. This update does not silently route it to the older joint
+engine, which masks junction observations and does not meet this workflow.
+
+Reproduce with scripts/sanger-empirical/README.txt and prepare-library.py.
+Historical results follow; the earlier uncalibrated component-noise rates and
+legacy15bp handoff limitation above/below are superseded by this update.
+
+VALIDATION SCOPE CORRECTION — 2026-10-31
+The old88 homeolog cases used in the reported87/88 figure did not meet the
+DEFAULT shared-Sanger primer-design minimum offset30bp:76 cases had0bp,12 had
+3bp. The new component-based6 also used0bp. These are standalone analyzer
+stress results; neither rate measures the complete primer-design workflow.
+
+The actual design pipeline has now been tested with6 newly generated cases:
+first ranked designed primer pair -> exported complete products -> public
+automatic template import -> physical sequencing-primer extensions -> AB1 ->
+unchanged automatic analyzer. Three forward/three reverse primers; minimum
+inter-homeolog cut-offset gaps45,48,51,54,57,60bp. Default +/-10bp limits.
+All90 truth groups>=2% within reference were recovered at>=1%, with zero
+false groups>=1%. Homeolog share error<=1.67pp. ConditionalTV5.70–7.45pp means
+strict5pp numerical accuracy remains0/6; no criterion was relaxed.
+The source waveforms are measured WT components, not physical edited-mixture
+experiments. The cohorts also differ in range, sequence and product geometry,
+so the improvement cannot be attributed solely to primer offset.
+
+Regression coverage now includes forward/reverse full design handoff and
+rejection of same-offset SNP-only references by the shared-Sanger designer.
+The analyzer still returns numeric exploratory estimates for direct reference
+inputs; that does not certify their primer design.
+
+Large-deletion end-to-end workflow remains unvalidated. The legacy template
+export validator still caps mixed maxIndel at15, even though the automatic
+analysis engine supports wider limits; that handoff needs separate correction
+before claiming a large-deletion design-to-analysis validation.
+
+Previous standalone analyzer study (historical results, scoped as above):
+
+Sanger noise and group-support update — 2026-10-31
+
+One automatic analysis contract and the shared physical-junction mixture engine
+are retained. No new public mode or parameter is introduced. All registered
+sample cycles, both deletion directions and the requested indel range remain.
+
+Changes
+- WT control photometry: smooth read-strength trend and dye/neighbour effects
+  can include a ridge-shrunk trinucleotide residual. The extra context model is
+  used only if withheld WT-cycle prediction improves. It is never learned from
+  the edited sample or truth fractions.
+- Pooled length support: covariance uses cycle-block residuals, with the former
+  IID estimate as a floor. Searching more possible junction origins requires
+  stronger support for an additional length. Retained lengths are refitted
+  without a fraction penalty. This is an engineering support rule, not a
+  calibrated statistical confidence interval.
+- Do not equate uncertain homeolog allocation with absence of an edit. A trial
+  that zeroed weak reference-specific coefficients removed genuine components
+  in empirical-component tests and was rejected. Individual homeolog allocation
+  estimates remain numeric. Geometry QC checks the pre-selection active set too,
+  so deleting an ambiguous alternative cannot manufacture a clean QC result.
+- Sparse photometry design rows avoid multiplications by zero. Mathematical
+  output is unchanged by this implementation optimization.
+
+Legacy frozen validation (same inputs and unchanged accuracy gates)
+Single: 156/156 numerically correct. Homeolog: 87/88, previously86/88.
+True groups >=2% within reference: 2154/2154 recovered at >=1%; 2153/2154 at >=2%.
+Homeolog true groups: 1028/1028 at >=2%. False groups at >=1% within reference:
+6 ->2; at >=2%:2 ->1. WT is included as a size-zero group.
+These groups mean reference x net indel length, not phased molecular haplotypes.
+Remaining legacy false groups: heterogeneous case7 B-1 (~1.05%) and case8 A-3
+(~2.10%). The latter rose from ~1.61%; not every individual estimate improved.
+The distributed/difficult case has correct groups but conditional TV5.85pp
+(previously5.04pp). Its original5pp test is intentionally still failing.
+Tests:631/632 pass. App/worker TypeScript and production build pass. The existing
+2.33MB initial-bundle budget warning remains. No full robustness claim is made.
+
+Measured-component validation
+The old artificial stress cohorts remain intact. Added a portable separate
+benchmark that resamples measured WT four-channel cycles and residuals rather
+than adding an arbitrary Gaussian law or a synthetic Phred. Development uses two
+public ICE WT controls; heldout uses a third control and newly generated DNA/
+mixtures after the engine was frozen. Every group contains multiple physical
+indels, including31/120bp deletions. No real experimental editing truth is claimed.
+Development8: original numeric accuracy gate3/8 before and after; group recovery90/96 ->91/96 at1%.
+Heldout6: all return numbers; original numeric accuracy gate1/6; groups67/72 recovered at1%; two
+extra groups at1–2%, none>=2%. Homeolog fractions remain unstable. These results
+are a limitation, not a passing cohort. Full protocol, hashes and per-case
+profiles are in the Desktop NoiseImprovement artifact folder.
+
+Same-AB1 comparison, native public ICE1.2.0 (not hosted ICE4.2)
+Two empirical-component cases with up to31bp deletion were analyzed with ICE
+indel_max_size20; its deletion-origin grid differs from CasMANGO's wider range.
+ICE reported no extra sizes in these two cases. It also did not report the true
+2% +6 in the single-reference case. In the original difficult case, ICE reported
+-4/+9 as exactly zero; the updated pooled model also removes these extra lengths.
+An aggregated ICE spectrum cannot certify individual homeolog assignments.
+
+Reproduction: scripts/sanger-empirical/README.txt. Do not tune on heldout data
+and continue calling it independent. Homeolog multi-target remains unvalidated.
+
+Peak-level descriptive check (not full distribution validation): measured high-
+quality WT source controls have median major signal920–946RFU and minor-dye
+fractions4.38–5.96%. Pure-WT generated controls have median major signal911–949
+RFU and minor-dye fractions5.07–6.09%. Long-range dependence is still unvalidated.

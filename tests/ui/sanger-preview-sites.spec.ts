@@ -1,0 +1,11 @@
+import '@angular/compiler';
+import {it,expect,vi} from 'vitest';
+import {SangerAnalysisPanelComponent} from '../../src/app/pages/sanger-analysis-panel/sanger-analysis-panel.component';
+import {tracePreviewSites} from '../../src/app/utils/sanger-trace-preview';
+import {reverseComplement} from '../../src/app/utils/biology.utils';
+import {sangerPooledDemo} from '../../src/app/utils/sanger-analysis-demo';
+import {parseSangerTrace} from '../../src/app/utils/sanger-trace';
+it('centres a single-reference measured preview on the mapped cut instead of genomic coordinate zero',()=>{const p=new SangerAnalysisPanelComponent({markForCheck:vi.fn()}as any);p.loadDemo();expect(p.previewStart).toBe(190);for(const row of p.previewPlots){expect(row.plot!.cuts).toHaveLength(1);expect(row.plot!.cuts![0].x).toBeGreaterThan(100);expect(row.plot!.cuts![0].x).toBeLessThan(row.plot!.width-100);}p.ngOnDestroy();});
+it('registers mixed control and sample cycles and includes both staggered targets in the default viewport',()=>{const p=new SangerAnalysisPanelComponent({markForCheck:vi.fn()}as any);p.loadDemo(true);expect(p.previewCycles).toBe(160);for(const row of p.previewPlots){expect(row.plot!.cuts).toHaveLength(2);expect(row.plot!.cuts!.every(c=>c.x>=0&&c.x<=row.plot!.width)).toBe(true);}const sample=p.sample;p.previewStart+=30;expect(p.previewPlots[1].plot!.cuts![0].x).toBeLessThan(700);expect(p.sample).toBe(sample);p.ngOnDestroy();});
+it.each([false,true])('maps known synthetic extension coordinates in either sequencing direction, reverse=%s',reverse=>{const d=sangerPooledDemo(),original=d.amplicons[0].sequence,cut=d.amplicons[0].cut,reference=reverse?reverseComplement(original):original,trace=parseSangerTrace(d.control),sites=tracePreviewSites([{name:'R',sequence:reference,cuts:[reverse?reference.length-cut:cut]}],d.primer,trace,0);expect(sites).toHaveLength(1);expect(sites[0].cut).toBe(cut-d.primer.length);});
+it('does not invent cut markers for unregistered mixed references',()=>{const d=sangerPooledDemo(),trace=parseSangerTrace(d.control);expect(tracePreviewSites(d.amplicons.map(a=>({...a,cuts:[a.cut]})),'',trace)).toEqual([]);});

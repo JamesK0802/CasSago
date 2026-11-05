@@ -1,0 +1,107 @@
+Current implementation update (29 October 2026): calibrated v4 supersedes the
+legacy signal extraction described below. See sanger-group-optimisation.txt for
+local peak contrast, WT-control context calibration, support screening, fresh
+validation and limitations. The v2 description is retained as historical audit.
+
+CasMANGO Sanger calibrated processing v2 — 28 October 2026
+
+Independent synthetic validation, not experimental accuracy certification.
+Classic (sanger-classic-v1) remains selectable. Calibrated is the new default.
+No truth fractions, mutation identities or regime labels enter inference.
+
+1. Signal extraction
+Integrate processed ABIF DATA9–12 peak areas over a radius of 0.34 × local cycle
+spacing, bounded to 2–5 scans. Subtract per-channel local median inter-peak
+background. Position weights depend only on signal/background, bounded 0.25–1.
+Edited residuals are not used to discard positions or erase rare alleles.
+
+2. Upstream calibration
+Register traces to the actual sequencing-primer axis. Raw registration may enter
+calibration at R² ≥0.55; final acceptance still requires held-out upstream R² ≥0.80.
+The same raw candidate phase-gap requirement is retained. Four bounded dye gains
+(0.55–1.8 relative scale) and one phase-lag parameter (0–0.20) are learned using only
+pre-cut WT positions. Every third upstream position is reserved for internal
+validation; retain calibration only for >5% relative MSE improvement and >1e-5
+absolute improvement there. Control and sample calibrations are independent;
+control/sample template proportions need not match. This internal validation is
+not a biological accuracy estimate. Independent generated datasets assess error.
+
+3. Inference and checks
+Use nonnegative, sum-to-one least squares with signal-based position weights.
+FISTA projection enforces the sum constraint directly rather than normalizing an
+unconstrained NNLS optimum afterward. Pooled model geometry/rank checks remain.
+Calibrated single-locus fits also require full numerical rank and condition ≤100.
+Single-locus fits use the empirical WT trace; pooled models use supplied DNA and
+calibrated lag. A five-base pre-cut guard is excluded as well as the insertion
+junction region. Full-fit R² and RMSE are measured against unweighted original
+normalized signal, not only the selected/weighted corrected points.
+
+The full pooled WT-control R² gate stays ≥0.85. Sample R² ≥0.90 and convergence are
+required for QC. Alternating-position edit estimates differing by >10 pp trigger
+review. Any modeled position with raw four-channel RMSE >0.20 triggers local
+signal-discordance review. Those positions are not removed from fitting. These
+fixed engineering thresholds are prototype policies, not calibrated p-values/CI.
+
+4. Range sensitivity
+Check all feasible +5-bp wider ranges through ±15. Compare them on ONE common
+position set: train 3/4, validate 1/4. A recommendation requires validation R²
+gain ≥0.01, RMSE reduction >15%, ≥3% global fitted signal outside the requested
+range, and passed geometry/coverage. Choose the smallest range within 2% RMSE of
+the best qualified candidate. The requested range is not silently changed.
+Reanalyse ±N is explicit. Benchmark 'assisted' follows recommendations separately
+from the fixed-range result; the two must not be conflated.
+
+5. Annotation
+Use the main CasMANGO REFERENCE / GROUP layout, deletion styling and insertion
+badges. Each reference has a tab; its indel spectrum and raw chromatograms follow
+that selection. Groups are net-size model components with within-reference signal
+fractions, not observed reads. Inserted bases are N / N×size. Deletion footprints
+follow the sequencing-direction model at the configured cut; exact biological
+junctions are not independently resolved. Reference rows are input 5′→3′. Small
+components remain in the full-fit denominator when display threshold is raised.
+Source arrays and inferred fractions are never changed by annotation filtering.
+
+6. Validation protocol
+Freeze original baseline into a standalone engine before changes. Replay the
+previous 120 synthetic cases. Freeze v1 and generate 140 fresh cases before
+inference; serialized results precede loading truth for assessment. Retain that
+first audit, including regressions. It exposed wider-range local-step failures
+and localized artifacts. Update only v2 range/discordance decision checks; generate
+another 140 cases with a distinct seed base and freeze before inspection.
+
+New cases include randomized edit mixtures, different control/sample shares,
+low-share references, small true components, WT-only nulls, independent channel
+drift, local dye pulses, outside-range −9/−13-bp alleles, severe background
+corruption, reverse-oriented submitted products, independently trimmed traces.
+The forward simulator generates full edited molecule strings and ABIF signals;
+it does not import inference columns. It is still a simulator family, not a
+replacement for independent real chromatograms or wet-lab controls.
+
+All conditions, blocked cases and inaccurate returned results are retained.
+Report all-returned accuracy separately from QC-passed accuracy. Max-bin spectrum
+error is separate from total editing error. Passing a ±5-pp spectrum criterion
+with small true components does not establish a sub-percent detection limit.
+The legacy validate-wheat harness is explicitly pinned to Classic.
+
+Results and limitations
+The v2 fresh 140-case comparison improved moderate edit MAE 1.16→0.53 pp,
+independent-control-share MAE 1.15→0.48 pp and low-share MAE 3.17→0.75 pp.
+WT-only maximum false edit was 5.71→0.43%. Range-assisted spectrum recovery was
+18/20, compared with 0/20 at the original ±5 range. Not all artifact cases improved:
+for local pulses spectrum-accuracy counts were 15/20→13/20, and the conservative
+local-discordance check requested review for 19/20, including accurate cases.
+One inaccurate pulse case still passed QC. Two outside-range cases still did not
+recover their spectrum. All 20 severely corrupted cases were blocked or marked
+for review. The ideal noiseless calibration case regressed slightly from ~0.0005
+to ~0.21 pp MAE. Runtime increased in exchange for calibration/validation checks.
+The report retains these results; do not advertise universal indel recovery.
+The public wheat assay is the same single noncoding-target assay as previously;
+these data do not establish coding knockout efficiency or whole-genome specificity.
+
+Related primary sources (precedents, not validation of this implementation)
+TIDE: https://doi.org/10.1093/nar/gku936
+ICE: https://www.biorxiv.org/content/10.1101/251082v3
+ICE source: https://github.com/synthego-open/ice
+We considered sparse regression but did not transfer ICE's numerical L1 setting:
+on a nonnegative sum-to-one simplex, the unweighted L1 norm is constant.
+No official TIDE/ICE code or their performance claims are attributed to this model.

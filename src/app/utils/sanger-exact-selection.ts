@@ -1,0 +1,16 @@
+import {SangerAnalysisResult,SangerAnnotation} from '../models/sanger-analysis';
+/** Select a certified whole-reference representative. This never refits the trace
+ * or consults benchmark truth, and preserves all fit/QC diagnostics. */
+export function selectExactRepresentative(result:SangerAnalysisResult,reference:string,index:number):SangerAnalysisResult {
+ const set=result.exactAlternatives?.find(s=>s.reference===reference);
+ if(!set||set.certificate!=='exact-rational-emission'||!Number.isInteger(index)||(index!==-1&&!set.options[index]))throw new Error('Invalid exact-signal representative');
+ const annotation=result.annotations?.find(a=>a.name===reference);if(!annotation)throw new Error('Missing reference');
+ const components=set.options[Math.max(0,index)].components.map(c=>({...c,events:c.events?.map(e=>({...e}))})),updated={...annotation,components};
+ const annotations=result.annotations!.map(a=>a.name===reference?updated:a);
+ const totals=(a:SangerAnnotation)=>{const bins=new Map<number,number>();a.components.forEach(c=>bins.set(c.size,(bins.get(c.size)||0)+c.fraction));const wt=a.components.filter(c=>!c.unresolved&&!c.events?.length).reduce((s,c)=>s+c.fraction,0);return {wt,indel:1-wt,inFrame:a.components.filter(c=>c.size!==0&&c.size%3===0).reduce((s,c)=>s+c.fraction,0),outOfFrame:a.components.filter(c=>c.size%3!==0).reduce((s,c)=>s+c.fraction,0),components:[...bins].map(([size,fraction])=>({size,fraction}))};};
+ const stats=totals(updated),out:SangerAnalysisResult={...result,annotations,exactAlternatives:result.exactAlternatives!.map(s=>s===set?{...s,selected:index}:s)};
+ if(result.pooled)out.pooled={...result.pooled,amplicons:result.pooled.amplicons.map(a=>a.name===reference?{...a,...stats,...(!annotation.estimable?{wt:null,indel:null,inFrame:null,outOfFrame:null}:{})}:a)};
+ if(result.joint){const groups=result.joint.groups.filter(g=>g.reference!==reference),replacement=components.map((c,i)=>({id:'E'+index+'-'+reference+'-'+i,reference,fraction:c.fraction*annotation.share,netSize:c.size,pathSizes:c.pathSizes,events:c.events||[],alternatives:[]}));out.joint={...result.joint,groups:[...groups,...replacement],selectedModels:groups.length+replacement.length,targets:result.joint.targets.map(t=>t.reference===reference?{...t,edited:t.edited===null?null:components.filter(c=>c.events?.some(e=>e.target===t.target||e.target===0)).reduce((s,c)=>s+c.fraction,0)}:t)};}
+ if(result.mixture){const before=totals(annotation),bins=new Map(result.mixture.components.map(c=>[c.size,c.fraction]));for(const c of before.components)bins.set(c.size,(bins.get(c.size)||0)-c.fraction*annotation.share);for(const c of stats.components)bins.set(c.size,(bins.get(c.size)||0)+c.fraction*annotation.share);const wt=result.mixture.wt+(stats.wt-before.wt)*annotation.share;out.mixture={...result.mixture,wt,indel:1-wt,inFrame:result.mixture.inFrame+(stats.inFrame-before.inFrame)*annotation.share,outOfFrame:result.mixture.outOfFrame+(stats.outOfFrame-before.outOfFrame)*annotation.share,components:[...bins].filter(([,f])=>f>1e-12).map(([size,fraction])=>({size,fraction}))};}
+ return out;
+}

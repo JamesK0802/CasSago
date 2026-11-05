@@ -1,0 +1,187 @@
+Current public workflow (31 October 2026): automatic reference-count selection, calibrated physical junction mixtures, full registered sample coverage and separate deletion/insertion bounds. See sanger-unified-workflow.txt. Earlier selectable engines and read-window settings below are historical APIs, not user options.
+
+Current update (31 October 2026): full-junction physical mixtures retain measured
+cycles independently of the indel search range. See sanger-full-junction-methods.txt.
+The earlier mask/donor-gate descriptions below are historical and superseded.
+
+Current v5 update (29 October 2026): real single-trace validation, SCF input,
+control-derived reference, robust donor quality mask and shared local QC are
+documented in sanger-real-validation.txt. Pooled v4 numerical fractions unchanged.
+
+Current implementation update (29 October 2026): calibrated v4 supersedes the
+legacy signal extraction described below. See sanger-group-optimisation.txt for
+local peak contrast, WT-control context calibration, support screening, fresh
+validation and limitations. The v2 description is retained as historical audit.
+
+CasMANGO single-locus Sanger Analysis prototype
+Implemented 28 October 2026
+
+Scope
+The Sanger page now has Primer Design and Sanger Analysis tabs, with independent
+state. The analysis UI follows the main analysis configuration flow: platform,
+file slots, parameters, reference/target configuration, analysis and results.
+Single mode supports one reference, one target and one sample AB1, with an
+unedited control for trace-mixture fitting. Mixed mode now supports 2–4 actual
+submitted amplicons after the mandatory model-separation check described below.
+Batch samples, multiple targets per product and more than four products remain
+unimplemented. Multi-record FASTA is accepted only in Mixed mode.
+No main-analysis form, files, result slots or workers are reused or mutated.
+
+Selectable methods and primary references
+1. Trace decomposition: custom CasMANGO non-negative trace-shift fitting,
+   inspired by Brinkman et al. 2014, TIDE:
+   https://doi.org/10.1093/nar/gku936
+   https://pmc.ncbi.nlm.nih.gov/articles/PMC4267669/
+   This is not the official TIDE implementation. It does not implement TIDE's
+   full processing, significance testing, +1 insertion base inference, or a
+   validated replacement for TIDE/ICE. No comparative accuracy claim is made.
+2. Base-call alignment: local Smith-Waterman alignment:
+   Smith TF, Waterman MS. 1981. Identification of common molecular subsequences.
+   https://doi.org/10.1016/0022-2836(81)90087-5
+   Consensus scoring: match +3, mismatch -4, affine gap opening -7 and
+   extension -1 (Gotoh 1982, https://doi.org/10.1016/0022-2836(82)90398-9).
+   Registration uses its separate linear scoring. N/ambiguity codes do not count
+   as matches. A consensus sequence is not an allele-frequency estimate.
+3. ABIF data format (Applied Biosystems, July 2006):
+   https://archive.gfjc.fiu.edu/workshops/resources/literature/ABIF_File_Format.pdf
+   Read original manufacturer specification; Biopython's public parser and
+   fixtures were consulted as independent format examples:
+   https://github.com/biopython/biopython/blob/master/Bio/SeqIO/AbiIO.py
+
+AB1 parsing
+Validate ABIF signature, directory bounds, field sizes, paired PBAS/PLOC,
+monotonic peak locations and equal channel lengths. Prefer PBAS2/PLOC2,
+fall back to the paired version 1 fields. Read DATA9-12 analyzed signals and
+use FWO_1 to associate each channel with its actual A/C/G/T dye. Do not assume
+a fixed dye order or substitute unprocessed raw channels. PCON is optional;
+its absence is reported when a quality filter cannot be applied. FASTQ/FASTA
+cannot replace an AB1 trace. Sequencing reads are limited to 3,000 base calls,
+input files to 12 MB, and references to 2 Mb. Reference alignment is restricted
+to a target-centred region rather than a whole-genome dynamic-programming matrix.
+
+Trace model
+- Align control base calls to both reference orientations (or the selected
+  direction). Require target coverage and at least 95% control identity.
+- Align a control region ending 12 bases before the cut to the sample's
+  upstream base calls. Require at least 60 aligned bases, 90% identity and
+  a consistent index offset. Require 40 quality-passing upstream bases.
+- Integrate five processed samples centred on each PLOC peak and normalize
+  each A/C/G/T vector by its total. This is a prototype base-index signal
+  model, not full chromatogram mobility correction or raw-signal basecalling.
+- For net indel size d, predict downstream sample base index i using control
+  vector i-d. Negative d represents a deletion and positive d an insertion.
+  Exclude the edit junction by starting at maximum indel + 5 bases.
+- Control Phred filtering applies to all shifted control positions used by
+  a retained fit row. Sample Phred is not filtered: mixed edited peaks can
+  intrinsically have poor base-call quality. Require at least 60 positions
+  and at least twice as many positions as modeled components.
+- Solve non-negative least squares by cyclic coordinate descent (10,000
+  iterations maximum; coefficient tolerance 1e-9), normalize coefficients
+  to sum to one and re-score those normalized fractions for R² and RMSE.
+- Reject numerically identical model columns: repeat sequences can make
+  different indel sizes indistinguishable. Similar but non-identical columns
+  can still be ill-conditioned; confidence intervals are not implemented.
+- Flag R² <0.90, upstream four-channel disagreement >10%, non-convergence,
+  absent control quality and fitted mass at the indel-range boundary.
+  Internal QC passing does not establish biological accuracy.
+- Report fitted WT, nonzero-indel, in-frame and out-of-frame signal fractions.
+  These are signal-model fractions, not read counts, cell fractions or a
+  validated knockout measurement. No substitution-frequency or HDR model.
+
+Consensus mode
+Use sample PBAS calls and local reference alignment to show sequence
+substitutions/indels within the target window. Convert positions and alleles
+back to the input reference strand for reverse reads. IUPAC/unknown calls are
+labelled ambiguous. No mixed-allele fractions or editing efficiency are inferred.
+For insertions the reported position is the base before which the insertion
+occurs. Equivalent repeat placements are not normalized to an HGVS convention.
+Within cut +/-20 bp, nearby differences may be grouped across up to 3 exact
+matched bases (Signal settings: 0-10; 0 disables joining). Primitive calls remain
+in expandable details, JSON and CSV. Complex replacements with zero net size
+are not WT. See sanger-local-events.txt for full scope and boundaries.
+
+Outputs
+Normalized fit spectrum, QC, analyzed four-colour chromatograms with the cut
+boundary, target mapping, consensus variant groups where applicable, CSV,
+result JSON with configuration and sample base-call FASTA. The chromatograms
+use processed DATA signals, interpolated between PLOC anchors for display.
+A display threshold filters the visible table only, not fitted coefficients.
+All processing runs locally; the fit/alignment runs in a cancellable worker.
+
+Verification and limits of the evidence
+The clearly labelled constructed ABIF demo contains 60% WT, 25% -1 bp and
+15% +1 bp. Tests recover these fractions, handle reversed reference orientation,
+classify a pure deletion, preserve reverse-strand variant coordinates, and
+reject inadequate quality/coverage and wrong loci. Additional tests cover
+ABIF corruption, inline dye-order metadata and UI single-only constraints.
+Two public real instrument fixtures (3100, 3730) validate file reading and
+self-comparison (WT trace vs itself). They do NOT validate edited mixed-trace
+accuracy. Controlled biological mixtures and a comparison with validated
+methods/NGS remain necessary before research estimates are treated as validated.
+
+Mixed-amplicon extension — 28 October 2026
+This later extension adds 2–4 actual submitted amplicons, one target per product,
+one shared submitted sequencing primer, one unedited pooled control and one
+pooled edited sample. The old single-only warning remains for batch samples,
+multiple targets per product and more than four products. The full gene/genomic
+input belongs to Primer Design; analysis references must be the actual complete
+PCR products submitted to the sequencing service, including primer sites. An
+explicit confirmation is required; the software cannot verify physical submission.
+
+Reference preflight is mandatory in the worker before any pooled regression:
+- Locate one exact sequencing-primer site per submitted product on either strand.
+  Orient each product as read from that primer and use extension distance, not
+  absolute FASTA coordinates, as the common model axis.
+- Require complete target-centred windows and >=60 upstream registration bases
+  within the usable extension range. Unknown reference bases are rejected.
+- Generate every product x indel-size sequence model. Before its own cut the
+  template stays WT; after the cut the model shifts by the net indel. Exclude
+  the insertion junction (maximum indel + 5) for every product.
+- Reject models with <max(3, ceil(2% of fitted positions)) pairwise diagnostic
+  bases. This checks shifted models as well as WT, so different target offsets
+  alone cannot establish recoverability.
+- Check the normalized Gram matrix using a cyclic Jacobi eigensolver. Require
+  full numerical rank (eigenvalues >max eigenvalue*1e-8) and condition <=100.
+  These cutoffs are conservative prototype policies, not published/validated
+  biological detection limits. Similar starts can still pass if diagnostic
+  sequence evidence within the window provides independent models.
+- A failed check opens a blocking popup. Changing reference, target, primer,
+  window or indel range invalidates a cached check. Analyze repeats the check
+  independently; manual preflight cannot bypass the worker gate.
+
+Reference-model pass is necessary, not sufficient. The real traces are then
+registered to the primer axis by searching 0–160 bases of initial base-call
+trim, using >=60 upstream positions and a nonnegative WT-reference mixture.
+Identical upstream templates may be merged only for registration. Require the
+best upstream fit R²>=0.80 and a >=0.02 gap to the next trim candidate. Reject
+ambiguous registration, insufficient actual trace coverage, and pooled control
+fit R²<0.85. Sample fit R²<0.90 is flagged as exploratory. Mixed-template
+mobility/peak-grid effects are not fully corrected; this is a reference-guided
+prototype rather than an established multi-homeolog assay.
+
+The fitted product shares are global signal fractions. WT/indel/in-frame/
+out-of-frame fractions inside each product use that product's fitted share as
+the denominator. Below 2% global signal share, within-product percentages are
+not reported. No read-level counts, assignment or NGS assignment margin exist.
+No sample or pooled-control Phred filter is applied: base-call confidence does
+not distinguish true mixed peaks from poor single-template reads. Single-locus
+unedited-control Phred remains in advanced Signal settings. This is an explicit
+implementation choice, not a claim that all established tools use the same QC.
+
+Window can be changed after analysis and recalculated using the loaded traces;
+old results are marked stale and exports retain the original fitted settings
+until recalculation completes. Indel threshold is a display threshold only:
+hidden components keep their fitted mass and are not renormalized to WT or
+silently removed from the fit. A below-threshold aggregate preserves accounting.
+
+The constructed pooled ABIF demo has 55% Demo-A (40% edited), 45% Demo-B
+(60% edited). It is labelled synthetic, not empirical assay validation.
+Tests cover rejection of identical/near templates, FASTA-origin invariance,
+window-dependent separation despite identical cut offsets, full-model rank,
+reverse-strand products, missing/duplicate primer sites, actual trace coverage,
+Phred independence in mixed traces, known synthetic fractions, and UI gating.
+The general trace-shift/NNLS background reference remains TIDE, not evidence
+validating this multi-template extension.
+
+2026-10-29 reporting-window correction
+Window is a post-fit reporting/classification setting. It is not a decomposition cutoff. Single-locus mixture fitting now uses the requested usable trace range clipped to actual control/sample coverage and valid shifted-control donors. Base-call alignments and consensus variants are retained before window filtering. Window edits in the result page update the view without restarting inference. JSON retains the full fitted models and the selected view window; CSV records the reporting window. Indel search bounds and signal-processing changes still require reanalysis. The real public sibling trace retains its approximately 50% +10 component, while using its longer usable region exposes worse signal mismatch (R2 about 0.77); it remains QC-failed. This is not evidence that a higher truncated-window R2 proved correctness.

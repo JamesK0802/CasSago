@@ -1,0 +1,121 @@
+{
+  "template": {
+    "format": "casmango-sanger-analysis-v1",
+    "primer": "GTGGACATCTAAGATAGCGCCTGGT",
+    "amplicons": [
+      {
+        "name": "A_1101-1425",
+        "sequence": "GTGGACATCTAAGATAGCGCCTGGTGCCCAGGTGAATGACACAGCCCGACGCAGGACGTCTGCCTGGCTCCCGCCATCCGCCTCGGCCGGTCATCTATAGGCCCGAAGTCTACAACAGCCTTTGGGACCCGATCCTGCGAGCTCTGCCTTGTGTATTGTCTTCCGCGCATTCTGATAATTTTATACCCGCACGAGGTACTTTACTTTCATCTAGTGAACTAAGCCCAATCACGTCAATCCTTCATTACTACTCGCCAGCAGTTTGGTTTTTCCAGTGATCAGAACGGCCGCAAAGTACATCGGCCAGTCGGCCTACGTGAGCAGC",
+        "forwardPrimer": "GTGGACATCTAAGATAGCGCCTGGT",
+        "reversePrimer": "GCTGCTCACGTAGGCCGAC",
+        "cuts": [
+          136
+        ],
+        "sourceReference": "A",
+        "start": 1100,
+        "end": 1425
+      }
+    ],
+    "settings": {
+      "scope": "single",
+      "editStartRadius": 5,
+      "readStart": 35,
+      "readEnd": 700,
+      "method": "mixture",
+      "maxIndel": 30,
+      "window": 90,
+      "controlPhred": 15,
+      "direction": "forward",
+      "joinNearby": 3,
+      "signalModel": "calibrated",
+      "checkWiderRange": true,
+      "analysisPolicy": "automatic",
+      "maxDeletion": 31,
+      "maxInsertion": 30
+    },
+    "scopeNote": "Predicted PCR products. Confirm actual submitted amplicons after sequencing; no trace data or experimental validation included."
+  },
+  "truth": {
+    "id": "confirmation-2",
+    "references": [
+      {
+        "name": "A_1101-1425",
+        "share": 1,
+        "controlShare": 1,
+        "alleles": [
+          {
+            "fraction": 0.375,
+            "events": []
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 110,
+                "end": 111,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 95,
+                "end": 126,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.22,
+            "events": [
+              {
+                "start": 109,
+                "end": 109,
+                "inserted": "TA"
+              }
+            ]
+          },
+          {
+            "fraction": 0.005,
+            "events": [
+              {
+                "start": 109,
+                "end": 109,
+                "inserted": "TGTGTG"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.375
+          },
+          {
+            "size": -1,
+            "fraction": 0.2
+          },
+          {
+            "size": -31,
+            "fraction": 0.2
+          },
+          {
+            "size": 2,
+            "fraction": 0.22
+          },
+          {
+            "size": 6,
+            "fraction": 0.005
+          }
+        ]
+      }
+    ]
+  },
+  "files": {
+    "control": "insertion-overfit-control.ab1",
+    "sample": "insertion-overfit-sample.ab1"
+  },
+  "scope": "Frozen synthetic full-workflow case; false+23 point estimate2.275% passes residual-only support but fails independently relearned blocked prediction. Not a passing breakpoint test."
+}

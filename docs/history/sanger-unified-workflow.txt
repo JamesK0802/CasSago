@@ -1,0 +1,46 @@
+통합 Sanger 워크플로 검증 — 2026-10-31
+
+사용자 입력은 edited/control 파일, reference·target, 여러 reference일 때 공통 sequencing primer, 최대deletion/최대insertion이다. Window와2% threshold는 결과 표시용이다.
+Single/Mixed, 방법, signal processing, 방향, large deletion, read 시작/끝, Phred, 엔진 선택과 실험적 옵션을 사용자 설정에서 제거했다.
+reference 수에 따라 관측 모델만 자동 선택한다. ref1은 실측WT donor/context response를 직접 사용하고, ref2–4는 알려진 reference와 control에서 형광 응답을 추정한다. 둘 다 동일 fitJunctionMixture 물리적 interval/origin/insertion-probability 모델을 사용한다.
+1ref를 mixed의 관측 경로로 강제한76건은67/76 정확도 통과(평균TV1.67pp, 최악16.21pp). 사용자에게 모드를 고르게 하지 않고, ref1일 때 실측WT 관측 모델을 유지했다.
+Public worker는 automatic 요청만 받는다. 과거 consensus/joint/path 선택 경로는 worker import에서 제거했다. 과거 연구용 API는 회귀/재현을 위해 소스에 남아 있지만 사용자에게 노출하지 않는다.
+작은 indel과 큰 deletion은 동일한 모델로 적합한다. Bounds만D1–500/I1–30으로 다르며, size에 따른 엔진 전환은 없다. 후보 수 증가 자체의 계산 비용은 사라지지 않는다.
+큰 후보 집합에는 working-set simplex solver를 쓴다. 매 단계 전체 후보의 gradient를 검사하고 전체 dual gap으로 종료한다. 목적함수와 후보군은 바꾸지 않으며 미달 시 원래 전체 solver로 돌아간다. 임의의 indel 후보를 제외하는 screen이 아니다.
+read 범위는 sample의 실제 관측과 reference coverage/registration으로 정한다. sample이control보다 길어도 해당sample cycle을 사용한다. 35–700 고정 절단과 품질 threshold에 의한 sample cycle 제거는 없다. reference 밖·신호가 없는 cycle은 정확히 등록할 수 없으므로 수치 근거가 없다.
+Control은 항상 필수이다. DNA서열은 실측형광/측정조건을 대신하지 못한다. 1ref의 별도FASTA는 선택: WTcontrol basecall에서 복사한다. control coverage 밖의 large deletion 등을 해석하려면 충분한 전체reference가 필요하다. 여러 homeolog의 개별ref는 mixedcontrol의 consensus로 대체할 수 없다.
+Single은 방향/기준축을control-reference 정렬로 잡으므로 primer 입력은 불필요하다. 여러ref는 공통 sequencing primer가 필요하다.
+Window는 cut 주위 표시 범위이고 fraction 재적합이나 관측 cycle 제한이 아니다. threshold도 출력 표시만 필터하고 JSON/CSV는 모든 성분과 원래 분모를 유지한다.
+
+정확도 기준은 이전 그대로: TV≤5pp, single 클래스 최대오차≤5pp, homeolog별 conditionalTV/share오차≤5pp, 정답≥2% 검출≥1%, 없는class 호출질량≤2pp. QC는 별도이며 정답 인증이 아니다.
+
+cohort | reported/total | accuracy pass | meanTVpp | maxTVpp(homeolog는conditional)
+기존 single 소형 | 76/76 | 76/76 | 0.8740 | 4.3679
+기존 single large | 30/30 | 30/30 | 0.7525 | 2.4341
+기존 single large 확인 | 8/8 | 8/8 | 0.5272 | 1.3647
+양방향·양쪽 deletion single | 30/30 | 30/30 | 0.6289 | 1.8627
+이전 독립 single 확인 | 8/8 | 8/8 | 0.5921 | 1.3086
+기존 homeolog primary | 36/36 | 36/36 | 1.0171 | 4.7397
+기존 homeolog structural | 12/12 | 12/12 | 0.6538 | 3.5086
+기존 homeolog heterogeneous | 12/12 | 12/12 | 1.1080 | 4.5719
+junction 주변 marker homeolog | 12/12 | 10/12 | 2.2112 | 5.4454
+이전 독립 homeolog 확인 | 8/8 | 8/8 | 1.6247 | 3.6709
+동결 후 새 single | 4/4 | 4/4 | 0.6325 | 1.4812
+동결 후 새 homeolog | 4/4 | 4/4 | 1.7133 | 4.7564
+31/200bp deletion homeolog | 4/4 | 4/4 | 0.8484 | 1.3216
+
+미달 사례:
+junction-homeolog-1673048119-7: jointTV 3.6695pp, maxConditionalTV 5.0430pp, share오차 1.5135pp, QC False
+junction-homeolog-1673048119-11: jointTV 3.3594pp, maxConditionalTV 5.4454pp, share오차 0.9867pp, QC True
+
+기존primary21/heterogeneous8은새자동전체신호경로에서원래5pp gate통과. regression test도실제사용자경로로옮겼으며정답/허용오차는그대로유지했다.
+새전체신호경로의junction주변marker2건미달을원본AB1 그대로새fixture에보존하고5pp정상실패테스트로추가했다. 테스트를skip/expected-failure로바꾸지않았다.
+그러므로 전체homeolog가robust하다는판정은보류한다. Homeolog multi-target으로진행하지않았다. 현재UI/API는ref당1target만받아과거실험엔진으로의자동우회를막는다.
+기존새확인8+8 외에소스동결후새single4/homeolog4도생성했다. seed와분석전선택index는fresh-protocol.json, waveform생성기는추론모듈을import하지않는다. truth는scorer에서만사용한다. 새데이터결과를보고추론을조정하지않았다.
+동결후변경은reference coverage관련error문구와diagnostic modeledRange추가뿐이며적합목적함수/관측/빈도추정은그대로다. freeze.json과final-source-hashes.json으로차이를확인할수있다.
+검증된모든분석은수치를반환했다. 알고리즘QC가경고해도결과를숨기지않는다.
+Single/Mixed76비교원본과결과:mixed-one-comparison/. 새data와실행파일은이폴더, 기존cohort출력은Desktop/CasMANGO_Sanger_Junction_20261030/<cohort>/automatic-final/.
+최종 unit결과: tests-final.log. 생산빌드: build-unified-final.log. 알려진정확도실패2건은그대로남아있다.
+
+최종 확인: unit630개 중628통과/기록된정확도2개실패. public UI/automatic 핵심22개 통과. app/worker TypeScript 및production build 통과. Sanger worker 약125→66.75KB. 기존initial bundle budget 경고는남음.
+1ref mixed비교는원본AB1을그대로두고알려진WT reference를동일한primer-extension축으로표현하기위해관측되지않는합성primer prefix를붙였다. 반전입력은정방향축으로정규화했다. 이는관측모델비교이며새실험데이터라고세지않았다.

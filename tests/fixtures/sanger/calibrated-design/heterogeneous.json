@@ -1,0 +1,291 @@
+{
+  "template": {
+    "format": "casmango-sanger-analysis-v1",
+    "primer": "GCACGCGATATGCCGACG",
+    "amplicons": [
+      {
+        "name": "A_1034-1412",
+        "sequence": "TAGCACCAGCTAATCAGCAGCCTCCACCCCTTATGATGCGACCAAAAGTAAACTTTTACAATAGACGTGTATCAAGCATGAGGCTTTGTGACCGACACTAAAAGCGGACAGCATCTCTCCCATACGGTCCAGGTTGCCAAAGGCTCGCATTCGAGGCAACCTCTTAGAGTAAAAACCATGAAGTCACTATAGTGTTGAGACGCCCGAAAAATAAGAACCGGGCGAGTTGAGATAAGCTAATTGCAACCCTTCCTACAGAACCCCGCGCCGTTCTTACAGCACTAAATCCCGATGTGTGTTCTGCCATAAGGAACGGATGTGCTTCGGCCGAAACAGCAATCGCGAACTGGAACCCACTGACCGTCGGCATATCGCGTGC",
+        "forwardPrimer": "TAGCACCAGCTAATCAGCAGCC",
+        "reversePrimer": "GCACGCGATATGCCGACG",
+        "cuts": [
+          160
+        ],
+        "sourceReference": "A",
+        "start": 1033,
+        "end": 1412
+      },
+      {
+        "name": "B_1034-1457",
+        "sequence": "TAGCACCAGCTAATCAGCAGCCTCCACCCCTTATGATGCGACCAAAAGTAAACTTTTACAATAGACGTGTATCAAGCATGAGGCTTTGTGACCGACACTAAAAGCGGACCGCATCTCTCCCATACGGTCCAGGTTGCCAAAGGCTCGCATTCGAGGCAACCTCTTAGAGTAAAAACCATGAAGTCACTATAGTGTTGAGACGCCCGAAAAATAAGAACCGGGCGAGTTGAGATAAGCTAATTGCAACCCTTCCTACAGATCCCCGCGCCGTTCTTACAGCACTAAATCCCGATGTGTGTTCTGCCATAAGGAACGGATGTGCTTCGGCCGAAACAGCAATCGCGAACTGGAACCCACTGACTTGCTAACAAGAAGGAGCTCTACACCTCCCTACGTTCCCATGAGCCGTCGGCATATCGCGTGC",
+        "forwardPrimer": "TAGCACCAGCTAATCAGCAGCC",
+        "reversePrimer": "GCACGCGATATGCCGACG",
+        "cuts": [
+          160
+        ],
+        "sourceReference": "B",
+        "start": 1033,
+        "end": 1457
+      },
+      {
+        "name": "D_1034-1517",
+        "sequence": "TAGCACCAGCTAATCAGCAGCCTCCACCCCTTATGATGTGACCAAAAGTAAACTTTTACAATAGACGTGTATCAAGCATGAGGCTTTGTGACCGACACTAAAAGCGGACAGCATCTCTCCCATACGGTCCAGGTTGCCAAAGGCTCGCATTCGAGGCAACCTCTTAGAGTAAAAACCATGAAGTCACTATAGTGTTGAGACGCCCGAAAAATAAGAACCGGGCGAGTTGAGATAAGCTAATTGCAACCCTTCCTACAGAACCCCGCGCCGTTCTTACAGCACTAAATCCCGATGTGTGTTCTGCCATAAGGAACGGATGTGCTTCGGCCGAAACAGCAATCGCGAACTGGAACCCACTGACCTCACACATGTCGCTCCGAAGAGGGTGTGTCTCATAACTCTATTGACCATTAGCGCCTCCCTTTCGCTTTGATCCTCAGAGAAGAGGACGACGGAAGGGAGTCTGCGTCGGCATATCGCGTGC",
+        "forwardPrimer": "TAGCACCAGCTAATCAGCAGCC",
+        "reversePrimer": "GCACGCGATATGCCGACG",
+        "cuts": [
+          160
+        ],
+        "sourceReference": "D",
+        "start": 1033,
+        "end": 1517
+      }
+    ],
+    "settings": {
+      "scope": "pooled",
+      "editStartRadius": 5,
+      "readStart": 35,
+      "readEnd": 700,
+      "method": "mixture",
+      "maxIndel": 10,
+      "window": 90,
+      "controlPhred": 15,
+      "direction": "auto",
+      "joinNearby": 3,
+      "signalModel": "calibrated",
+      "checkWiderRange": true,
+      "analysisPolicy": "automatic",
+      "maxDeletion": 10,
+      "maxInsertion": 10
+    },
+    "scopeNote": "Predicted PCR products. Confirm actual submitted amplicons after sequencing; no trace data or experimental validation included."
+  },
+  "truth": {
+    "id": "confirmation-1",
+    "references": [
+      {
+        "name": "A_1034-1412",
+        "share": 0.25,
+        "controlShare": 0.3333333333333333,
+        "alleles": [
+          {
+            "fraction": 0.375,
+            "events": []
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 200,
+                "end": 201,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 197,
+                "end": 204,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.22,
+            "events": [
+              {
+                "start": 199,
+                "end": 199,
+                "inserted": "TG"
+              }
+            ]
+          },
+          {
+            "fraction": 0.005,
+            "events": [
+              {
+                "start": 199,
+                "end": 199,
+                "inserted": "AGACTT"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.375
+          },
+          {
+            "size": -1,
+            "fraction": 0.2
+          },
+          {
+            "size": -7,
+            "fraction": 0.2
+          },
+          {
+            "size": 2,
+            "fraction": 0.22
+          },
+          {
+            "size": 6,
+            "fraction": 0.005
+          }
+        ]
+      },
+      {
+        "name": "B_1034-1457",
+        "share": 0.3,
+        "controlShare": 0.3333333333333333,
+        "alleles": [
+          {
+            "fraction": 0.3,
+            "events": []
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 245,
+                "end": 247,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.15,
+            "events": [
+              {
+                "start": 241,
+                "end": 250,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 246,
+                "end": 246,
+                "inserted": "T"
+              }
+            ]
+          },
+          {
+            "fraction": 0.15,
+            "events": [
+              {
+                "start": 246,
+                "end": 246,
+                "inserted": "GTCC"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.3
+          },
+          {
+            "size": -2,
+            "fraction": 0.2
+          },
+          {
+            "size": -9,
+            "fraction": 0.15
+          },
+          {
+            "size": 1,
+            "fraction": 0.2
+          },
+          {
+            "size": 4,
+            "fraction": 0.15
+          }
+        ]
+      },
+      {
+        "name": "D_1034-1517",
+        "share": 0.45,
+        "controlShare": 0.3333333333333333,
+        "alleles": [
+          {
+            "fraction": 0.25,
+            "events": []
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 304,
+                "end": 307,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 303,
+                "end": 308,
+                "inserted": ""
+              }
+            ]
+          },
+          {
+            "fraction": 0.15,
+            "events": [
+              {
+                "start": 308,
+                "end": 308,
+                "inserted": "AGG"
+              }
+            ]
+          },
+          {
+            "fraction": 0.2,
+            "events": [
+              {
+                "start": 308,
+                "end": 308,
+                "inserted": "CTACA"
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "size": 0,
+            "fraction": 0.25
+          },
+          {
+            "size": -3,
+            "fraction": 0.2
+          },
+          {
+            "size": -5,
+            "fraction": 0.2
+          },
+          {
+            "size": 3,
+            "fraction": 0.15
+          },
+          {
+            "size": 5,
+            "fraction": 0.2
+          }
+        ]
+      }
+    ]
+  },
+  "files": {
+    "control": "heterogeneous-control.ab1",
+    "sample": "heterogeneous-sample.ab1"
+  },
+  "scope": "Frozen designed synthetic component case with distinct A/B/D indel spectra. Raw conditional TV9.31pp fails the5pp gate. This fixture tests evidence specificity, not a passing fraction-accuracy claim."
+}

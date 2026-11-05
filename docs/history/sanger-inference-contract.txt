@@ -1,0 +1,91 @@
+Sanger mixture inference: observation model and recovery contract
+Status: research specification and exact counterexample; group recovery is not complete.
+
+OBSERVATION MODEL
+Inputs: matched WT/control and edited four-channel traces, references, primer,
+and targets. Truth, recipes, random seeds, expected group counts and percentages
+never enter inference; they enter generation and evaluation only.
+
+For an oriented molecule s_j with fraction w_j:
+ z[k,b] = gain[b] * sum_j w[j] * emission_b(s_j,k)
+ mu[k,b] = z[k,b] / sum_c z[k,c],  w >= 0, sum(w) = 1.
+The current ideal generator uses additive base-specific Gaussian peaks.
+Real context effects and dye response require separate validated calibration.
+
+A good trace fit, accurate length marginals, optimizer convergence, and full
+rank of a selected basis do not establish uniqueness across other supports.
+
+EXACT FIVE-INDEL COUNTEREXAMPLE
+One target has WT 51%, a common 2 bp deletion 9%, and four 3 bp insertions at the
+same boundary. All variant percentages are positive and distinct.
+ Recipe A: AAA 11.5%, ACC 12.5%, CAC 9.5%, CCA 6.5%, deletion 9%, WT 51%.
+ Recipe B: AAC 13.5%, ACA 10.5%, CAA 7.5%, CCC 8.5%, deletion 9%, WT 51%.
+
+Insertion-family mass is 40%. The C-channel contributions at the three inserted
+cycles are 16%, 19%, 22% in both recipes; A contributions are 24%, 21%, 18%.
+Prefixes/suffixes match because all insertions have the same length and origin.
+No insertion sequence is shared by the two four-insertion supports.
+
+The test embeds this profile in 3 homeologs x 2 edited targets, with 5 variants
+in every profile. All 30 variant percentages are distinct in each recipe. The
+other five profiles are unchanged. Finite random pairing preserves the
+insertion-length class membership, so the second target contributes the same
+fluorescence. Five pairing seeds give identical control/edit AB1 files, byte
+for byte. Input templates also match. Only the hidden ground truth differs.
+
+The exact rational certificate enumerates all supports of size 1, 2 and 3 among
+the eight A/C triplets. None matches (total,C1,C2,C3)=(40,16,19,22). Both A and B
+are four-insertion solutions and are sparsest in this known family. Knowing the
+length distribution and preferring fewer groups therefore do not select a
+unique truth. Each selected four-column basis has rank 4; their eight-column
+union has rank 4. Selected-basis rank alone is not a uniqueness certificate.
+
+A deterministic algorithm given identical inputs returns identical outputs.
+It cannot uniquely recover both different truths. This exact limitation of the
+current observation model does not excuse failures on identifiable instances.
+
+PROPOSED ACCEPTANCE CONTRACT -- SCOPE STILL REQUIRES AGREEMENT
+1. Specify allowed repairs and calibration assumptions before testing.
+2. On identifiable instances, require canonical edited sequences and fractions
+   under prespecified absolute AND relative tolerances.
+3. Treat repeat-boundary placements giving the same sequence as equivalent.
+4. On indistinguishable inputs, report an ambiguity witness or feasible ranges;
+   a selected representative must not be called uniquely recovered truth.
+5. Separate optimizer failure, unexplained signal and proven nonidentifiability.
+6. Validate 1 ref / 1 target, then 3 refs / 1 target, then 3 refs / 2 targets;
+   vary 1..5 variants, equal/unequal proportions, reference contexts and noise.
+
+MINIMAL ALGORITHM DIRECTION -- NOT YET A REPLACEMENT IMPLEMENTATION
+One forward model; one nonnegative mixture objective; one candidate-search
+contract; one identifiability assessment. A heuristic cannot claim global
+optimality without a valid bound. Biological/linkage priors must be explicit
+assumptions, not presented as measured information. Benchmark-specific patches
+must not be used to force agreement with a particular truth table.
+
+REPRODUCTION
+ node node_modules/vitest/vitest.mjs run tests/core/sanger-identifiability.spec.ts
+ CASSAGO_IDENTIFIABILITY=1 CASSAGO_INSERTION_WITNESS=1 node node_modules/vitest/vitest.mjs run tests/probes/sanger-five-group-identifiability.spec.ts
+The ordinary core test needs no external benchmark files.
+
+PRIMARY BACKGROUND
+Donoho & Elad (2003): uniqueness of sparse representations needs dictionary
+conditions; sparsity alone is not a universal guarantee.
+https://pmc.ncbi.nlm.nih.gov/articles/PMC153464/
+Brinkman et al. (2014): TIDE estimates indel spectra/frequencies and +1 base
+composition; this is not evidence of arbitrary multi-base allele phasing.
+https://pubmed.ncbi.nlm.nih.gov/25300484/
+
+Exact representative selection (2026-11-04)
+- Conditional insertion/substitution haplotype alternatives are generated from the fitted molecules, without benchmark truth.
+- Every offered alternative conserves exact rational mass and the entire fitted, unnormalized four-channel emission. IEEE-754 coefficients are converted to exact fractions; no epsilon determines equality. Context-sensitive or phase-sensitive differences reject an alternative.
+- A whole-reference option is selected together, preserving consistency across targets. Affected projected sequence groups are yellow. WT, target totals, charts, raw-attribution weights, benchmark comparisons and exports use the chosen representative; trace fit and QC remain unchanged.
+- At most 16 verified representative combinations are displayed per reference. These are witnesses, not an exhaustive enumeration of the continuous feasible mixture set or a posterior distribution. Absence of a detected alternative is not a proof of global uniqueness.
+- Exactness is conditional on the calibrated emission model. It does not assert that experimental sequencing has infinite precision or that two biological preparations must have byte-identical instrument files.
+- Recoverable search failures remain separate from nonidentifiability. The original five-variant single-reference failure has a missing 8-base insertion candidate; an oracle diagnostic (after blind inference only) recovers all true proportions within 0.05 percentage points. This is evidence of an unfinished search problem, not an excuse to merge distinguishable groups.
+
+Unresolved default and option-aware evaluation (2026-11-04)
+- Default selection is -1 (unresolved), not an arbitrarily called representative. Certified variable same-size sequence groups are pooled for display; variable bases become N. Known bases and stable groups are retained. This consensus is not a called physical molecule.
+- Equal final sequences with different deletion coordinates are a placement ambiguity: retain the known sequence and stable abundance, mark the row yellow, and list equivalent placements. Do not invent N in a known allele.
+- WT/substitution statistics show a range while unresolved. Their donut sector is combined, rather than presenting an arbitrary WT point estimate. A user selection updates statistics and concrete sequences together.
+- Ground truth is used only after inference for evaluation. A GT group counts as option-compatible only when its complete target sequence and fraction (within 2 pp) occur together in a certified option. Per-group coverage and coherent whole-reference profile coverage are separate. Mutually exclusive options cannot be combined to claim a correct profile.
+- Benchmark rows retain explicit option metadata and CSV fields; they do not silently replace the fitted estimate with the GT-selected representative. No truth-driven selection is sent to inference.
