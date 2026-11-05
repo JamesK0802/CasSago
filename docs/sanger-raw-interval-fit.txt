@@ -1,3 +1,5 @@
+CURRENT STATUS: v42, 2026-11-05. Read ../../NEXT_CODEX_HANDOFF.txt (repository root) and algorithm document first. The following is historical implementation context; its older version labels and cut-origin defaults are not the current release contract.
+
 Current handoff — v38, 2026-11-05
 
 Conditional profile/class choices are now evaluated again against the SAME

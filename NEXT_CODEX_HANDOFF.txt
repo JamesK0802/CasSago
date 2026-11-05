@@ -21,7 +21,7 @@ No truth/seed/recipe input to inference. Evaluation/generator/solver criteria un
 
 Tests and deployment
 Local release tests:122 plus original-failure blind replay1 passed. CasMango:404passed. Both production builds passed. Browser compiled worker reproduced the old two-group failure correctly, with12.55% substitution and12.61% insertion. The exported browser result is retained in the migration record.
-First hosted CI run41971493250: scientific replay passed on Linux (231.951sec);13 other tests failed solely at old5/30sec wall-clock caps. Assertions were unchanged; release test timeout raised to120sec and the explicit30sec primer integration cap to120sec. See subsequent Actions runs for final deploy status.
+First hosted CI run41971493250: scientific replay passed on Linux (231.951sec);13 other tests failed solely at old5/30sec wall-clock caps. Assertions were unchanged; release test timeout raised to120sec and the explicit30sec primer integration cap to120sec. Final hosted run41972797603 completed SUCCESS (all123 release tests, production build and Pages deployment). Public HTTP, v42 worker/WASM and live UI including guide-to-primer transfer verified. Independent compiled browser replay:28direct+2strict equivalent+0unexplained.
 Docs-only changes do not rebuild static Pages assets.
 
 Methods/reimplementation document
