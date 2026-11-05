@@ -1,0 +1,442 @@
+[
+  {
+    "path": "src/app/workers/core/classifier.ts",
+    "sha256": "d053fabf552899b9daf1e9233bc59f3265b0a0d2cb7dc70b0a1140101d3445c0"
+  },
+  {
+    "path": "src/app/workers/core/exact-mixture-fiber.ts",
+    "sha256": "85c97ba0e659e4194c97a17e83b478e12272337fdf2176375921de573249e62f"
+  },
+  {
+    "path": "src/app/workers/core/fastq-parser.ts",
+    "sha256": "1fcfea67f012ad4b35192c22b80415675aa5a59fbd0677036f819d1f00d145cb"
+  },
+  {
+    "path": "src/app/workers/core/grna-designer.ts",
+    "sha256": "f2311651566ce294c465955dccb814a37ba419b2b0a36aa15a10c474141a68f4"
+  },
+  {
+    "path": "src/app/workers/core/sanger-allele-groups-oracle-prototype.ts",
+    "sha256": "d89930b6fc364bf95f666d590ff9f211ffca4770b55f7dee96ca7a465a6d38fb"
+  },
+  {
+    "path": "src/app/workers/core/sanger-allele-groups.ts",
+    "sha256": "156db3990313a094536e45f9a4e8da43d37e0bea04b5fed2d024c378891bcbcc"
+  },
+  {
+    "path": "src/app/workers/core/sanger-analysis.ts",
+    "sha256": "3a7723299b0261b99996b8fb6d31dc05fcb53fc7073b5e18149108f89324f96d"
+  },
+  {
+    "path": "src/app/workers/core/sanger-automatic.ts",
+    "sha256": "63856a236c411b79eef0b670489125fb8585d01df5680397d9639b31bac2cc33"
+  },
+  {
+    "path": "src/app/workers/core/sanger-candidate-screen.ts",
+    "sha256": "7972706d9b3f171b8c59aa7a5a1a96fde3055d300f78aea0b121913e998dee51"
+  },
+  {
+    "path": "src/app/workers/core/sanger-compound-refine.ts",
+    "sha256": "9ec0dc57f3c2916069c16aa21b79a38aa2a435b8f8deb7720a9b05e656af1427"
+  },
+  {
+    "path": "src/app/workers/core/sanger-conditional-groups.ts",
+    "sha256": "8e1bca744b45513f3465a4da3f72e5444429ca7b19904b822fe90f5c89a797dc"
+  },
+  {
+    "path": "src/app/workers/core/sanger-conditional-phase.ts",
+    "sha256": "dbede721fbd4910d415cda02a6995a61edea239e5adb9556eb0d7043ea3c5e29"
+  },
+  {
+    "path": "src/app/workers/core/sanger-consensus.ts",
+    "sha256": "fe2d2171dd191c80aeae681793c19907be9f3aa3e29e9b1453e9f27cf8c1e126"
+  },
+  {
+    "path": "src/app/workers/core/sanger-control-photometry.ts",
+    "sha256": "5a1ea9f4a2a5f8f5350cd75b8c05745b57c407d62d8a297881591b1de8ae7858"
+  },
+  {
+    "path": "src/app/workers/core/sanger-control-response.ts",
+    "sha256": "530a6c3d6c4e2b57127b15fbb20c34b954f9658fc41c9ca138ed976c7bf704df"
+  },
+  {
+    "path": "src/app/workers/core/sanger-control-transfer.ts",
+    "sha256": "88cc7bc67936625f905d6b78803753aa5c0480c95108062312e9a3f1432f72a9"
+  },
+  {
+    "path": "src/app/workers/core/sanger-cross-class-alternatives.ts",
+    "sha256": "015d8b826eb188aa11df52f1758a18fbbff56d4d0decf6193882a6ad97c75a96"
+  },
+  {
+    "path": "src/app/workers/core/sanger-cross-target-alternatives.ts",
+    "sha256": "e6a2c10c38fbceb577d6e1cb2e3f4191dd4a8643dedb8a1c36982d1496092646"
+  },
+  {
+    "path": "src/app/workers/core/sanger-cycle.ts",
+    "sha256": "27f8ec82f0b48d59e64f6b5ce944605031e13a73962aa4c3b23b0f31cea40f19"
+  },
+  {
+    "path": "src/app/workers/core/sanger-dictionary-polish.ts",
+    "sha256": "f2178c20e93eafc5db5125fcc0103725ebaabf734e5cf92bbfb66bd6c5bc39bc"
+  },
+  {
+    "path": "src/app/workers/core/sanger-discrete-phase.ts",
+    "sha256": "5c1af9dd48061a09c36a172cae6268f6843637eaa25ad8ef04a83255a86437de"
+  },
+  {
+    "path": "src/app/workers/core/sanger-edit-normalize.ts",
+    "sha256": "3231e4fd7938a58e97ba666c3112731e259c4b62e155ed10302a45b0cb263bb9"
+  },
+  {
+    "path": "src/app/workers/core/sanger-emission.ts",
+    "sha256": "c7f39a842275895f427b7552754619cf0cc3b0675a6a81c1b3079fe5197184fc"
+  },
+  {
+    "path": "src/app/workers/core/sanger-exact-alternatives.ts",
+    "sha256": "b1ca6b92a5805752d3ff841365a789db59287270b48d076cdac8c2321cc52463"
+  },
+  {
+    "path": "src/app/workers/core/sanger-fit-cache.ts",
+    "sha256": "6242de3a255102b4e9568bcb8e8d7160277eb9bb88eb3439257fd6d1fb0cbe4f"
+  },
+  {
+    "path": "src/app/workers/core/sanger-frequency-path-candidates.ts",
+    "sha256": "81f74afb11ab70401028a87b356cefffa310583f9c7e73b6f62a4b537bded8d5"
+  },
+  {
+    "path": "src/app/workers/core/sanger-frequency-path-decoder.ts",
+    "sha256": "8a6280bdd32344156ee50c4222c6722aec0132842cb2f48a301aecfe3b14f7b7"
+  },
+  {
+    "path": "src/app/workers/core/sanger-joint.ts",
+    "sha256": "6a4b69ba76270eba53754e856f1c7e5da5fb2212af5960aa9b96eaccd340d584"
+  },
+  {
+    "path": "src/app/workers/core/sanger-junction-evidence.ts",
+    "sha256": "0c740e216adffb616735e9d3dac4fefaabe3e073af775cc9366384e156069c47"
+  },
+  {
+    "path": "src/app/workers/core/sanger-junction-mixture.ts",
+    "sha256": "f5721369f9127d89a9b1efac8f7e1e3f02cf5b0091b8f52b604f1764bc0ac7ce"
+  },
+  {
+    "path": "src/app/workers/core/sanger-junction-paths.ts",
+    "sha256": "33dfe6b646e889d35ed76236baacee2578b588979f28ed32ea2c6aa97b908cb0"
+  },
+  {
+    "path": "src/app/workers/core/sanger-junction-solution.ts",
+    "sha256": "2a79f000f907df6829239b93d62e4a710e0164c49b3d3ac4e7c99e346d83453f"
+  },
+  {
+    "path": "src/app/workers/core/sanger-junction-support.ts",
+    "sha256": "05da7ca7660ba7f5bc9fb4a349de78b18e3425248ba899c7935c4163f7bc2c11"
+  },
+  {
+    "path": "src/app/workers/core/sanger-latent-insertion-r.ts",
+    "sha256": "a859665a81304c3c41a4d1859a55826edbe30b4473b3d79e49dfc1c708718104"
+  },
+  {
+    "path": "src/app/workers/core/sanger-length-marginals.ts",
+    "sha256": "af3acbf17bd6822f286f5adfd6f4eb3e236432963ad6d09b41d5e0d227866400"
+  },
+  {
+    "path": "src/app/workers/core/sanger-linear-sequence-oracle.ts",
+    "sha256": "7557280ee422e5e3df29b2b921e6c864f9e9d56d0587fea0c65f90bc03b70c50"
+  },
+  {
+    "path": "src/app/workers/core/sanger-local-length-decoder.ts",
+    "sha256": "6d4cb3ff575da627e903d33efb8b1989aa09058e6a80fa1a971001959d508623"
+  },
+  {
+    "path": "src/app/workers/core/sanger-nonnegative-ls.ts",
+    "sha256": "fe767799ab404bc4f1c1e4eb158bc7f53a3bd5adc0e7a2eafa6b0bb61b61cb24"
+  },
+  {
+    "path": "src/app/workers/core/sanger-offset-groups.ts",
+    "sha256": "c43184e6af5bb9a50f5cd622785c6cd23eed5afb69f1642c288c4f72bad5101b"
+  },
+  {
+    "path": "src/app/workers/core/sanger-offset-length-prototype.ts",
+    "sha256": "877e03d5aec474f9fb811487f696c796567b119b5bf68f047ed740d71b63b86f"
+  },
+  {
+    "path": "src/app/workers/core/sanger-onset-fit.ts",
+    "sha256": "3a05f4509597c04d91ed289a88990a5040310c751fb94c94d3940e749f6f28db"
+  },
+  {
+    "path": "src/app/workers/core/sanger-paired.ts",
+    "sha256": "0956cacd62d2f3a5998cb31512fabaf068ab6876f8952ae41c079f47bef025a3"
+  },
+  {
+    "path": "src/app/workers/core/sanger-path-agreement.ts",
+    "sha256": "8c4d714968c7e043053fa4c62d665f4d1737103cd98c5d64d5965f4f4ba0e43f"
+  },
+  {
+    "path": "src/app/workers/core/sanger-path-aliases.ts",
+    "sha256": "88aef00932b41f8c02ce4dd2b65b81eb48c86a4a2dd1547e15025b49ff8fc2f3"
+  },
+  {
+    "path": "src/app/workers/core/sanger-path-common.ts",
+    "sha256": "b9657ee99c2ca317a5ac961e822d209bff73fd918441ee15878de662471001a5"
+  },
+  {
+    "path": "src/app/workers/core/sanger-path-identifiability.ts",
+    "sha256": "9a5bd2d7ab8b5a40f6af44c1ba9179938a37951f02c94f3b0f07f03722ab4bc1"
+  },
+  {
+    "path": "src/app/workers/core/sanger-path-known.ts",
+    "sha256": "5b02f7e8a97e616f2406af4dc31d57b9ff14c8de7cb2a1bfde9d4ab833035212"
+  },
+  {
+    "path": "src/app/workers/core/sanger-path-latent.ts",
+    "sha256": "50e3fca048d196ae66e09b3dbd92a15fc4e927db75e09c19cf14d4cefdaaf0bd"
+  },
+  {
+    "path": "src/app/workers/core/sanger-path-screen.ts",
+    "sha256": "51577d03ac9384db94b1a2929f3cecaaf3723dbd61c7a88d0477b6ec984dd7d7"
+  },
+  {
+    "path": "src/app/workers/core/sanger-path.ts",
+    "sha256": "a2bc4d8b66908311f310b007b8b8b724711fbe5d4dd54623d2a22d6accb6c91b"
+  },
+  {
+    "path": "src/app/workers/core/sanger-pooled.ts",
+    "sha256": "06f609f98d6695f5df58b474c677f39e5ba188f511a28419dce0d863caa1ce81"
+  },
+  {
+    "path": "src/app/workers/core/sanger-primer-designer.ts",
+    "sha256": "8af7a4fa6afdbc4bdffb43e97564a555d913ad18892d89bbacf7ba7196b22fea"
+  },
+  {
+    "path": "src/app/workers/core/sanger-primer-safety.ts",
+    "sha256": "8457dde7f4d9e2573f600c8393cacfe689574dacac93793b5a447790bb23245e"
+  },
+  {
+    "path": "src/app/workers/core/sanger-primer-separation.ts",
+    "sha256": "c0ffb70aada3240672c730fc2d8b9563b9fb60aedbd8702b1470e9378ac9d6b4"
+  },
+  {
+    "path": "src/app/workers/core/sanger-quantized-peaks.ts",
+    "sha256": "faf4b99a12e339be44588e0c792817de6483a7eb9ad5bca9463dbcd514de46db"
+  },
+  {
+    "path": "src/app/workers/core/sanger-raw-interval-fit.ts",
+    "sha256": "08afe55901e8596141d646f7e64b3f89f5d92dc6423e90ec7a0e5ffe6d65909a"
+  },
+  {
+    "path": "src/app/workers/core/sanger-sequence-fit-cache.ts",
+    "sha256": "e00669aec8c2a542dd4fb96759ae96a178091bff3a2ddf93535cbc59d19157e0"
+  },
+  {
+    "path": "src/app/workers/core/sanger-sequence-group-result.ts",
+    "sha256": "cd1af3fc7d600c0bbedd0d9037ffa0c4d39fee73f0fc20fcb3a2b8a2c090a986"
+  },
+  {
+    "path": "src/app/workers/core/sanger-signal.ts",
+    "sha256": "790418d38040d7eaf71a310363cf6198e9efad8e06c4ec7c12f06e9538944643"
+  },
+  {
+    "path": "src/app/workers/core/sanger-single-fit.ts",
+    "sha256": "e5034b93de357cbc3ee9660c6035aa904ef2426b42d4cfb17f560a5f0899e597"
+  },
+  {
+    "path": "src/app/workers/core/sanger-single-junction.ts",
+    "sha256": "eb6167bc7336521398669945285621e0121efc556c2ebc40cadc78752467c5ba"
+  },
+  {
+    "path": "src/app/workers/core/sanger-single-quality.ts",
+    "sha256": "b720cf1278058eae42557e25f89e2b2798425628996c5da5c5bb943ab7d00540"
+  },
+  {
+    "path": "src/app/workers/core/sanger-single-signals.ts",
+    "sha256": "b62de481229142554fe2fb7987f891feebe40e2a1b075c5be842c631d06a369c"
+  },
+  {
+    "path": "src/app/workers/core/sanger-stratified-paths.ts",
+    "sha256": "26c550e0f14c24a3bd01433c5ca96d4d7341b7be20b2f7f8d63dcbe545300414"
+  },
+  {
+    "path": "src/app/workers/core/sanger-substitution-linkage.ts",
+    "sha256": "f2fd2e1e9cf83bf75867531e49d0975c7c9fb4a878622de5c59f6cfdc141b7e1"
+  },
+  {
+    "path": "src/app/workers/core/sanger-substitution-search.ts",
+    "sha256": "7e65f336b042c780b7430a2542f4154a481e37a55018dbf8ebfaac0d22a0e952"
+  },
+  {
+    "path": "src/app/workers/core/sanger-transition-response.ts",
+    "sha256": "5834fbde92232bf788088df7d6d45fa2b44f025ede3574cbcf6b99f8aa1aa866"
+  },
+  {
+    "path": "src/app/workers/core/sequence-matcher.ts",
+    "sha256": "d237ef5dd79114941da8c0f37b38132fb09f49e85a344df321d3173e5732587e"
+  },
+  {
+    "path": "src/app/workers/core/simplex-active-set.ts",
+    "sha256": "e5d538059dfb2f653b11a423f205408f6c03e2be5b369066c11ea90a4f7220dd"
+  },
+  {
+    "path": "src/app/models/analysis.model.ts",
+    "sha256": "1c3998f473d69f10098e03ceecdbe8140d612d3d034eaa99fd786a937505bd1d"
+  },
+  {
+    "path": "src/app/models/grna-design.ts",
+    "sha256": "0167aa783d7f4e6fcef09d177fa37cd4e7f20a5be958362651e7c960a919b295"
+  },
+  {
+    "path": "src/app/models/reference-source.ts",
+    "sha256": "f4d718682d003a3fe18367eb6339058939a785811680c1485c5a0e996b97510f"
+  },
+  {
+    "path": "src/app/models/sanger-analysis.ts",
+    "sha256": "33366a099358aa44045e7f00d8e43a17c259f69fda129ac64c4774653f02a592"
+  },
+  {
+    "path": "src/app/models/sanger-design.ts",
+    "sha256": "2a0f2286aa572ecb4dae780f960c4ef7179ed5cae50ed9ca1c2563ddb39a7d76"
+  },
+  {
+    "path": "src/app/models/sequence.model.ts",
+    "sha256": "0966a3d37266906ddf9e4bf859357e6229f187bd78001754b8680f2b7a718ace"
+  },
+  {
+    "path": "src/app/utils/abif.ts",
+    "sha256": "aefee5964ec41aa158d324a5d5b7b3f5164a623a68567272aa8d91bd52a22135"
+  },
+  {
+    "path": "src/app/utils/biology.utils.ts",
+    "sha256": "9705b2f2fb8d8afc8cfd4335ce766b75e8c5b6e2ca0bb438a87db34d1ed7adc8"
+  },
+  {
+    "path": "src/app/utils/reference-checksum.ts",
+    "sha256": "ae8836fb445c9b0da5846483880f121ac4d0aeab82ada6f14a71f11613c788a3"
+  },
+  {
+    "path": "src/app/utils/sanger-analysis-demo.ts",
+    "sha256": "ba14ccc97bb95ee4caa907b485d3e9bc7d5f2c3b1e52b5d702b02e131a5732a6"
+  },
+  {
+    "path": "src/app/utils/sanger-annotation.ts",
+    "sha256": "b660600050b0e333898e3b338a67e2e4be77d97e12faff563a623c97a5d663fe"
+  },
+  {
+    "path": "src/app/utils/sanger-automatic-template.ts",
+    "sha256": "a5a1ef00dc9bc56ae6019f5687f3bca0edb041643f9e7e044032567235c9f880"
+  },
+  {
+    "path": "src/app/utils/sanger-benchmark-assessment.ts",
+    "sha256": "725be197945be08c26579705e304e298b9c5278d866a99ed4571237ea3ca1e6c"
+  },
+  {
+    "path": "src/app/utils/sanger-benchmark.ts",
+    "sha256": "f4246bf26b93247b608ada0e52398b3b8b58dd3a290698938a3d4143c25ee80e"
+  },
+  {
+    "path": "src/app/utils/sanger-design-export.ts",
+    "sha256": "f67317220692ffd1f9faa47cfb91507d42a8da6826575da8eace6713e68e65f8"
+  },
+  {
+    "path": "src/app/utils/sanger-design.utils.ts",
+    "sha256": "2924fd450b5cf03e04f2db911f771af1ef6a7ef4886708b05d754b0026bd5843"
+  },
+  {
+    "path": "src/app/utils/sanger-exact-benchmark.ts",
+    "sha256": "af52122e7500597bb250af53c9d55e19ad40f20dad72925a1cbc66028de178ef"
+  },
+  {
+    "path": "src/app/utils/sanger-exact-display.ts",
+    "sha256": "ec64ba409021b2f6bb15d1bdbdaea5a583d09eb9b096174fc7597f0842192c6d"
+  },
+  {
+    "path": "src/app/utils/sanger-exact-profile-benchmark.ts",
+    "sha256": "7e0e2c216df75a85ade4b7f68e42d8a54ac024732bede8a71825274f585bbf4f"
+  },
+  {
+    "path": "src/app/utils/sanger-exact-selection.ts",
+    "sha256": "f38af7089f43aafd74bd86936e7fb7a073b538d64fc2098ba717d7d8420c6034"
+  },
+  {
+    "path": "src/app/utils/sanger-native-signal-certificate.ts",
+    "sha256": "d09c14688048c66e9b0b57fef519d0ada3cf9c6cee251affa9ba938c8e33497a"
+  },
+  {
+    "path": "src/app/utils/sanger-placement.ts",
+    "sha256": "3a9f482557103a204fe37337b136ee0683fe22b193a1896b7e148b767d887594"
+  },
+  {
+    "path": "src/app/utils/sanger-product-bounds.ts",
+    "sha256": "41e6e5630016233d08fafd56259f5d710856a81137817d336c00ca53865fd54d"
+  },
+  {
+    "path": "src/app/utils/sanger-progress.ts",
+    "sha256": "55214562a0b155bc4569e6963afc18365ec5d5f036a0bb487774ce6efcccfcb0"
+  },
+  {
+    "path": "src/app/utils/sanger-result-window.ts",
+    "sha256": "dc70f507521d52c719f5e307911486e34979f7658a002adff6b1edb691e96076"
+  },
+  {
+    "path": "src/app/utils/sanger-sequence-groups.ts",
+    "sha256": "6d9893fe7b5b1865e5b8c32cd0fec959ba9e93fc2786c968c9d47f854c697d58"
+  },
+  {
+    "path": "src/app/utils/sanger-signal-equivalence-benchmark.ts",
+    "sha256": "453bfce129ea35852c41b5f7faacff27282d9db62403c7b279042553686c3d0a"
+  },
+  {
+    "path": "src/app/utils/sanger-synth-profiles.ts",
+    "sha256": "53f39ef8dd8c0d580a6406e994e2a63f9cc41c4bcd24ac35d4e4f54228dc0abf"
+  },
+  {
+    "path": "src/app/utils/sanger-synthetic-benchmark.ts",
+    "sha256": "9302b7fb5444024fd0377e55e05b817cfd2c1a24c9277b51e0da54b4bbdf9247"
+  },
+  {
+    "path": "src/app/utils/sanger-target-profile.ts",
+    "sha256": "241ded1833a75a52b57d2ff08f4b5297dd5ad7d6a728b909bfe04400ebc92c6a"
+  },
+  {
+    "path": "src/app/utils/sanger-trace-preview.ts",
+    "sha256": "c9e9de3103e55893bb3a6f1c9656fc4dd9054e13c6634cfa126019ade327ab64"
+  },
+  {
+    "path": "src/app/utils/sanger-trace.ts",
+    "sha256": "a2a160e2719317c88811852b6e3183ebde579dd9e3087b4b6533d6f56c9a1bbd"
+  },
+  {
+    "path": "src/app/utils/sanger-truth-groups.ts",
+    "sha256": "0835c85a748458b7a7852f7ab6b991affadd5a045398cf614d187e8d2b4ba0aa"
+  },
+  {
+    "path": "src/app/utils/sanger-window-check.ts",
+    "sha256": "72442db51b009b346f3168e766d553a83ef7fd76e85492c1b453604917ebcb05"
+  },
+  {
+    "path": "src/app/utils/scf.ts",
+    "sha256": "c084600d60a4f37618152e52d3addcbee69b853ad1169539afbfac68eada2032"
+  },
+  {
+    "path": "src/app/workers/grna-design.worker.ts",
+    "sha256": "4f5b4dfe4385f6ed316dde39cf7fec45d45f61c17c76257b4a40825beca2ee9d"
+  },
+  {
+    "path": "src/app/workers/sanger-analysis.worker.ts",
+    "sha256": "6afdd6de164f03f7d16212e6825ab132087f295c7bd4e8d9b9995c871f196955"
+  },
+  {
+    "path": "src/app/workers/sanger-design.worker.ts",
+    "sha256": "d6327daf7b5e7f7f07d412b5c9d449e43dbed7b51ed1c81a2b29c26554e4aa9e"
+  },
+  {
+    "path": "src/app/services/design-handoff.service.ts",
+    "sha256": "ec8ce8e0c257f62cb9133a1e20909e44e4c4e33f67c812a7e083fbfd782d727f"
+  },
+  {
+    "path": "src/app/services/ncbi-reference-library.service.ts",
+    "sha256": "aec43170724646bcea9d8358ea822ba99343c5bb83abb8b118b0c6bceb19f369"
+  },
+  {
+    "path": "src/app/services/reference-library.service.ts",
+    "sha256": "5542388dbcd5858d9db64510fb83d01ad98b5b8f6ed081dd892626f642e34d74"
+  }
+]

@@ -1,0 +1,41 @@
+CasSago current handoff 2026-11-05 v42
+
+Canonical project: /Users/james/Desktop/CasSago
+GitHub: https://github.com/JamesK0802/CasSago
+Pages: https://jamesk0802.github.io/CasSago/
+Repository is public with explicit user approval. Pages uses GitHub Actions.
+CasMango is independent at /Users/james/Desktop/CasMango and localhost:8431; it has no Sanger/gRNA-design feature modules. Do not copy the CasMango app shell or AppStateService back into this project.
+
+Scientific state
+The original two Demo-A T1 failures were directly recovered. v42 frozen fresh five passed: 121 direct +29 strictly equivalent +0 unexplained /150 non-WT groups, WT30/30 accepted, no false extra >=1pp. Same three-reference/two-target synthetic panel; not new genomic backbones or proof of experimental-noise robustness.
+The older seven-failure input passed20 direct+10strict equivalent. Inherited coupled-deletion input passed30direct. Never count inspected replays as prospective cases.
+Algorithm: sanger-sequence-groups-v42-near-frequency-phase.
+Original full directory core hash: 98f5df4059ee4a0d882747ba2d1ac4e828df7605e995699b9f46c12769c671f8.
+The standalone tree removes unrelated modules, so compare retained module hashes rather than expecting an identical directory inventory. All63 retained sanger-*.ts core files matched the validated source on separation.
+
+Changes
+1. ADC bins are lower-inclusive/upper-exclusive. 1e-5 ADC upper interior prevents incompatible adjacent bins sharing one endpoint. Boundary unit test fails onv38 and passes onv42.
+2. Extend frequency continuation to near-coincident groups with different net length (difference<=4/learned amplitude); bounded temporary transfers require complete free whole-molecule refit and measured-objective improvement.
+No truth/seed/recipe input to inference. Evaluation/generator/solver criteria unchanged.
+3. Standalone UI contains Sanger/primer/guide workspace and contact. Removed old import-from-CasMango-state helper. Existing development gate retained.
+
+Tests and deployment
+Local release tests:122 plus original-failure blind replay1 passed. CasMango:404passed. Both production builds passed. Browser compiled worker reproduced the old two-group failure correctly, with12.55% substitution and12.61% insertion. The exported browser result is retained in the migration record.
+First hosted CI run41971493250: scientific replay passed on Linux (231.951sec);13 other tests failed solely at old5/30sec wall-clock caps. Assertions were unchanged; release test timeout raised to120sec and the explicit30sec primer integration cap to120sec. See subsequent Actions runs for final deploy status.
+Docs-only changes do not rebuild static Pages assets.
+
+Methods/reimplementation document
+ docs/알고리즘_단계와_AI_재현명세.txt
+Contains human Korean numbered stages, detailed implementation contract and110 normative source modules with hashes. Full package and retained scientific evidence are archived outside Git in /Users/james/Desktop/CasSago_Migration_20261105.
+
+History and exact inputs
+ /Users/james/Desktop/CasMango_Sanger/01_현재작업/Sanger_Compact_20261102/benchmarks/prospective-20261105-half-open-near-phase-v42-a
+ /Users/james/Desktop/CasMango_Sanger/01_현재작업/Sanger_Compact_20261102/benchmarks/resume-20261105-v38-continuation
+ /Users/james/Desktop/CasMango_Sanger/01_현재작업/Sanger_Compact_20261102/handoff-20261105-v42
+Old compact source is a research checkpoint, not the standalone canonical working tree. Main CasMango design-only files were moved to a reversible quarantine after hash checks and404tests; no broad permanent deletion was used.
+
+Reproduction
+ npm ci
+ npm test
+ npm run build:pages
+For new prospective batches use tests/probes/sanger-prospective-validation.spec.ts, a NEW output folder, CASSAGO_PROSPECTIVE=1 CASSAGO_PROSPECTIVE_COUNT=5 CASSAGO_ENFORCE_GATE=1. Inspect manifest.gatePassed, not just Vitest exit status. Preserve failures.

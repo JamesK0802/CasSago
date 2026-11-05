@@ -3,6 +3,10 @@ name: Test and deploy CasSago
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "README.md"
+      - "NEXT_CODEX_HANDOFF.txt"
   workflow_dispatch:
 
 permissions:

@@ -175,4 +175,4 @@ describe('Sanger design sequence helpers',()=>{
 
 
 // Bounded integration computation; group/fraction assertions remain unchanged.
-it('keeps enough usable upstream calibration sequence for single-reference Sanger analysis',()=>{const out=designSangerPrimers([sangerDesignExample()[0]],{...SANGER_DEFAULTS,workflow:'standard-pcr',direction:'forward'});expect(out.candidates.length).toBeGreaterThan(0);expect(Math.min(...out.candidates.flatMap(c=>c.sites.flatMap(s=>s.cutOffsets)))).toBeGreaterThanOrEqual(SANGER_DEFAULTS.readStart+72);},30000);
+it('keeps enough usable upstream calibration sequence for single-reference Sanger analysis',()=>{const out=designSangerPrimers([sangerDesignExample()[0]],{...SANGER_DEFAULTS,workflow:'standard-pcr',direction:'forward'});expect(out.candidates.length).toBeGreaterThan(0);expect(Math.min(...out.candidates.flatMap(c=>c.sites.flatMap(s=>s.cutOffsets)))).toBeGreaterThanOrEqual(SANGER_DEFAULTS.readStart+72);},120000);
