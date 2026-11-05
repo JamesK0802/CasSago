@@ -1,4 +1,6 @@
-import '@angular/compiler';import{it,expect,vi,afterEach}from'vitest';import{readFileSync}from'node:fs';import{App}from'../../src/app/app';
+import '@angular/compiler';
+import{it,expect,vi,afterEach}from'vitest';
+import{App}from'../../src/app/app';
 afterEach(()=>vi.unstubAllGlobals());
-it('routes the independent workspace, guide designer and contact page',()=>{const location={hash:'#/grna-design'};vi.stubGlobal('window',{location});const app=new App();expect(app.page).toBe('guides');app.showPage('workspace');expect(location.hash).toBe('/sanger-design');app.showPage('contact');expect(location.hash).toBe('/contact');location.hash='#/sanger-design';app.readRoute();expect(app.page).toBe('workspace');});
-it('keeps the development gate and separates it from CasMango state',()=>{vi.stubGlobal('window',{location:{hash:''}});const app=new App();app.unlockDevelopment({value:'wrong',focus:vi.fn()}as any);expect(app.developmentUnlocked).toBe(false);const source=readFileSync(new URL('../../src/app/app.ts',import.meta.url),'utf8');expect(source).not.toMatch(/AppStateService|AnalysisPageComponent|ResultViewerPageComponent|BenchmarkPageComponent|SequenceWorkspacePageComponent/);});
+it('routes the public tools and landing page and defaults to the landing page',()=>{const location={hash:''};vi.stubGlobal('window',{location});const app=new App();expect(app.page).toBe('home');expect(app.navigation).toHaveLength(4);for(const tab of app.navigation){app.showPage(tab.id);app.readRoute();expect(app.page).toBe(tab.id);}});
+it('keeps sessions independent and blocks switching while a worker is busy',()=>{vi.stubGlobal('window',{location:{hash:''}});const app=new App();app.add();expect(app.sessions).toEqual([1,2]);app.panels={some:(fn:any)=>fn({busy:true}),toArray:()=>[]}as any;app.showPage('contact');app.add();app.close(2);expect(app.page).toBe('analysis');expect(app.sessions).toEqual([1,2]);});

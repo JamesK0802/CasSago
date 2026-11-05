@@ -7,7 +7,7 @@ import {projectTargetAnnotation,targetEvents}from'./sanger-target-profile';
 /** Only an isolated, exactly certified same-site/length insertion fiber may
  * become an N block. Other ambiguities keep separate fitted groups and point
  * fractions; substitutions, changed origins and mass transfers are never pooled. */
-export function exactDisplayView(annotation:SangerAnnotation,target:number,radius:number,set?:SangerExactAlternatives):SangerAnnotationView {
+export function exactDisplayView(annotation:SangerAnnotation,target:number,radius:number|{left:number;right:number},set?:SangerExactAlternatives):SangerAnnotationView {
  const projected=(annotation.cuts?.length||1)>1?projectTargetAnnotation(annotation,target):annotation,view=sangerAnnotationViews([projected],0,radius,true)[0];
  if(!set||set.selected>=0||set.certificate!=='exact-rational-emission')return view;
  const base=set.options[0];if(!base||base.exactFractions.length!==base.components.length)return view;

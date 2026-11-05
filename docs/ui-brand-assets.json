@@ -1,0 +1,10 @@
+{
+  "generator": "Built-in image_gen",
+  "reference": "CasMango public/casmango-logo.jpg and casmango-mascot-idle.png",
+  "assets": [
+    {"path": "public/cassago-logo.png", "prompt": "Sibling CasSAGO logo matching the CasMANGO composition and rounded typography: round milky sago pearl outline containing a sage/lavender DNA helix at left, charcoal Cas and pearl lavender SAGO at right; no character, no face, transparent background."},
+    {"path": "public/cassago-mascot.png", "prompt": "Cute round milky-white sago pearl mascot in the CasMango flat illustration style, smooth dark brown outline, oval eyes, peach cheeks, small smile, lavender translucent rim and shoes, mint/lavender DNA belly emblem; no glass realism, no exposed DNA torso, transparent background."},
+    {"path": "public/cassago-mascot-wave.png", "prompt": "Preserve the sago mascot identity and raise the arm on the viewer right beside the head in a hello wave, rounded mitten hand with two small motion marks; transparent background."},
+    {"path": "public/cassago-construction.png", "prompt": "Preserve the sago mascot identity, add a yellow construction hard hat and a yellow/charcoal striped barricade in front, mascot peeking above with one mitten resting on it; transparent background, no text."}
+  ]
+}

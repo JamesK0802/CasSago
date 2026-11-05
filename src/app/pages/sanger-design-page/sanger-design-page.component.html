@@ -1,10 +1,8 @@
 <section class="design-page" aria-labelledby="sanger-title">
   <header class="design-header">
-    <h1 id="sanger-title" title="CRISPR Amplicon Sequencing with Sanger Analysis for Genotyping and Outcomes">CasSago</h1>
+    <h1 id="sanger-title" title="CRISPR Amplicon Sequencing with Sanger Analysis for Genotyping and Outcomes">Primer Design</h1>
     <button type="button" class="quiet" *ngIf="activeSection === 'design'" (click)="loadExample()" [disabled]="busy">Load example</button>
   </header>
-  <nav class="sanger-page-tabs" role="tablist" aria-label="Sanger workspace"><button id="sanger-design-tab" type="button" role="tab" [attr.aria-selected]="activeSection === 'design'" aria-controls="sanger-design-panel" (click)="activeSection = 'design'">Primer Design</button><button id="sanger-analysis-tab" type="button" role="tab" [attr.aria-selected]="activeSection === 'analysis'" aria-controls="sanger-analysis-panel" (click)="activeSection = 'analysis'">Sanger Analysis</button></nav>
-  <app-sanger-analysis-panel id="sanger-analysis-panel" role="tabpanel" aria-labelledby="sanger-analysis-tab" [hidden]="activeSection !== 'analysis'" [designRows]="analysisDesignRows" />
   <div id="sanger-design-panel" class="design-layout" role="tabpanel" aria-labelledby="sanger-design-tab" [hidden]="activeSection !== 'design'">
     <div class="setup">
       <fieldset [disabled]="busy">

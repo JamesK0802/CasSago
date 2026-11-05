@@ -36,10 +36,10 @@ function locationFor(events:SangerJointEvent[]):string{
 }
 /** Sequence-specific rows conserve fitted reference/size mass. Mixed-base
  * combinations remain model-derived candidates, not molecule-level phasing. */
-export function sangerAnnotationViews(items:SangerAnnotation[],threshold:number,radius=30,showUnconfirmed=true):SangerAnnotationView[]{
+export function sangerAnnotationViews(items:SangerAnnotation[],threshold:number,radius:number|{left:number;right:number}=30,showUnconfirmed=true):SangerAnnotationView[]{
  const cutoff=Math.max(0,Math.min(100,Number(threshold)||0))/100;
  return items.map(a=>{
-  const cuts=a.cuts?.length?a.cuts:[a.cut],start=Math.max(0,Math.min(...cuts)-radius),end=Math.min(a.reference.length,Math.max(...cuts)+radius);
+  const cuts=a.cuts?.length?a.cuts:[a.cut],start=Math.max(0,Math.min(...cuts)-(typeof radius==='number'?radius:radius.left)),end=Math.min(a.reference.length,Math.max(...cuts)+(typeof radius==='number'?radius:radius.right));
   type Group={components:Component[];size:number;fraction:number;events:SangerJointEvent[];sequenceKey?:string;state:SequenceState};
   const grouped=new Map<string,Group>();
   const rank:Record<SequenceState,number>={'base-call':0,mixture:1,unphased:2,unresolved:3};

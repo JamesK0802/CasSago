@@ -4,7 +4,7 @@ import {sangerAnnotationViews,SangerAnnotationRow} from './sanger-annotation';
 import {reverseComplement} from './biology.utils';
 export interface TruthGroupView {label:string;description:string;sequence:string;row:SangerAnnotationRow;fraction:number;edited:boolean}
 /** Display adapter only: ground truth never enters the analysis worker. */
-export function sangerTruthGroups(data:BenchmarkTruth|null,annotation:SangerAnnotation,radius:number,focusCut=annotation.cut):TruthGroupView[]{
+export function sangerTruthGroups(data:BenchmarkTruth|null,annotation:SangerAnnotation,radius:number|{left:number;right:number},focusCut=annotation.cut):TruthGroupView[]{
  if(!data)return [];
  return data.truth.filter(t=>t.reference===annotation.name).map(t=>{
   const recipe=data.recipe?.find(r=>r.name===annotation.name),reverse=recipe?recipe.sequence!==annotation.reference&&recipe.sequence===reverseComplement(annotation.reference):t.sequence!==t.inputSequence&&reverseComplement(t.sequence)===t.inputSequence;

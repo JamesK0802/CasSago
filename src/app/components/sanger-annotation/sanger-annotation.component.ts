@@ -1,3 +1,4 @@
+import {sangerGroupKey} from '../../utils/sanger-curation';
 import {exactDisplayView,exactFractionLabel} from '../../utils/sanger-exact-display';
 import {projectTargetAnnotation,projectTargetTruth} from '../../utils/sanger-target-profile';
 import {BenchmarkTruth} from '../../utils/sanger-benchmark';
@@ -9,6 +10,14 @@ import {Component,Input,Output,EventEmitter,OnChanges,ViewChildren,QueryList,Ele
 import {SangerAnnotation} from '../../models/sanger-analysis';import {sangerAnnotationViews,SangerAnnotationView} from '../../utils/sanger-annotation';
 @Component({selector:'app-sanger-annotation',standalone:true,imports:[CommonModule,SangerChromatogramComponent],templateUrl:'./sanger-annotation.component.html',styleUrl:'./sanger-annotation.component.css'})
 export class SangerAnnotationComponent implements OnChanges,AfterViewChecked{
+ @Input() curateMode=false;@Input() excludedGroups:string[]=[];@Output() groupToggle=new EventEmitter<{reference:string;target:number;id:string}>();
+ excluded(row:{id:string}){return this.curateMode&&this.excludedGroups.includes(sangerGroupKey(this.active?.name||'',this.targetIndex,row.id));}
+ toggleGroup(row:{id:string}){if(this.active)this.groupToggle.emit({reference:this.active.name,target:this.targetIndex,id:row.id});}
+ @Input() windowLeft:number|null=null;@Input() windowRight:number|null=null;
+ get windowBounds():{left:number;right:number}{return {left:this.windowLeft??Math.floor(this.window/2),right:this.windowRight??Math.ceil(this.window/2)};}
+ @Input() lane:'both'|'estimated'|'truth'='both';
+ @Output() scrollChanged=new EventEmitter<{left:number;top:number}>();
+ setScroll(position:{left:number;top:number}){this.scrolls?.forEach(ref=>{const el=ref.nativeElement;if(Math.abs(el.scrollLeft-position.left)>1)el.scrollLeft=position.left;if(Math.abs(el.scrollTop-position.top)>1)el.scrollTop=position.top;});}
  @Input() truth:BenchmarkTruth|null=null;truthViews:TruthGroupView[][]=[];
  @Input() equivalentReferences:string[]=[];
  @Input() benchmark:SynthComparison[]=[];@Input() threshold=1;showSmall=false;
@@ -40,14 +49,14 @@ export class SangerAnnotationComponent implements OnChanges,AfterViewChecked{
  truthMatches(index:number){const gt=this.truthActive[index],matches=(this.active?.rows||[]).flatMap((row,i)=>gt.row.sequenceKey&&row.sequenceKey===gt.row.sequenceKey?[{row,index:i+1}]:[]);return matches.length?`Group ${matches.map(m=>m.index).join(' + ')} · ${(matches.reduce((sum,m)=>sum+m.row.fraction,0)*100).toFixed(2)}%`:'No exact estimated group';}
  truthDetected(gt:TruthGroupView){return !!this.active?.estimable&&(this.equivalentReferences.includes(this.active.name)||!!gt.row.sequenceKey&&this.active.rows.some(row=>row.sequenceKey===gt.row.sequenceKey&&this.showGroup(row)));}
  truthDetectionLabel(gt:TruthGroupView){const rows=(this.active?.rows||[]).filter(row=>!!gt.row.sequenceKey&&row.sequenceKey===gt.row.sequenceKey&&this.showGroup(row));if(!this.active?.estimable)return 'Not detected: fit QC review';if(!rows.length)return this.equivalentReferences.includes(this.active?.name||'')?'Exactly signal-equivalent; individual sequence assignment is unresolved':'Not detected: no matching estimated sequence above the threshold';const fraction=rows.reduce((sum,row)=>sum+row.fraction,0)*100;return 'Detected sequence · estimated '+fraction.toFixed(2)+'% · Δ '+(fraction-gt.fraction*100).toFixed(2)+' pp';}
- fractionText(row:SangerAnnotationView['rows'][number]){return exactFractionLabel(row);}
+ fractionText(row:SangerAnnotationView['rows'][number]){if(this.curateMode&&!this.excluded(row)){const mass=this.active?.rows.filter(r=>!this.excluded(r)).reduce((n,r)=>n+r.fraction,0)||0;return mass?exactFractionLabel({...row,fraction:row.fraction/mass}):'0.00';}return exactFractionLabel(row);}
  badge(row:SangerAnnotationView['rows'][number]){if(!row.edited)return 'WT';const events=row.representative?.events||[];return row.size===0&&events.length&&events.every(e=>e.inserted===e.end-e.start)?'Substitution':(row.size>0?'+':'')+row.size+' bp';}
  private syncing=false;
- syncScroll(event:Event){if(this.syncing)return;this.syncing=true;const source=event.target as HTMLElement;this.scrolls?.forEach(ref=>{if(ref.nativeElement!==source)ref.nativeElement.scrollLeft=source.scrollLeft;});this.syncing=false;}
+ syncScroll(event:Event){if(this.syncing)return;this.syncing=true;const source=event.target as HTMLElement;this.scrollChanged.emit({left:source.scrollLeft,top:source.scrollTop});this.scrolls?.forEach(ref=>{if(ref.nativeElement!==source)ref.nativeElement.scrollLeft=source.scrollLeft;});this.syncing=false;}
  get active(){return this.views[Math.min(Math.max(0,this.selectedIndex),Math.max(0,this.views.length-1))];}
  choose(i:number){this.selectedIndex=i;this.selectedIndexChange.emit(i);this.center=true;}
  private viewCache=new Map<string,{views:SangerAnnotationView[];truthViews:TruthGroupView[][]}>();
  ngOnChanges(changes?:SimpleChanges){if(!changes||changes['analysis']||changes['annotations']||changes['window']||changes['truth'])this.viewCache.clear();if(!changes||changes['analysis']||changes['sampleTrace']||changes['window'])this.traceCache.clear();this.rebuild();}
- rebuild(){const key=this.targetIndex+':'+this.window;const cached=this.viewCache.get(key);if(cached){this.views=cached.views;this.truthViews=cached.truthViews;this.center=true;return;}this.views=this.annotations.map(a=>exactDisplayView(a,this.targetIndex,Math.floor(this.window/2),this.analysis?.exactAlternatives?.find(s=>s.reference===a.name&&s.targets.includes(this.targetIndex+1))));this.truthViews=this.annotations.map(a=>sangerTruthGroups(this.truth&&(a.cuts?.length||1)>1?projectTargetTruth(this.truth,a,this.targetIndex):this.truth,a,Math.floor(this.window/2),a.cuts?.[this.targetIndex]??a.cut));this.truthViews=this.truthViews.map((truth,index)=>{const order=this.views[index].rows,rank=(gt:TruthGroupView)=>{const row=order.findIndex(row=>!!gt.row.sequenceKey&&row.sequenceKey===gt.row.sequenceKey);return row<0?Infinity:row;};return truth.map((gt,original)=>({gt,original})).sort((a,b)=>rank(a.gt)-rank(b.gt)||a.original-b.original).map(t=>t.gt);});this.viewCache.set(key,{views:this.views,truthViews:this.truthViews});this.center=true;}
+ rebuild(){const key=this.targetIndex+':'+this.window+':'+this.windowBounds.left+':'+this.windowBounds.right;const cached=this.viewCache.get(key);if(cached){this.views=cached.views;this.truthViews=cached.truthViews;this.center=true;return;}this.views=this.annotations.map(a=>exactDisplayView(a,this.targetIndex,this.windowBounds,this.analysis?.exactAlternatives?.find(s=>s.reference===a.name&&s.targets.includes(this.targetIndex+1))));this.truthViews=this.annotations.map(a=>sangerTruthGroups(this.truth&&(a.cuts?.length||1)>1?projectTargetTruth(this.truth,a,this.targetIndex):this.truth,a,this.windowBounds,a.cuts?.[this.targetIndex]??a.cut));this.truthViews=this.truthViews.map((truth,index)=>{const order=this.views[index].rows,rank=(gt:TruthGroupView)=>{const row=order.findIndex(row=>!!gt.row.sequenceKey&&row.sequenceKey===gt.row.sequenceKey);return row<0?Infinity:row;};return truth.map((gt,original)=>({gt,original})).sort((a,b)=>rank(a.gt)-rank(b.gt)||a.original-b.original).map(t=>t.gt);});this.viewCache.set(key,{views:this.views,truthViews:this.truthViews});this.center=true;}
  ngAfterViewChecked(){if(!this.center||!this.scrolls?.length)return;this.center=false;this.scrolls.forEach((ref,i)=>{const el=ref.nativeElement,cut=this.active?.cutIndex||0;el.scrollLeft=Math.max(0,150+15+cut*13-el.clientWidth/2);});}
 }

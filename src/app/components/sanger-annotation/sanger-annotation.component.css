@@ -32,3 +32,4 @@
 .with-truth .sticky-right{padding:6px 8px;box-sizing:border-box}
 
 .truth-lane .lane-title{color:#253247}.truth-lane .unified-anno-container{border-color:#dbe3ec}.truth-group-row.gt-detected>div{background:#eff6ff}.truth-group-row.gt-missing>div{background:#fef2f2}.truth-group-row.gt-detected .sticky-left,.truth-group-row.gt-detected .sticky-right strong{color:#1d4ed8}.truth-group-row.gt-missing .sticky-left,.truth-group-row.gt-missing .sticky-right strong{color:#b91c1c}
+.excluded-row .seq-center,.excluded-row .sticky-right{opacity:.3}.exclude-btn-group{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:1px solid #fecaca;background:#fff1f2;color:#be123c;border-radius:4px;font:inherit;margin-right:7px;cursor:pointer}.exclude-btn-group.is-excluded{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}.excluded-row .sticky-left{color:#94a3b8}.benchmark-annotation-grid:not(.with-truth){display:block}

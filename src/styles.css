@@ -668,3 +668,9 @@ a { color: inherit; }
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* Milky, translucent sago pearl palette with readable cool-ink actions. */
+:root{--color-primary:#7c819e;--color-primary-hover:#626782;--color-primary-light:#f2f0f8;--color-primary-subtle:#e9e6f2;--color-primary-border:#d8d4e5;--color-accent:#a4b5ad;--color-accent-subtle:#e4eee9}
+:focus-visible{outline-color:#7c819e}
+/* Pearl surfaces with stronger, readable brand accents. */
+:root{--color-primary:#586fa6;--color-primary-hover:#405783;--color-primary-light:#edf1fa;--color-primary-subtle:#dfe7f6;--color-primary-border:#b6c4e1;--color-accent:#4d8975;--color-accent-subtle:#d9eee4;--color-bg:#f7f8fb;--color-text-secondary:#58677d;--color-text-tertiary:#8291a7}

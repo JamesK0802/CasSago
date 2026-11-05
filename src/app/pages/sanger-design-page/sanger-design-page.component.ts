@@ -6,7 +6,7 @@ import {SangerPrimerMapComponent} from '../../components/sanger-primer-map/sange
 import {selectedAmplicons,makeAnalysisTemplate,DesignedAmplicon} from '../../utils/sanger-design-export';
 import {ReferenceSourceComponent} from '../../components/reference-library/reference-source.component';
 import {LibraryReference,ReferenceSource} from '../../models/reference-source';
-import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, OnDestroy, Optional, ViewChild } from '@angular/core';
+import { EventEmitter, Output, AfterViewChecked, ChangeDetectorRef, Component, ElementRef, OnDestroy, Optional, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SANGER_DEFAULTS, SangerCandidate, SangerDesignResult, SangerDesignSettings } from '../../models/sanger-design';
@@ -18,10 +18,12 @@ import { DesignHandoffService } from '../../services/design-handoff.service';
 interface NamedTarget {name:string;guide:string;cut?:number}
 interface ReferenceRow { name: string; sequence: string; targets: string; mode: 'cuts' | 'guides';source?:ReferenceSource;targetRows?:NamedTarget[] }
 @Component({
-  selector:'app-sanger-design-page', standalone:true, imports:[CommonModule,FormsModule,SangerAnalysisPanelComponent,SangerPrimerMapComponent,SangerAmpliconAlignmentComponent,SangerPrimerDifferenceComponent,SangerSynthBuilderComponent,ReferenceSourceComponent],
+  selector:'app-sanger-design-page', standalone:true, imports:[CommonModule,FormsModule,SangerPrimerMapComponent,SangerAmpliconAlignmentComponent,SangerPrimerDifferenceComponent,SangerSynthBuilderComponent,ReferenceSourceComponent],
   templateUrl:'./sanger-design-page.component.html', styleUrls:['./sanger-design-page.component.css','../sanger-ui.css'],
 })
 export class SangerDesignPageComponent implements OnDestroy, AfterViewChecked {
+  @Output() templateRequested=new EventEmitter<unknown>();
+  @Output() syntheticRequested=new EventEmitter<SynthDataset>();
   @ViewChild(SangerAnalysisPanelComponent) analysisPanel?:SangerAnalysisPanelComponent;
   visibleCount=10;
   showMap=false;
@@ -135,8 +137,8 @@ export class SangerDesignPageComponent implements OnDestroy, AfterViewChecked {
   setOffsetDesign(enabled:boolean){this.settings.workflow=enabled?'shared-sanger':'shared-pcr';this.changed();}
   get analysisAmplicons():DesignedAmplicon[]{try{return this.result&&this.selected?selectedAmplicons(this.result,this.selected):[];}catch{return [];}}
   get templateIssue():string{try{if(this.result&&this.selected)makeAnalysisTemplate(this.result,this.selected);return '';}catch(e){return e instanceof Error?e.message:String(e);}}
-  useGeneratedSynth(data:SynthDataset){try{if(!this.analysisPanel)return;this.analysisPanel.applySynthetic(data.template,data.control,data.edit,{recipe:data.recipe,truth:data.truth,mixing:data.mixing,cycles:data.cycles});this.activeSection='analysis';}catch(e){this.error=e instanceof Error?e.message:String(e);}}
-  useInAnalysis(){try{if(!this.result||!this.selected||!this.analysisPanel)return;this.analysisPanel.applyTemplate(makeAnalysisTemplate(this.result,this.selected));this.activeSection='analysis';}catch(e){this.error=e instanceof Error?e.message:String(e);}}
+  useGeneratedSynth(data:SynthDataset){this.syntheticRequested.emit(data);}
+  useInAnalysis(){try{if(this.result&&this.selected)this.templateRequested.emit(makeAnalysisTemplate(this.result,this.selected));}catch(e){this.error=e instanceof Error?e.message:String(e);}}
   exportAnalysisTemplate(){try{if(this.result&&this.selected)this.download('CasSago_profile.json',JSON.stringify(makeAnalysisTemplate(this.result,this.selected),null,2),'application/json');}catch(e){this.error=e instanceof Error?e.message:String(e);}}
   exportTargets(){const rows=[['Reference','Target','Cut position (after base N)'],...this.analysisAmplicons.flatMap(a=>a.cuts.map((cut,i)=>[a.name,a.targetNames?.[i]||'T'+(i+1),String(cut)]))];this.download('CasSago_selected_targets.csv',rows.map(row=>row.map(v=>'"'+v.replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv');}
   get status(): string {
