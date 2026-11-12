@@ -10,7 +10,7 @@ const create=()=>new SangerDesignPageComponent({markForCheck:vi.fn()} as any);
 describe('Sanger design page lifecycle',()=>{
   it('keeps PCR length limits separate from sequencing range and passes both to the worker',()=>{
     const workers:any[]=[];vi.stubGlobal('Worker',class{terminate=vi.fn();postMessage=vi.fn();constructor(){workers.push(this);}});
-    const page=create();expect(page.settings.productMax).toBe(1000);expect(page.settings.readEnd).toBe(1000);
+    const page=create();expect(page.settings.productMin).toBe(500);expect(page.settings.productMax).toBe(1500);expect(page.settings.readEnd).toBe(800);
     page.loadExample();page.settings.productMin=200;page.settings.productMax=900;page.settings.readEnd=700;page.changed();page.search();
     expect(workers[0].postMessage).toHaveBeenCalledWith(expect.objectContaining({settings:expect.objectContaining({productMin:200,productMax:900,readEnd:700})}));page.cancel();
   });

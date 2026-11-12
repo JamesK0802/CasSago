@@ -41,7 +41,7 @@ export class SangerDesignPageComponent implements OnDestroy, AfterViewChecked {
   @ViewChild('primerResults') primerResults?:ElementRef<HTMLElement>;
   private sequenceCenterPending = false;
   activeSection:'design'|'analysis'='design';
-  private defaults():SangerDesignSettings{return {...SANGER_DEFAULTS,platform:'sanger',direction:'both',readEnd:1000,productMax:1000,requirePartner:true,primerMin:20,primerMax:20,tmMin:55,tmMax:65,gcMin:40,gcMax:60,sharedPrimerPolicy:'progressive'};}
+  private defaults():SangerDesignSettings{return {...SANGER_DEFAULTS,platform:'sanger',direction:'both',readEnd:800,productMin:500,productMax:1500,requirePartner:true,primerMin:20,primerMax:20,tmMin:55,tmMax:65,gcMin:40,gcMax:60,sharedPrimerPolicy:'progressive'};}
   settings: SangerDesignSettings = this.defaults();
   amplification:'shared'|'specific'='shared';
   rows: ReferenceRow[] = [this.blank(1),this.blank(2)];
