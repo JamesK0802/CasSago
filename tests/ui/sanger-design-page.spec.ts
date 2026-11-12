@@ -8,6 +8,12 @@ import { SANGER_DEFAULTS } from '../../src/app/models/sanger-design';
 afterEach(()=>vi.unstubAllGlobals());
 const create=()=>new SangerDesignPageComponent({markForCheck:vi.fn()} as any);
 describe('Sanger design page lifecycle',()=>{
+  it('keeps PCR length limits separate from sequencing range and passes both to the worker',()=>{
+    const workers:any[]=[];vi.stubGlobal('Worker',class{terminate=vi.fn();postMessage=vi.fn();constructor(){workers.push(this);}});
+    const page=create();expect(page.settings.productMax).toBe(1000);expect(page.settings.readEnd).toBe(1000);
+    page.loadExample();page.settings.productMin=200;page.settings.productMax=900;page.settings.readEnd=700;page.changed();page.search();
+    expect(workers[0].postMessage).toHaveBeenCalledWith(expect.objectContaining({settings:expect.objectContaining({productMin:200,productMax:900,readEnd:700})}));page.cancel();
+  });
   it('runs independently without the CasMango application state',()=>{const page=create();expect(page.rows.length).toBeGreaterThan(0);expect('state' in page).toBe(false);});
   it('clears stale results when input or settings change',()=>{
     const page=create();page.result={} as any;page.selected={} as any;page.changed();expect(page.result).toBeNull();expect(page.selected).toBeNull();

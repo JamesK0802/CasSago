@@ -41,7 +41,7 @@ export class SangerDesignPageComponent implements OnDestroy, AfterViewChecked {
   @ViewChild('primerResults') primerResults?:ElementRef<HTMLElement>;
   private sequenceCenterPending = false;
   activeSection:'design'|'analysis'='design';
-  private defaults():SangerDesignSettings{return {...SANGER_DEFAULTS,platform:'sanger',direction:'both',readEnd:1000,requirePartner:true,primerMin:20,primerMax:20,tmMin:55,tmMax:65,gcMin:40,gcMax:60,sharedPrimerPolicy:'progressive'};}
+  private defaults():SangerDesignSettings{return {...SANGER_DEFAULTS,platform:'sanger',direction:'both',readEnd:1000,productMax:1000,requirePartner:true,primerMin:20,primerMax:20,tmMin:55,tmMax:65,gcMin:40,gcMax:60,sharedPrimerPolicy:'progressive'};}
   settings: SangerDesignSettings = this.defaults();
   amplification:'shared'|'specific'='shared';
   rows: ReferenceRow[] = [this.blank(1),this.blank(2)];
@@ -67,7 +67,7 @@ export class SangerDesignPageComponent implements OnDestroy, AfterViewChecked {
   removeTarget(row:ReferenceRow,index:number){if(this.targetRows(row).length<=1)return;row.targetRows!.splice(index,1);this.changed();}
   referenceChanged(row:ReferenceRow){for(const target of this.targetRows(row))if(target.guide.trim())delete target.cut;this.changed();}
   targetChanged(row:ReferenceRow,target:NamedTarget){delete target.cut;this.changed();}
-  private normalizeSettings(){const fixed=['productMin','productMax','sodiumMm','primerNm','maxTmDifference','specificityMismatches','specificBoth','specificityStrategy','threePrimeWindow'] as const;for(const key of fixed)(this.settings as any)[key]=SANGER_DEFAULTS[key];this.settings.sharedPrimerPolicy='progressive';this.settings.platform='sanger';this.settings.direction='both';this.settings.requirePartner=true;this.settings.indelRange=SANGER_DEFAULTS.indelRange;this.settings.readEnd=Math.min(1000,this.settings.readEnd);this.settings.workflow=this.rows.length===1?'standard-pcr':this.amplification==='specific'?'homeolog-pcr':'shared-sanger';}
+  private normalizeSettings(){const fixed=['sodiumMm','primerNm','maxTmDifference','specificityMismatches','specificBoth','specificityStrategy','threePrimeWindow'] as const;for(const key of fixed)(this.settings as any)[key]=SANGER_DEFAULTS[key];this.settings.sharedPrimerPolicy='progressive';this.settings.platform='sanger';this.settings.direction='both';this.settings.requirePartner=true;this.settings.indelRange=SANGER_DEFAULTS.indelRange;this.settings.readEnd=Math.min(1000,this.settings.readEnd);this.settings.workflow=this.rows.length===1?'standard-pcr':this.amplification==='specific'?'homeolog-pcr':'shared-sanger';}
   private syncTargets(row:ReferenceRow){const targets=this.targetRows(row);row.mode=targets.every(t=>!t.guide.trim()&&Number.isInteger(t.cut))?'cuts':'guides';row.targets=targets.map(t=>t.guide.trim()||String(t.cut??'')).join(', ');}
   private designReference(row:ReferenceRow){
     const targets=this.targetRows(row);if(targets.length<1||targets.length>2)throw Error(row.name+': use one or two targets.');
