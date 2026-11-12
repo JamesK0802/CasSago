@@ -5,7 +5,7 @@ import {CommonModule} from '@angular/common';
 import {oppositePrimer,SangerCandidate,SangerDesignResult,PrimerSite} from '../../models/sanger-design';
 import {reverseComplement} from '../../utils/biology.utils';
 import {oppositePrimerColour} from '../../utils/sanger-primer-colours';
-interface Track {name:string;primary:PrimerSite;partner?:PrimerSite;length:number;cuts:{name:string;offset:number}[];guides:{start:number;end:number}[]}
+interface Track {name:string;inputReversed?:boolean;primary:PrimerSite;partner?:PrimerSite;length:number;cuts:{name:string;offset:number}[];guides:{start:number;end:number}[]}
 interface CandidateMap {candidate:SangerCandidate;index:number;tracks:Track[];low:number;high:number;ticks:number[]}
 @Component({selector:'app-sanger-primer-map',standalone:true,imports:[CommonModule,SangerPrimerDifferenceComponent,SangerWTPreviewComponent],templateUrl:'./sanger-primer-map.component.html',styleUrl:'./sanger-primer-map.component.css'})
 export class SangerPrimerMapComponent implements OnChanges {
@@ -34,7 +34,7 @@ export class SangerPrimerMapComponent implements OnChanges {
     if(raw?.mode==='guides')for(const g of raw.targets.toUpperCase().split(/[\s,;]+/).filter(Boolean))for(const seq of new Set([g,reverseComplement(g)])){
      let at=ref.sequence.indexOf(seq);while(at>=0){if(ref.cuts.some(c=>at<=c&&at+seq.length>=c))guides.push({start:this.offset(at,primary),end:this.offset(at+seq.length,primary)});at=ref.sequence.indexOf(seq,at+1);}
     }
-    return {name:ref.name,primary,partner,length:partner?Math.max(primary.end,partner.end)-Math.min(primary.start,partner.start):Math.min(this.result!.settings.readEnd,primary.direction==='forward'?ref.sequence.length-primary.end:primary.start)+candidate.sequence.length,cuts:ref.cuts.map((c,i)=>({name:ref.targetNames?.[i]||'T'+(i+1),offset:this.offset(c,primary)})),guides};
+    return {name:ref.name,inputReversed:ref.inputReversed,primary,partner,length:partner?Math.max(primary.end,partner.end)-Math.min(primary.start,partner.start):Math.min(this.result!.settings.readEnd,primary.direction==='forward'?ref.sequence.length-primary.end:primary.start)+candidate.sequence.length,cuts:ref.cuts.map((c,i)=>({name:ref.targetNames?.[i]||'T'+(i+1),offset:this.offset(c,primary)})),guides};
    });
    const low=-candidate.sequence.length,high=Math.max(1,...tracks.map(t=>t.length-candidate.sequence.length));
    const step=high>1000?250:100,ticks=Array.from({length:Math.floor(high/step)+1},(_,i)=>i*step);

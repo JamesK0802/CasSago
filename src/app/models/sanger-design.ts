@@ -1,5 +1,7 @@
 import {ReferenceSource} from './reference-source';
 export interface SangerReference {
+  /** Design coordinates use sequence; true records reversal of the supplied input. */
+  inputReversed?: boolean;
   name: string;
   sequence: string;
   /** Cut boundaries: N means the cut is after base N in the supplied strand. */

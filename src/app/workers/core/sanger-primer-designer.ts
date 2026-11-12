@@ -2,6 +2,7 @@ import {usablePrimerRead,annotatePrimerSafety,comparePrimerSafety} from './sange
 import {screenSharedSangerWT} from './sanger-primer-separation';
 import { alignTraceSequence } from './sanger-analysis';
 import { reverseComplement } from '../../utils/biology.utils';
+import {orientSangerReferences} from '../../utils/sanger-design.utils';
 import {designProgressiveSharedPrimers} from './sanger-shared-primer-designer';
 import { CommonPartner, PrimerProperties, PrimerSite, SangerCandidate, SangerDesignResult,
   SangerDesignSettings, SangerReference, ThreePrimeVariant } from '../../models/sanger-design';
@@ -202,6 +203,7 @@ function partnersFor(c: SangerCandidate, refs: SangerReference[], s: SangerDesig
 
 export function designSangerPrimers(refs: SangerReference[], s: SangerDesignSettings,
   progress: (fraction: number, stage: string) => void = () => {}): SangerDesignResult {
+  refs=orientSangerReferences(refs);
   validateDesign(refs,s);
   if (s.workflow === 'homeolog-pcr') return designSpecificPairs(refs,s,progress);
   if(s.workflow==='shared-sanger' && s.platform!=='ngs' && s.sharedPrimerPolicy==='progressive')return designProgressiveSharedPrimers(refs,s,progress);

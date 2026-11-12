@@ -7,6 +7,7 @@ export default defineConfig({test:{
   testTimeout:120000,
   include:[
     'tests/core/sanger-primer-designer.spec.ts',
+    'tests/core/sanger-reference-orientation.spec.ts',
     'tests/core/sanger-primer-safety.spec.ts',
     'tests/core/sanger-primer-separation.spec.ts',
     'tests/core/sanger-progressive-primer.spec.ts',
