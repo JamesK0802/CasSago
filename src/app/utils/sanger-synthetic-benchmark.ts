@@ -1,6 +1,6 @@
 import {SynthTargetProfile,mixTargetProfiles} from './sanger-synth-profiles';
 import {referenceChecksum} from './reference-checksum';
-import {SangerCandidate,SangerDesignResult} from '../models/sanger-design';
+import {oppositePrimer,SangerCandidate,SangerDesignResult} from '../models/sanger-design';
 import {SangerAnalysisResult,SangerJointEvent,TRACE_BASES} from '../models/sanger-analysis';
 import {selectedAmplicons,makeAnalysisTemplate,SangerAnalysisTemplate} from './sanger-design-export';
 import {reverseComplement} from './biology.utils';
@@ -15,7 +15,7 @@ export interface SynthTruth {targetStates?:number[];reference:string;sourceRefer
 export interface SynthDataset {control:ArrayBuffer;edit:ArrayBuffer;truth:SynthTruth[];template:SangerAnalysisTemplate;cycles:number;recipe:SynthReference[];mixing?:{method:'random-target-pairing';seed:number;populationPerReference:number};input:AutomaticSangerInput}
 export interface SynthComparison {profileCertificate?:{kind:'exact-complete-emission';maxDeltaPp:number;offProfilePp:number};optionMatch?:{indices:number[];sequenceIndices:number[];withinTolerance:boolean;range:[number,number];profileOptions:number[];tolerancePp:number};target?:number;reference:string;group:string;truth:number|null;estimated:number|null;delta:number|null;recovery:string;placement:string;pattern?:string;scope?:'reference'|'group';sequenceKey?:string;sequenceScope?:'sequence'|'pattern'}
 const dna=(s:string)=>s.replace(/\s/g,'').toUpperCase();
-export function synthReferences(result:SangerDesignResult,c:SangerCandidate):SynthReference[]{const a=selectedAmplicons(result,c);return a.map((r,i)=>({name:r.name,sourceReference:r.sourceReference,sequence:c.direction==='reverse'?reverseComplement(r.sequence):r.sequence,cuts:r.cuts.map(cut=>c.direction==='reverse'?r.sequence.length-cut:cut),targetNames:r.targetNames||r.cuts.map((_,t)=>'T'+(t+1)),share:i===a.length-1?100-Math.round(10000/a.length)/100*(a.length-1):Math.round(10000/a.length)/100,primerLength:c.sequence.length,partnerLength:c.partner!.sequence.length,alleles:[]}));}
+export function synthReferences(result:SangerDesignResult,c:SangerCandidate):SynthReference[]{const a=selectedAmplicons(result,c);return a.map((r,i)=>({name:r.name,sourceReference:r.sourceReference,sequence:c.direction==='reverse'?reverseComplement(r.sequence):r.sequence,cuts:r.cuts.map(cut=>c.direction==='reverse'?r.sequence.length-cut:cut),targetNames:r.targetNames||r.cuts.map((_,t)=>'T'+(t+1)),share:i===a.length-1?100-Math.round(10000/a.length)/100*(a.length-1):Math.round(10000/a.length)/100,primerLength:c.sequence.length,partnerLength:oppositePrimer(c,i)!.sequence.length,alleles:[]}));}
 export function synthWT(ref:SynthReference){return 100-ref.alleles.reduce((s,a)=>s+Number(a.percent),0);}
 /** Editable random defaults in sequencing orientation; never alter either primer site. */
 export function randomSynthEvent(ref:SynthReference,random:()=>number=Math.random,onlyTarget?:number):SynthEvent {

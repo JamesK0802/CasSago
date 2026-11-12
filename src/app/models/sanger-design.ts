@@ -9,6 +9,9 @@ export interface SangerReference {
   source?:ReferenceSource;
 }
 export interface SangerDesignSettings {
+  sharedPrimerPolicy?: 'exact' | 'progressive';
+  /** UI requests one relaxation stage at a time; absent retains automatic search. */
+  sharedSearchStage?:0|1|2|3;
   workflow: 'shared-sanger' | 'shared-pcr' | 'homeolog-pcr' | 'standard-pcr';
   platform?: 'sanger' | 'ngs';
   specificityMismatches: number; specificBoth: boolean;
@@ -17,6 +20,7 @@ export interface SangerDesignSettings {
   tmMin: number; tmMax: number; gcMin: number; gcMax: number;
   sodiumMm: number; primerNm: number;
   window: number; readStart: number; readEnd: number;
+  /** Minimum read-axis gap between every pair of reference/target cuts. */
   minOffset: number; indelRange: number;
   direction: 'both' | 'forward' | 'reverse';
   requirePartner: boolean; productMin: number; productMax: number;
@@ -30,6 +34,8 @@ export const SANGER_DEFAULTS: SangerDesignSettings = {
   productMin: 150, productMax: 1500, maxTmDifference: 5,
 };
 export interface PrimerSite {
+  /** One-based positions on the oligo, counted from its 5-prime end. */
+  mismatchPositions?:number[];
   reference: string;
   /** Zero-based, half-open coordinates on the supplied strand. */
   start: number; end: number;
@@ -42,8 +48,11 @@ export interface PrimerProperties {
   selfEnd: number; selfAny: number; hairpinStem: number;
 }
 export interface CommonPartner extends PrimerProperties {
+  /** Present when each reference uses its own opposite PCR oligo. */
+  perReference?:PrimerProperties[];
   sites: PrimerSite[]; products: number[]; pairEnd: number;
 }
+export interface OppositePrimerChoice {primer:PrimerProperties;site:PrimerSite;product:number;safety:PrimerBindingScreen}
 export interface ThreePrimeVariant {background:string;position:number;backgroundPosition:number;targetBase:string;backgroundBase:string;fromThreePrime:number;alignmentIdentity:number}
 export interface PrimerBindingScreen {
   searchLimit:3;
@@ -53,6 +62,12 @@ export interface PrimerBindingScreen {
   references:{reference:string;minimumMismatches:number;minimumExact:boolean;nearSiteCount:number;hasUnknownBases:boolean}[];
 }
 export interface SangerCandidate extends PrimerProperties {
+  oppositeChoices?:OppositePrimerChoice[][];
+  commonOppositeChoices?:CommonPartner[];
+  individualOppositeDefault?:CommonPartner;
+  oppositeSetChoices?:{partner:CommonPartner;screens:PrimerBindingScreen[]}[];
+  partnerSafety?:PrimerBindingScreen[];
+  sharedDesign?:{stage:'both-exact'|'one-exact'|'single-aligned'|'single-unrestricted'|'double';positionSpread:number;worstFivePrimePosition:number;terminalExact:10};
   primerSafety?:{primary:PrimerBindingScreen;partner:PrimerBindingScreen|null};
   wtSeparation?:{minimumDifferences:number;comparedBases:number;condition:number|null;warnings:string[]};
   id: string; direction: 'forward' | 'reverse'; sites: PrimerSite[];
@@ -63,7 +78,11 @@ export interface SangerCandidate extends PrimerProperties {
   referenceIndex?: number;
   specificity?: { primary: boolean; partner: boolean; mismatches: number;strategy?:'three-prime'|'mismatch';terminalWindow?:number;primaryVariants?:ThreePrimeVariant[];partnerVariants?:ThreePrimeVariant[] };
 }
+export function oppositePrimer(candidate:SangerCandidate,index:number):PrimerProperties|null {
+  return candidate.partner?.perReference?.[index] || candidate.partner || null;
+}
 export interface SangerDesignResult {
+  searchedStage?:0|1|2|3;
   candidates: SangerCandidate[];
   stats: { enumerated: number; qualityPassed: number; commonUnique: number;
     geometryPassed: number; offsetPassed: number; partnerChecked: number;separabilityRejected?:number };

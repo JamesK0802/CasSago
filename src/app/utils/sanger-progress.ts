@@ -1,5 +1,11 @@
 /** Estimated stage budget, not a measurement of wall-clock completion. */
 export function sangerProgress(stage:string):{percent:number;label:string}{
+ if(stage.startsWith('Fitting invariant-flank length proportions'))return {percent:25,label:'Length proportions'};
+ if(stage.startsWith('Constructing joint marginal constraints'))return {percent:35,label:'Joint measured constraints'};
+ if(stage.startsWith('Fitting measured base marginals'))return {percent:45,label:'Measured base proportions'};
+ if(stage.startsWith('Bounding base proportions'))return {percent:60,label:'Base-range optimization'};
+ if(stage.startsWith('Bounding substitution signal'))return {percent:96,label:'Joint substitution bounds'};
+ if(stage.startsWith('Preparing length and base-range results'))return {percent:98,label:'Preparing results'};
  if(stage==='Checking ground truth after inference')return{percent:99,label:'Ground-truth comparison'};
  if(stage.startsWith('Conditional prefix · ')){const inner=sangerProgress(stage.slice(21));return{percent:5+inner.percent*.2,label:'1 / 5 · First-target prefix'};}
  const refine=stage.match(/Refining first-target allocations · reference (\d+) \/ (\d+) · (\d+) \/ (\d+)/);
@@ -32,4 +38,10 @@ export function sangerProgress(stage:string):{percent:number;label:string}{
  if(/Calibrat|WT product|unedited pooled/.test(stage))return {percent:15,label:'2 / 7 · Control calibration'};
  if(/Fitting|separability/.test(stage))return {percent:35,label:'3 / 7 · Signal fitting'};
  return {percent:5,label:'1 / 7 · Trace registration'};
+}
+
+/** Ease toward reported stage progress without advancing just because time passed. */
+export function smoothSangerProgress(current:number,target:number):number {
+ const ceiling=Math.max(0,Math.min(99,target)),gap=Math.max(0,ceiling-current);
+ return current+Math.min(gap,Math.max(.02,Math.min(1.2,gap*.12)));
 }

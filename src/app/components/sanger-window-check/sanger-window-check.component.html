@@ -1,0 +1,247 @@
+        <div class="window-check-panel" id="guide-window-check-panel" *ngIf="showWindowCheck">
+          <div class="window-check-header">
+            <div class="window-check-title">
+              <h3>Window Check & Pairwise Similarity Matrix</h3>
+              <p class="window-check-hint">Extract cut-site windows and check similarity percentage between target sequences.</p>
+            </div>
+            <button type="button" class="btn-close-window-check" (click)="close.emit()">&times;</button>
+          </div>
+
+          <div class="window-controls-row">
+            <label class="control-label">Window Size (bp):</label>
+            <div class="slider-wrapper">
+              <input type="range" [min]="windowCheckSize < 30 ? 1 : 30" [max]="windowCheckSize > 180 ? 1000 : 180" step="1" [ngModel]="windowCheckSize"
+                [ngModelOptions]="{standalone: true}" (ngModelChange)="onWindowCheckSizeChange($event)"
+                class="window-range-slider" />
+              <span class="range-bound min-bound">{{windowCheckSize < 30 ? 1 : 30}}</span>
+              <span class="range-bound max-bound">{{windowCheckSize > 180 ? 1000 : 180}}</span>
+            </div>
+            <div class="number-input-wrapper">
+              <input type="number" min="1" max="1000" [ngModel]="windowCheckSize"
+                [ngModelOptions]="{standalone: true}" (ngModelChange)="onWindowCheckSizeChange($event)"
+                class="form-control window-number-input" />
+              <span class="unit-label">bp</span>
+            </div>
+          </div>
+
+          <!-- Loading Spinner -->
+          <div class="window-check-loading" *ngIf="isCalculatingWindowCheck">
+            <div class="spinner"></div>
+            <span>Calculating window extraction and similarity matrix...</span>
+          </div>
+
+          <!-- Content Results -->
+          <p *ngIf="windowCheckError" role="alert">{{windowCheckError}}</p>
+          <div class="window-check-results" *ngIf="!isCalculatingWindowCheck && !windowCheckError">
+            <div *ngIf="extractedWindows.length === 0" class="no-windows-alert">
+              No valid reference sequences or gRNA targets entered yet. Please fill out the reference configuration below.
+            </div>
+
+            <div *ngIf="extractedWindows.length > 0">
+              <div class="homoeolog-overviews" *ngIf="homoeologMode && homoeologOverviews.length">
+                <div class="homoeolog-overview-card" *ngFor="let overview of homoeologOverviews">
+                  <div class="homoeolog-overview-head">
+                    <strong>{{ overview.groupId }}</strong>
+                  </div>
+                  <div class="homoeolog-lane" *ngFor="let lane of overview.lanes">
+                    <div class="homoeolog-lane-label" [title]="lane.geneName + (lane.isAnchor ? ' · baseline' : '')">
+                      <label class="homoeolog-anchor-toggle" [title]="lane.isAnchor ? 'Baseline reference' : 'Use as baseline'">
+                        <input type="checkbox" [checked]="lane.isAnchor"
+                          (change)="selectHomoeologAnchor(overview.groupId, lane.geneIndex)" />
+                        <span></span>
+                      </label>
+                      <strong>{{ lane.geneName }}</strong>
+                    </div>
+                    <div class="homoeolog-track">
+                      <div class="homoeolog-track-line"></div>
+                      <div *ngFor="let difference of lane.differences" class="homoeolog-difference"
+                        [style.left.%]="difference.leftPercent" [style.width.%]="difference.widthPercent"
+                        [title]="'Homoeolog difference · ' + difference.label"></div>
+                      <ng-container *ngFor="let marker of lane.markers; let markerIndex = index">
+                        <div *ngIf="marker.windowLeftPercent !== undefined" class="homoeolog-window"
+                          [style.left.%]="marker.windowLeftPercent" [style.width.%]="marker.windowWidthPercent"
+                          [style.--marker-color]="targetColor(markerIndex)"
+                          [title]="marker.targetId + ' window'"></div>
+                        <div *ngIf="marker.guideLeftPercent !== undefined" class="homoeolog-guide"
+                          [class.near]="!marker.exact"
+                          [style.left.%]="marker.guideLeftPercent" [style.width.%]="marker.guideWidthPercent"
+                          [style.--marker-color]="targetColor(markerIndex)"
+                          [title]="marker.targetId + ' gRNA · cut ' + marker.cutSite"></div>
+                        <b *ngIf="marker.leftPercent !== undefined" class="homoeolog-marker-label"
+                          [style.left.%]="marker.leftPercent"
+                          [style.--marker-color]="targetColor(markerIndex)"
+                          [title]="marker.targetId + ' · cut ' + marker.cutSite + (marker.exact ? ' · exact' : ' · ' + marker.mismatches + ' mismatch')">
+                          {{ marker.targetId }}
+                          <small *ngIf="marker.windowDifferenceBp !== undefined"
+                            [class.same]="marker.windowDifferenceBp === 0">{{ marker.windowDifferenceBp }} bp</small>
+                        </b>
+                        <div *ngIf="marker.leftPercent === undefined" class="homoeolog-marker-error"
+                          [style.top.px]="8" [title]="marker.error">
+                          {{ marker.targetId }} !
+                        </div>
+                      </ng-container>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Extracted Windows Cards List -->
+              <div class="windows-list-section">
+                <h4>Extracted Target Windows (Size: {{ windowCheckSize }} bp)</h4>
+                <div class="windows-grid">
+                  <div *ngFor="let item of extractedWindows" class="window-card">
+                    <div class="window-card-header">
+                      <span class="window-target-name">{{ item.geneName }} - {{ item.targetId }}</span>
+                      <span class="window-length-badge">{{ item.sequence.length }} bp</span>
+                    </div>
+                    <div class="window-meta" *ngIf="item.cutSiteIndex !== -1">
+                      Cut Site Index: {{ item.cutSiteIndex }} | Strand: {{ item.strand }} | PAM: <code>{{ item.pam }}</code>
+                      <span class="near-match-badge" *ngIf="item.guideMatch && !item.guideMatch.exact">
+                        {{ item.guideMatch.mismatches }} mismatch
+                      </span>
+                    </div>
+                    <div class="window-meta warning" *ngIf="item.cutSiteIndex === -1">
+                      gRNA not matched in reference (fallback center window)
+                    </div>
+
+                    <!-- Clean Visual Reference Map Bar -->
+                    <div class="ref-map-bar-wrapper" *ngIf="item.refLength">
+                      <div class="ref-map-bar" [title]="'Ref: ' + item.refLength + ' bp | Window: ' + item.winStart + '-' + item.winEnd + ' bp | Target: ' + item.grnaStart + '-' + item.grnaEnd + ' bp'">
+                        <div class="ref-map-bg"></div>
+                        <div class="ref-map-win" [style.left.%]="item.winLeftPercent" [style.width.%]="item.winWidthPercent"></div>
+                        <div class="ref-map-target" *ngIf="item.targetLeftPercent !== undefined" [style.left.%]="item.targetLeftPercent" [style.width.%]="item.targetWidthPercent"></div>
+                      </div>
+                    </div>
+
+                    <div class="window-seq monospaced">
+                      {{ item.sequence }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bottom-Left Shared Section Legend -->
+                <div class="global-ref-map-legend-bottom">
+                  <span class="legend-item legend-ref"><span class="legend-box box-ref"></span> Reference</span>
+                  <span class="legend-item legend-win"><span class="legend-box box-win"></span> Extracted Window</span>
+                  <span class="legend-item legend-target"><span class="legend-box box-target"></span> Target (gRNA)</span>
+                </div>
+              </div>
+
+              <!-- Pairwise Similarity Matrix Table -->
+              <div class="similarity-matrix-section">
+                <div class="matrix-header-row">
+                  <h4>Pairwise Window Similarity Matrix (%)</h4>
+                  <span class="matrix-hint">Click any cell to compare sequences below · Drag mouse left/right to scroll</span>
+                </div>
+                <div class="matrix-table-wrapper scrollable-drag" #matrixWrapper
+                  (mousedown)="startDragScroll($event, matrixWrapper)"
+                  (mouseleave)="stopDragScroll(matrixWrapper)"
+                  (mouseup)="stopDragScroll(matrixWrapper)"
+                  (mousemove)="onDragScroll($event, matrixWrapper)">
+                  <table class="similarity-table">
+                    <thead>
+                      <tr>
+                        <th class="corner-cell">Target</th>
+                        <th *ngFor="let w of extractedWindows" class="col-header" [title]="itemLabel(w)">
+                          {{ w.targetId }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let rowW of extractedWindows; let rIdx = index">
+                        <th class="row-header" [title]="itemLabel(rowW)">
+                          {{ rowW.targetId }} ({{ rowW.geneName }})
+                        </th>
+                        <td *ngFor="let colW of extractedWindows; let cIdx = index"
+                          (click)="selectPairComparison(rIdx, cIdx)"
+                          [style.background-color]="getHeatmapColor(similarityMatrix[rIdx][cIdx], rIdx === cIdx)"
+                          [class.diagonal]="rIdx === cIdx"
+                          [class.selected-cell]="selectedPairRowIndex === rIdx && selectedPairColIndex === cIdx"
+                          title="Click to compare alignment between {{ rowW.targetId }} and {{ colW.targetId }}">
+                          <span class="similarity-pct">{{ similarityMatrix[rIdx][cIdx] | number:'1.1-1' }}%</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Pairwise Sequence Alignment Comparison Panel -->
+              <div id="guide-pair-comparison" class="pair-comparison-section" *ngIf="selectedPairComparison">
+                <div class="pair-comparison-header">
+                  <div class="pair-title-info">
+                    <h4>
+                      Sequence Comparison:
+                      <span class="highlight-target">{{ selectedPairComparison.target1.targetId }}</span> ({{ selectedPairComparison.target1.geneName }})
+                      <span class="vs-badge">VS</span>
+                      <span class="highlight-target">{{ selectedPairComparison.target2.targetId }}</span> ({{ selectedPairComparison.target2.geneName }})
+                    </h4>
+                  </div>
+                  <div class="pair-stats">
+                    <span class="stat-badge cut-site-legend">✂ Cut Site</span>
+                    <span class="stat-badge similarity">Similarity: {{ selectedPairComparison.similarity | number:'1.1-1' }}%</span>
+                    <span class="stat-badge matches">Matches: {{ selectedPairComparison.matchCount }} / {{ selectedPairComparison.totalLen }} bp</span>
+                    <span class="stat-badge mismatches" *ngIf="selectedPairComparison.mismatchCount > 0">Mismatches: {{ selectedPairComparison.mismatchCount }}</span>
+                    <button type="button" class="btn-close-comparison" (click)="clearPairComparison()">&times;</button>
+                  </div>
+                </div>
+
+                <div class="alignment-box monospaced scrollable-drag" #alignBox
+                  (mousedown)="startDragScroll($event, alignBox)"
+                  (mouseleave)="stopDragScroll(alignBox)"
+                  (mouseup)="stopDragScroll(alignBox)"
+                  (mousemove)="onDragScroll($event, alignBox)">
+                  <!-- Row 1: Target 1 -->
+                  <div class="alignment-row">
+                    <div class="alignment-label" [title]="itemLabel(selectedPairComparison.target1)">
+                      {{ selectedPairComparison.target1.targetId }}
+                    </div>
+                    <div class="alignment-seq">
+                      <span *ngFor="let t of selectedPairComparison.tokens1"
+                        class="base-char"
+                        [class.match]="t.isMatch"
+                        [class.mismatch]="!t.isMatch && !t.isGap"
+                        [class.gap]="t.isGap"
+                        [class.cut-site]="t.isCutSite"
+                        [title]="t.isCutSite ? 'Cut Site Position' : ''">
+                        {{ t.char }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Row 2: Match Bar -->
+                  <div class="alignment-row match-bar-row">
+                    <div class="alignment-label"></div>
+                    <div class="alignment-seq match-bar">
+                      <span *ngFor="let m of selectedPairComparison.matchBar"
+                        class="match-icon"
+                        [class.match]="m === '|'"
+                        [class.mismatch]="m === '•'"
+                        [class.cut-site-icon]="m === '✂'">
+                        {{ m }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Row 3: Target 2 -->
+                  <div class="alignment-row">
+                    <div class="alignment-label" [title]="itemLabel(selectedPairComparison.target2)">
+                      {{ selectedPairComparison.target2.targetId }}
+                    </div>
+                    <div class="alignment-seq">
+                      <span *ngFor="let t of selectedPairComparison.tokens2"
+                        class="base-char"
+                        [class.match]="t.isMatch"
+                        [class.mismatch]="!t.isMatch && !t.isGap"
+                        [class.gap]="t.isGap"
+                        [class.cut-site]="t.isCutSite"
+                        [title]="t.isCutSite ? 'Cut Site Position' : ''">
+                        {{ t.char }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>

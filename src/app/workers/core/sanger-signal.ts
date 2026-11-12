@@ -17,11 +17,13 @@ export function integratedPeaks(trace:SangerTrace,fixedBackground?:number[]):Pea
 }
 /** Learn background only where every supplied WT sequence has no emitting base
  * in this channel at the current or adjacent cycle. Uses upstream TRAIN rows only,
- * never edited fractions/residuals. Midpoint peak tails are not a background oracle. */
+ * never edited fractions/residuals. Sample the quiet-cycle lower envelope,
+ * not peak-centre cross-colour photons. A midpoint tail alone is not a
+ * background oracle; the entire cycle must be WT-quiet in this channel. */
 export function referenceBackgroundPeaks(trace:SangerTrace,sequences:string[],trim:number,positions:number[],minimumSamples=8):PeakSignal{
- const raw=integratedPeaks(trace,[0,0,0,0]),training=positions.filter((_,i)=>i%3!==0),samples=TRACE_BASES.map(()=>[] as number[]);
+ const training=positions.filter((_,i)=>i%3!==0),samples=TRACE_BASES.map(()=>[] as number[]);
  for(const p of training){const at=p-trim;if(at<1||at>=trace.peaks.length-1)continue;
-  TRACE_BASES.forEach((base,b)=>{if(sequences.every(s=>[-1,0,1].every(d=>/[ACGT]/.test(s[p+d]||'')&&s[p+d]!==base)))samples[b].push(raw.areas![at][b]);});
+  TRACE_BASES.forEach((base,b)=>{if(sequences.every(s=>[-1,0,1].every(d=>/[ACGT]/.test(s[p+d]||'')&&s[p+d]!==base))){const channel=trace.channels[base],first=Math.max(0,Math.ceil((trace.peaks[at-1]+trace.peaks[at])/2)),last=Math.min(channel.length-1,Math.floor((trace.peaks[at]+trace.peaks[at+1])/2));let floor=Infinity;for(let j=first;j<=last;j++)floor=Math.min(floor,channel[j]);if(Number.isFinite(floor))samples[b].push(Math.max(0,floor));}});
  }
  const background=samples.map(v=>v.length>=minimumSamples?median(v):0),corrected=integratedPeaks(trace,background);
  return {...corrected,background,backgroundSamples:samples.map(v=>v.length)};

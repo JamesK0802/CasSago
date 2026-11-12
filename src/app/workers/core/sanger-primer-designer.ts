@@ -2,6 +2,7 @@ import {usablePrimerRead,annotatePrimerSafety,comparePrimerSafety} from './sange
 import {screenSharedSangerWT} from './sanger-primer-separation';
 import { alignTraceSequence } from './sanger-analysis';
 import { reverseComplement } from '../../utils/biology.utils';
+import {designProgressiveSharedPrimers} from './sanger-shared-primer-designer';
 import { CommonPartner, PrimerProperties, PrimerSite, SangerCandidate, SangerDesignResult,
   SangerDesignSettings, SangerReference, ThreePrimeVariant } from '../../models/sanger-design';
 
@@ -49,7 +50,7 @@ function hairpinStem(seq: string): number {
   }
   return best;
 }
-function properties(seq: string, s: SangerDesignSettings): PrimerProperties | null {
+export function properties(seq: string, s: SangerDesignSettings): PrimerProperties | null {
   if (/[^ACGT]/.test(seq) || /([ACGT])\1{4}/.test(seq)) return null;
   const gc = 100 * (seq.match(/[GC]/g)?.length || 0) / seq.length;
   const tm = nearestNeighbourTm(seq,s.sodiumMm,s.primerNm);
@@ -62,7 +63,7 @@ function properties(seq: string, s: SangerDesignSettings): PrimerProperties | nu
 type Direction = 'forward' | 'reverse';
 /** Enumerate target-local oligos, then scan the entire supplied sequence for
  * those candidates. This avoids indexing every genomic k-mer in a long reference. */
-function localOligos(ref: SangerReference, k: number, direction: Direction, reach: number): Set<string> {
+export function localOligos(ref: SangerReference, k: number, direction: Direction, reach: number): Set<string> {
   const dna = direction === 'forward' ? ref.sequence : reverseComplement(ref.sequence);
   const cuts = ref.cuts.map(c => direction === 'forward' ? c : dna.length-c);
   const lo = Math.max(0,Math.min(...cuts)-reach-k);
@@ -95,7 +96,7 @@ export function exactBindingSites(seq: string, ref: SangerReference): { start: n
   }
   return hits;
 }
-function site(ref: SangerReference, start: number, k: number, direction: Direction, s: SangerDesignSettings): PrimerSite {
+export function site(ref: SangerReference, start: number, k: number, direction: Direction, s: SangerDesignSettings): PrimerSite {
   const dna = direction === 'forward' ? ref.sequence : reverseComplement(ref.sequence);
   return { reference: ref.name, direction,
     start: direction === 'forward' ? start : dna.length-start-k,
@@ -103,12 +104,12 @@ function site(ref: SangerReference, start: number, k: number, direction: Directi
     cutOffsets: ref.cuts.map(c => (direction === 'forward' ? c : dna.length-c) - start-k),
     extension: dna.slice(start+k,start+k+s.readEnd) };
 }
-function windows(ref: SangerReference, s: SangerDesignSettings): [number,number][] {
+export function windows(ref: SangerReference, s: SangerDesignSettings): [number,number][] {
   return ref.cuts.map(c => [c-Math.floor(s.window/2),c+Math.ceil(s.window/2)]);
 }
 export function primerTargetDistance(c: SangerCandidate): number {return Math.max(...c.sites.flatMap(hit=>hit.cutOffsets));}
 export function comparePrimerDistance(a:SangerCandidate,b:SangerCandidate):number {return primerTargetDistance(a)-primerTargetDistance(b) || Math.abs(a.tm-60)-Math.abs(b.tm-60) || (Math.max(...(a.partner?.products||[0]))-Math.max(...(b.partner?.products||[0]))) || a.id.localeCompare(b.id);}
-function coversRead(sites: PrimerSite[], refs: SangerReference[], s: SangerDesignSettings): boolean {
+export function coversRead(sites: PrimerSite[], refs: SangerReference[], s: SangerDesignSettings): boolean {
   // Quantitative Sanger needs an intact upstream calibration interval.
   // Match the template handoff contract even for a single PCR product.
   if(s.platform!=='ngs'&&s.workflow!=='shared-pcr'&&sites.some(hit=>hit.cutOffsets.some(c=>c<usablePrimerRead(s,hit.extension.length).start+72)))return false;
@@ -118,15 +119,16 @@ function coversRead(sites: PrimerSite[], refs: SangerReference[], s: SangerDesig
     return lo >= 0 && hi <= refs[i].sequence.length && (s.platform==='ngs' ? start>=0 : start-s.indelRange >= usablePrimerRead(s,hit.extension.length).start && end+s.indelRange <= usablePrimerRead(s,hit.extension.length).end);
   }));
 }
-function minOffset(sites: PrimerSite[]): number {
-  let gap = sites.length<2 ? 0 : Infinity;
-  for (let a = 0; a < sites.length; a++) for (let b = a+1; b < sites.length; b++) {
-    // T1 is compared with T1 across references, even on reverse-oriented reads.
-    for (let t = 0; t < sites[a].cutOffsets.length; t++) gap = Math.min(gap,Math.abs(sites[a].cutOffsets[t]-sites[b].cutOffsets[t]));
-  }
+export function minOffset(sites: PrimerSite[]): number {
+  // All ref/target cuts share the sequencing-primer read axis. A different
+  // gene, guide or target index does not exempt a pair from the spacing rule.
+  // Keep duplicates: two distinct targets at the same read cycle have gap 0.
+  const cuts=sites.flatMap(s=>s.cutOffsets).sort((a,b)=>a-b);
+  let gap = cuts.length<2 ? 0 : Infinity;
+  for(let i=1;i<cuts.length;i++)gap=Math.min(gap,cuts[i]-cuts[i-1]);
   return gap;
 }
-function traceDistance(sites: PrimerSite[], s: SangerDesignSettings): [number,number] {
+export function traceDistance(sites: PrimerSite[], s: SangerDesignSettings): [number,number] {
   let differences = sites.length<2 ? 0 : Infinity, compared = sites.length<2 ? Math.max(0,Math.min(s.readEnd,sites[0].extension.length)-s.readStart) : Infinity;
   for (let a = 0; a < sites.length; a++) for (let b = a+1; b < sites.length; b++) {
     const range=s.platform==='ngs'?{start:s.readStart,end:Math.min(s.readEnd,sites[a].extension.length,sites[b].extension.length)}:usablePrimerRead(s,Math.min(sites[a].extension.length,sites[b].extension.length)),end=range.end;
@@ -169,7 +171,7 @@ export function validateDesign(refs: SangerReference[], s: SangerDesignSettings)
  * adding a design mode or rejecting otherwise valid one-direction PCR pairs. */
 export function oppositeReadReady(sites:PrimerSite[],refs:SangerReference[],s:SangerDesignSettings):boolean {
  if(!refs.some(r=>r.cuts.length>1)||!coversRead(sites,refs,s))return false;
- if(s.workflow==='shared-sanger')for(let h=0;h<sites.length;h++)for(let k=h+1;k<sites.length;k++)for(let t=0;t<refs[h].cuts.length;t++)if(Math.abs(sites[h].cutOffsets[t]-sites[k].cutOffsets[t])<=2*s.indelRange)return false;
+ if(s.workflow==='shared-sanger'&&minOffset(sites)<=2*s.indelRange)return false;
  return true;
 }
 function partnersFor(c: SangerCandidate, refs: SangerReference[], s: SangerDesignSettings,
@@ -202,6 +204,7 @@ export function designSangerPrimers(refs: SangerReference[], s: SangerDesignSett
   progress: (fraction: number, stage: string) => void = () => {}): SangerDesignResult {
   validateDesign(refs,s);
   if (s.workflow === 'homeolog-pcr') return designSpecificPairs(refs,s,progress);
+  if(s.workflow==='shared-sanger' && s.platform!=='ngs' && s.sharedPrimerPolicy==='progressive')return designProgressiveSharedPrimers(refs,s,progress);
   const stats = { enumerated:0,qualityPassed:0,commonUnique:0,geometryPassed:0,offsetPassed:0,partnerChecked:0 };
   const candidates: SangerCandidate[] = [];
   const canPair=refs.every(r=>r.sequence.length>=s.productMin);

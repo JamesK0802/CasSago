@@ -8,7 +8,7 @@ function validateResult(value:any):asserts value is SangerAnalysisResult{
 }
 export function parseSangerReport(text:string){
  const report=JSON.parse(text);if(report?.format!=='casmango-sanger-result-v2')throw Error('Use a CasSago result JSON exported by this tool.');validateResult(report.result);if(report.originalResult)validateResult(report.originalResult);
- const curation=report.curation?.active===true?{active:true,excludedGroups:Array.isArray(report.curation.excludedGroups)?report.curation.excludedGroups.filter((v:unknown)=>typeof v==='string'):[]}:null;
+ const curation=report.curation?.active===true?{active:true,excludedGroups:Array.isArray(report.curation.excludedGroups)?report.curation.excludedGroups.filter((v:unknown)=>typeof v==='string'):[],excludedScopes:Array.isArray(report.curation.excludedScopes)?report.curation.excludedScopes.filter((v:unknown)=>typeof v==='string'):[]}:null;
  if(curation&&!report.originalResult)throw Error('A curated report must include its original result.');
  return {result:report.result as SangerAnalysisResult,originalResult:(report.originalResult||null) as SangerAnalysisResult|null,curation,input:report.input,view:report.view,benchmark:report.benchmark,syntheticTruth:report.syntheticTruth};
 }

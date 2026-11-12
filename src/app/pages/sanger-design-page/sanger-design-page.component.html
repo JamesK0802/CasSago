@@ -1,7 +1,10 @@
 <section class="design-page" aria-labelledby="sanger-title">
   <header class="design-header">
     <h1 id="sanger-title" title="CRISPR Amplicon Sequencing with Sanger Analysis for Genotyping and Outcomes">Primer Design</h1>
-    <button type="button" class="quiet" *ngIf="activeSection === 'design'" (click)="loadExample()" [disabled]="busy">Load example</button>
+    <div class="sample-actions" *ngIf="activeSection === 'design'">
+      <button type="button" class="quiet" (click)="loadExample()" [disabled]="busy">Load example</button>
+      <button type="button" class="quiet" (click)="loadCpcTrySample()" [disabled]="busy">CPC / TRY sample</button>
+    </div>
   </header>
   <div id="sanger-design-panel" class="design-layout" role="tabpanel" aria-labelledby="sanger-design-tab" [hidden]="activeSection !== 'design'">
     <div class="setup">
@@ -30,40 +33,71 @@
         </section>
       </fieldset>
       <div class="run-actions"><button type="button" class="primary" *ngIf="!busy" (click)="search()">Find primers <span>→</span></button><button type="button" *ngIf="busy" (click)="cancel()">Cancel search</button></div>
-      <div class="progress" *ngIf="busy" aria-live="polite"><progress max="100" [value]="progress"></progress><span>{{ stage }} · {{ progress }}%</span></div>
       <p class="error" role="alert" *ngIf="error">{{ error }}</p><p class="notice" aria-live="polite" *ngIf="notice">{{ notice }}</p>
     </div>
-    <div class="results">
-      <div class="empty" *ngIf="!result && !busy"><div class="empty-icon" aria-hidden="true">↦</div><h2>Design from full-length references</h2><p>Add genes and one or two named gRNAs, then find primers.</p><div class="scope-tag">Target-local candidates · full-input binding checks · both strands</div></div>
-      <div class="empty" *ngIf="busy"><h2>Searching the supplied references</h2><p>{{ stage }}</p></div>
+    <div class="results" #primerResults>
+      <div class="empty primer-placeholder" *ngIf="!result && !busy" aria-label="Primer results"><p>Find primers to see results</p></div>
+      <div class="empty primer-loading" *ngIf="busy && !result" role="status" aria-live="polite"><span class="primer-spinner" aria-hidden="true"></span><p>Finding primers…</p></div>
       <ng-container *ngIf="result">
         <header class="results-header"><div><div class="eyebrow">DESIGN RESULTS</div><h2>{{ status }}</h2></div></header>
-        <div class="result-status" *ngIf="!result.candidates.length"><h3>{{ noResultReason }}</h3><p *ngIf="!result.complete">A ranked candidate shortlist was checked. This is a bounded search.</p><p>No match applies to the supplied sequences and settings, not every possible experimental design.</p></div>
         <div class="coverage-list" *ngIf="result.coverage"><span *ngFor="let coverage of result.coverage" [class.missing]="!coverage.candidates">{{ coverage.reference }} <strong>{{ coverage.candidates ? coverage.candidates + ' pairs' : 'No pair in shortlist' }}</strong></span></div>
         <div class="candidate-table" *ngIf="result.candidates.length">
-          <table>
+          <table class="primer-results-table">
+            <colgroup><col class="primer-col-index"><col class="primer-col-sequence"><col class="primer-col-distance"><col class="primer-col-tm"><col class="primer-col-gc"><col class="primer-col-safety"><col class="primer-col-length"></colgroup>
             <thead><tr>
               <th class="candidate-index">#</th><th title="PCR primer reused for sequencing; arrow shows its extension direction">Sequencing primer · 5′ → 3′</th>
-              <th title="Opposite PCR primer; reverse when the sequencing primer is forward, and vice versa">Opposite PCR primer · 5′ → 3′</th>
-              <th title="Expected PCR product lengths, in input-reference order">Amplicon sizes</th>
-              <th>Tm (°C)</th><th>GC (%)</th>
-              <th title="Minimum sequencing-primer mismatches at unintended sites across all supplied references, including the same reference; intended sites excluded">Min other-site difference</th><th class="chroma-column">Open Map</th>
+              <th title="Distance from sequencing primer end to each cut">Cut distance (bp)</th>
+              <th title="Perfect-duplex estimate; mismatch duplex stability is not predicted">Tm (°C)</th><th>GC (%)</th>
+              <th title="Minimum sequencing-primer mismatches at unintended sites across all supplied references, including the same reference; intended sites excluded">Min other-site difference</th><th>Length (nt)</th>
             </tr></thead>
-            <tbody><ng-container *ngFor="let c of visibleCandidates; let i = index"><tr [class.selected]="selected?.id === c.id" (click)="selectCandidate(c)">
+            <tbody *ngFor="let c of visibleCandidates;let i=index" [class.selected-primer-block]="isSelected(c)"><tr [class.selected]="isSelected(c)" (click)="selectCandidate(c)">
               <td class="candidate-index">{{i+1}}</td><td><button type="button" class="candidate" (click)="selectCandidate(c)"><code>{{ c.sequence }}</code><span class="direction" [title]="c.direction === 'forward' ? 'Forward sequencing primer' : 'Reverse sequencing primer'">{{ c.direction === 'forward' ? 'F →' : 'R ←' }}</span></button></td>
-              <td><code class="partner-option">{{ c.partner?.sequence || '—' }}</code></td>
-              <td>{{ c.partner ? c.partner.products.join(' / ') + ' bp' : '—' }}</td>
+              <td><span class="reference-distance" *ngFor="let site of c.sites">{{site.reference}}: {{site.cutOffsets.join(' / ')}}</span></td>
               <td>{{ c.tm | number:'1.1-1' }}</td><td>{{ c.gc | number:'1.0-0' }}%</td>
-              <td><app-sanger-primer-difference [candidate]="c" [result]="result" /></td><td class="chroma-column"><button type="button" class="trace-toggle" (click)="$event.stopPropagation();toggleCandidateMap(c)" [attr.aria-expanded]="showMap && selected?.id===c.id" [attr.aria-label]="'Toggle map for pair '+(i+1)"><span class="chroma-chevron">{{showMap && selected?.id===c.id?'▴':'▾'}}</span></button></td>
-            </tr><tr class="inline-wt-row" *ngIf="selected?.id===c.id && showMap"><td colspan="8"><app-sanger-primer-map [compact]="true" [result]="result" [candidates]="[c]" [selected]="c" [references]="rows" [showChroma]="showChroma" (candidateSelected)="selectCandidate($event)" (chromaRequested)="toggleCandidateTrace($event)" /></td></tr></ng-container></tbody>
+              <td><app-sanger-primer-difference [candidate]="c" [result]="result" [showOpposite]="isSelected(c) && oppositeConfirmed" /></td><td>{{c.sequence.length}}</td>
+            </tr>
+            <ng-container *ngIf="isSelected(c) && oppositeConfirmed && selected as active">
+              <tr class="opposite-summary-heading"><td></td><td>Opposite primer{{active.partner?.perReference?'s':''}} · 5′ → 3′</td><td>Product (bp)</td><td colspan="4"></td></tr>
+              <tr class="selected-opposite-row" *ngFor="let row of selectedOppositeRows;let r=index">
+                <td class="candidate-index opposite-reference">{{row.reference}}</td>
+                <td><span class="primer-colour-dot" [style.background]="oppositeColour(active.partner,r)" aria-hidden="true"></span><code>{{row.primer.sequence}}</code></td>
+                <td><ng-container *ngIf="row.reference;else sharedProducts">{{active.partner!.products[r]}}</ng-container><ng-template #sharedProducts><span class="reference-distance" *ngFor="let site of active.sites;let j=index">{{site.reference}}: {{active.partner!.products[j]}}</span></ng-template></td>
+                <td>{{row.primer.tm|number:'1.1-1'}}</td>
+                <td>{{row.primer.gc|number:'1.0-0'}}%</td>
+                <td>{{mismatchLabel(row.screen)}} bp</td>
+                <td>{{row.primer.sequence.length}}</td>
+              </tr>
+            </ng-container>
+            <tr class="inline-wt-row" *ngIf="isSelected(c) && showMap"><td colspan="7"><ng-container *ngIf="selected as active">
+              <app-sanger-primer-map [compact]="true" [showOpposite]="oppositeConfirmed" [result]="result" [candidates]="[active]" [selected]="active" [references]="rows" [showChroma]="showChroma" (candidateSelected)="selectCandidate($event)" (chromaRequested)="toggleCandidateTrace($event)">
+                <button map-actions type="button" class="choose-opposite" (click)="showOppositeChoices=!showOppositeChoices" [attr.aria-expanded]="showOppositeChoices">{{oppositeConfirmed?'Change opposite primers':'Choose opposite primers'}} <span aria-hidden="true">{{showOppositeChoices?'▴':'▾'}}</span></button>
+              </app-sanger-primer-map>
+              <div class="opposite-step" *ngIf="showOppositeChoices" (click)="$event.stopPropagation()">
+                <ng-container *ngIf="showOppositeChoices"><h3>Opposite primer set</h3>
+                  <div class="opposite-ticket-list"><button type="button" class="opposite-ticket" *ngFor="let ticket of oppositeTickets.slice(0,oppositeVisibleCount);let t=index;trackBy:trackOppositeTicket" [class.chosen]="ticketSelected(ticket)" [attr.aria-pressed]="ticketSelected(ticket)" [attr.aria-label]="'Select opposite primer set '+(t+1)" (click)="chooseOppositeTicket(t)">
+                    <span class="ticket-heading"><strong>{{ticket.common?'One primer for all references':'Individual primers · one complete set'}}</strong><span>{{ticketSelected(ticket)?'Selected ✓':'Select →'}}</span></span>
+                    <ng-container *ngIf="ticket.common;else individualTicket">
+                      <span class="shared-primer-grid ticket-columns" aria-hidden="true"><span>Opposite primer · 5′ → 3′</span><span>Length</span><span>Tm (°C)</span><span>GC (%)</span><span>Other-site diff.</span></span>
+                      <span class="shared-primer-grid ticket-reference"><code [style.color]="oppositeColour(ticket.partner,0)">{{ticket.partner.sequence}}</code><span>{{ticket.partner.sequence.length}} nt</span><span>{{ticket.partner.tm|number:'1.1-1'}}</span><span>{{ticket.partner.gc|number:'1.0-0'}}%</span><span>{{mismatchLabel(ticketScreen(ticket,0))}} bp</span></span>
+                      <span class="shared-products"><span class="products-label">Products</span><span *ngFor="let h of active.sites;let r=index"><strong>{{h.reference}}</strong> {{ticket.partner.products[r]}} bp</span></span>
+                    </ng-container>
+                    <ng-template #individualTicket>
+                      <span class="opposite-primer-grid ticket-columns" aria-hidden="true"><span>Reference</span><span>Opposite primer · 5′ → 3′</span><span>Length</span><span>Tm (°C)</span><span>GC (%)</span><span>Other-site diff.</span><span>Product</span></span>
+                      <span class="opposite-primer-grid ticket-reference" *ngFor="let h of active.sites;let r=index"><strong>{{h.reference}}</strong><code [style.color]="oppositeColour(ticket.partner,r)">{{ticketPrimer(ticket,r).sequence}}</code><span>{{ticketPrimer(ticket,r).sequence.length}} nt</span><span>{{ticketPrimer(ticket,r).tm|number:'1.1-1'}}</span><span>{{ticketPrimer(ticket,r).gc|number:'1.0-0'}}%</span><span>{{mismatchLabel(ticketScreen(ticket,r))}} bp</span><span>{{ticket.partner.products[r]}} bp</span></span>
+                    </ng-template>
+                  </button></div>
+                  <button type="button" class="more-opposites" *ngIf="oppositeVisibleCount<oppositeTickets.length" (click)="oppositeVisibleCount=oppositeVisibleCount+3">Show 3 more opposite sets</button>
+                </ng-container>
+              </div>
+            </ng-container></td></tr></tbody>
           </table>
         </div>
-        <div class="candidate-pagination" *ngIf="visibleCandidates.length < result.candidates.length"><button type="button" (click)="loadMore()">Load 10 more</button></div>
-        <app-sanger-amplicon-alignment [result]="result" [selected]="selected" [references]="rows" />
-        <div class="analysis-handoff" *ngIf="selected?.partner"><button type="button" (click)="showSynth=!showSynth" [attr.aria-expanded]="showSynth">Generate Synth Data</button><button type="button" (click)="exportAnalysisTemplate()" [disabled]="!!templateIssue">Download Profile</button><button type="button" class="primary" (click)="useInAnalysis()" [disabled]="!!templateIssue">Use in Sanger Analysis →</button><p class="field-note" *ngIf="templateIssue">{{templateIssue}}</p></div>
-        <app-sanger-synth-builder *ngIf="showSynth" [result]="result" [selected]="selected" [references]="rows" (analyze)="useGeneratedSynth($event)" />
+        <div class="candidate-pagination"><small *ngIf="!canFindMore && result.searchedStage===3">2 mismatches each</small><button type="button" *ngIf="visibleCandidates.length < result.candidates.length" (click)="loadMore()">Show {{nextCandidateCount}} more · {{remainingCandidateCount}} remaining</button><button type="button" *ngIf="visibleCandidates.length >= result.candidates.length && canFindMore" (click)="findMore()" [disabled]="busy">{{nextSearchLabel}}</button></div>
+        <app-sanger-amplicon-alignment *ngIf="oppositeConfirmed" [result]="result" [selected]="selected" [references]="rows" />
+        <div class="analysis-handoff" *ngIf="selected?.partner && oppositeConfirmed"><button type="button" (click)="showSynth=!showSynth" [attr.aria-expanded]="showSynth">Generate Synth Data</button><button type="button" (click)="exportAnalysisTemplate()" [disabled]="!!templateIssue">Download Profile</button><button type="button" class="primary" (click)="useInAnalysis()" [disabled]="!!templateIssue">Use in Sanger Analysis →</button><p class="field-note" *ngIf="templateIssue">{{templateIssue}}</p></div>
+        <app-sanger-synth-builder *ngIf="showSynth && oppositeConfirmed" [result]="result" [selected]="selected" [references]="rows" (analyze)="useGeneratedSynth($event)" />
       </ng-container>
-      <details class="research"><summary>Method &amp; references</summary><p>Accepts full genomic or gene sequences (up to 2 Mb each; 8 Mb total), generates candidates around the required target windows, and checks binding across the full input. Shared-Sanger mode searches one identical A/C/G/T oligo across every input reference, requiring a single exact binding site in a shared orientation. Every required window must fit within the usable read range, with different distances to corresponding targets. Only the sequencing side must have different target distances. The optional common opposite primer completes the PCR pair; it is not an additional sequencing primer. Separate-reference mode designs individual PCR pairs with a configurable cross-binding mismatch screen.</p><p>Offset separation and WT sequence differences are design diagnostics. They do not prove that mixed edited reference traces can be decomposed. These design diagnostics are separate from trace fitting in the Sanger Analysis tab.</p><p><a href="https://doi.org/10.1093/NAR/GKU410" target="_blank" rel="noopener noreferrer">CHOPCHOP</a> uses Primer3 and genomic mapping for primer design. This browser search screens the supplied references, not a whole genome. Shared designs check at most 600 primary primers, retain multiple partner options and return up to 300 pairs. Sanger results prioritize greater minimum unintended-site mismatch counts, then fewer near sites, usable WT signal differences for shared-Sanger candidates, and target coverage. PCR-only ranking is unchanged. Sanger coverage excludes at least the first 50 bp and the final 50 bp of the shorter of the configured read limit and predicted extension. The whole target window plus indel allowance must fit inside this usable region. Measured quality may require a larger exclusion.</p><p>Candidate generation and oligo checks follow principles used by <a href="https://primer3.org/manual.html" target="_blank" rel="noopener noreferrer">Primer3</a> and <a href="https://doi.org/10.1186/1471-2105-13-134" target="_blank" rel="noopener noreferrer">Primer-BLAST</a>; this browser implementation does not run either tool. <a href="https://doi.org/10.1073/pnas.95.4.1460" target="_blank" rel="noopener noreferrer">SantaLucia 1998</a> supplies the Tm model. <a href="https://doi.org/10.1093/nar/gku936" target="_blank" rel="noopener noreferrer">TIDE</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4525701/" target="_blank" rel="noopener noreferrer">Poly Peak Parser</a> provide related trace-decomposition work, not validation of this proposed assay.</p><p>Separate-reference design also draws on the locus-specific design strategy described in <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4765872/" target="_blank" rel="noopener noreferrer">PolyMarker</a>; this prototype does not run PolyMarker.</p></details>
+      <details class="research"><summary>Method &amp; references</summary><p>Accepts full genomic or gene sequences (up to 2 Mb each; 8 Mb total), generates candidates around the required target windows, and checks binding across the full input. Shared-Sanger searches exact shared pairs first, then an exact shared sequencing primer with reference-specific opposite primers. If needed, it tries one mismatch per reference with positions within 3 bp, then one mismatch with a larger position spread, and finally exactly two mismatches per reference. Mismatch counts must be equal across all intended references. The terminal 10 bases at the 3′ end must always match exactly. For single mismatches, closer positions across references rank first, followed by earlier 5′ positions; no candidate exceeds two mismatches. Every required window must fit within the usable read range, with different distances to corresponding targets. Only the sequencing side must have different target distances. An exact opposite primer is required for each reference; a common opposite primer is preferred. It is not an additional sequencing primer. Separate-reference mode designs individual PCR pairs with a configurable cross-binding mismatch screen.</p><p>Offset separation and WT sequence differences are design diagnostics. They do not prove that mixed edited reference traces can be decomposed. These design diagnostics are separate from trace fitting in the Sanger Analysis tab.</p><p><a href="https://doi.org/10.1093/NAR/GKU410" target="_blank" rel="noopener noreferrer">CHOPCHOP</a> uses Primer3 and genomic mapping for primer design. This browser search screens the supplied references, not a whole genome. Shared designs check at most 600 primary primers, retain multiple partner options and return up to 300 pairs. Progressive shared candidates require at least five resolved mismatches at all unintended ungapped sites across the supplied references and both strands. Unknown bases prevent a confirmed pass. This is not a genome-wide binding guarantee. Relax conditions advances one search stage at a time. Select the sequencing primer first, then a complete opposite-primer set; a shared opposite primer is preferred. Mismatches are shown in red on the primer map and its hover sequence. Mismatch primers are incorporated into predicted PCR products; amplification balance requires experimental validation. PCR-only ranking is unchanged. Sanger coverage excludes at least the first 50 bp and the final 50 bp of the shorter of the configured read limit and predicted extension. The whole target window plus indel allowance must fit inside this usable region. Measured quality may require a larger exclusion.</p><p>Candidate generation and oligo checks follow principles used by <a href="https://primer3.org/manual.html" target="_blank" rel="noopener noreferrer">Primer3</a> and <a href="https://doi.org/10.1186/1471-2105-13-134" target="_blank" rel="noopener noreferrer">Primer-BLAST</a>; this browser implementation does not run either tool. <a href="https://doi.org/10.1073/pnas.95.4.1460" target="_blank" rel="noopener noreferrer">SantaLucia 1998</a> supplies the Tm model. <a href="https://doi.org/10.1093/nar/gku936" target="_blank" rel="noopener noreferrer">TIDE</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4525701/" target="_blank" rel="noopener noreferrer">Poly Peak Parser</a> provide related trace-decomposition work, not validation of this proposed assay.</p><p>Separate-reference design also draws on the locus-specific design strategy described in <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4765872/" target="_blank" rel="noopener noreferrer">PolyMarker</a>; this prototype does not run PolyMarker.</p></details>
     </div>
   </div>
 </section>

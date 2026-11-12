@@ -1,5 +1,5 @@
 import{refineDiscretePhase,SangerLinearOptimizer}from'./sanger-discrete-phase';
-import {proposeStratifiedPaths} from './sanger-stratified-paths';
+import {frequencyProfiles} from './sanger-stratified-paths';
 import{sequenceGroupResult}from'./sanger-sequence-group-result';
 import{fitLengthMarginals}from'./sanger-length-marginals';import{decodeFrequencyPaths}from'./sanger-frequency-path-decoder';
 import {SangerFitCache} from './sanger-fit-cache';
@@ -14,8 +14,8 @@ import {SignalPathInput,PathEdit,Model,materialize,prepare,assertSignalTraceGrid
  * whole-molecule fluorescence refit. These are
  * best-fit cut-local hypotheses, not a posterior over physical haplotypes.
  * All measured positions enter discovery, so no independent held-out score is claimed. */
-export function analyzeOffsetGroups(input:SignalPathInput,progress:(s:string)=>void=()=>{},audit?:(state:any)=>void):SangerAnalysisResult{return initializeOffsetProfiles(input,progress,audit).result;}
-export function initializeOffsetProfiles(input:SignalPathInput,progress:(s:string)=>void=()=>{},audit?:(state:any)=>void,optimizer?:SangerLinearOptimizer){
+export function analyzeOffsetGroups(input:SignalPathInput,progress:(s:string)=>void=()=>{},audit?:(state:any)=>void,optimizer?:SangerLinearOptimizer):SangerAnalysisResult{return initializeOffsetProfiles(input,progress,audit,optimizer).result;}
+export function initializeOffsetProfiles(input:SignalPathInput,progress:(s:string)=>void=()=>{},audit?:(state:any)=>void,optimizer?:SangerLinearOptimizer,onCandidates?:(rows:{reference:number;events:PathEdit[];fraction:number}[])=>void){
  if(!input.ampliconConfirmed||!input.control||!input.sample)throw Error('Confirm submitted products and provide matched control/sample chromatograms.');
  const controlRepair=repairSignalTraceCycles(input.control),sampleRepair=repairSignalTraceCycles(input.sample);input={...input,control:controlRepair.trace,sample:sampleRepair.trace};
  assertSignalTraceGrid(input.control);assertSignalTraceGrid(input.sample);
@@ -39,13 +39,15 @@ export function initializeOffsetProfiles(input:SignalPathInput,progress:(s:strin
  const lengths=fitLengthMarginals(refs,positions,y,(seq,p)=>emit(seq,p,sc.lag),maxDeletion,maxInsertion,s.editStartRadius??10),families=refs.flatMap((r,h)=>{const all=lengths.families.filter(f=>f.reference===h),share=all.reduce((sum,f)=>sum+f.fraction,0),keep=all.filter(f=>f.size!==0&&f.fraction>=share*.01);return[{reference:h,size:0,fraction:share-keep.reduce((sum,f)=>sum+f.fraction,0)},...keep];});
  progress('Decoding offset local edits');
  const profileOptions:PathEdit[][][][]=[],selected:number[]=[];
+ let expandedSearch=false;
  const decoded:{groups:{reference:number;events:PathEdit[];fraction:number}[];details:any[]}={groups:[],details:[]};
  for(let h=0;h<refs.length;h++){
   const rows=positions.flatMap((p,i)=>refs.every((r,k)=>k===h||p<r.cuts[0]-3||p>=r.cuts[0]+13)?[i]:[]),ownPositions=rows.map(i=>positions[i]),ownObserved=rows.flatMap(i=>{
    const p=positions[i],v=y.slice(4*i,4*i+4);
    for(const f of families)if(f.reference!==h){const r=refs[f.reference],b='ACGT'.indexOf(r.sequence[p<r.cuts[0]-3?p:p-f.size]);if(b>=0)v[b]-=f.fraction;}
    return v;
-  }),own=families.filter(f=>f.reference===h).map(f=>({...f,reference:0})),proposals=proposeStratifiedPaths(refs[h],own,ownPositions,ownObserved,lengths.rmse,5,200,4,stage=>progress('First target reference '+(h+1)+' / '+refs.length+' · '+stage));
+  }),own=families.filter(f=>f.reference===h).map(f=>({...f,reference:0}));let proposals=frequencyProfiles(refs[h],own,ownPositions,ownObserved,lengths.rmse,200,stage=>progress('First target reference '+(h+1)+' / '+refs.length+' · '+stage),0,optimizer);
+  const refineProposals=()=>{
   if(optimizer){
    const share=own.reduce((sum,f)=>sum+f.fraction,0),target=ownObserved.map(v=>v/share);
    for(let i=0;i<proposals.options.length;i++){
@@ -58,8 +60,25 @@ export function initializeOffsetProfiles(input:SignalPathInput,progress:(s:strin
     proposals.scores[i]={rmse:share*fit.rmse,maximum};
    }
   }
-  let best=-1;for(let i=0;i<proposals.options.length;i++)if(proposals.scores[i].maximum<=Math.max(1e-5,4*lengths.rmse)&&(best<0||proposals.scores[i].rmse<proposals.scores[best].rmse))best=i;
+  };
+  refineProposals();
+  const chooseValidated=()=>{let best=-1;for(let i=0;i<proposals.options.length;i++)if(proposals.scores[i].maximum<=Math.max(1e-5,4*lengths.rmse)&&(best<0||proposals.scores[i].rmse<proposals.scores[best].rmse))best=i;return best;};
+  let best=chooseValidated();
+  if(best<0&&optimizer){
+   progress('Expanding unvalidated first-target profiles · reference '+(h+1)+' / '+refs.length);
+   proposals=frequencyProfiles(refs[h],own,ownPositions,ownObserved,lengths.rmse,2000,stage=>progress('Expanded first-target reference '+(h+1)+' / '+refs.length+' · '+stage),0,optimizer);
+   refineProposals();best=chooseValidated();
+   if(best>=0){
+    // Keep only proposals that satisfy the SAME prefix validation rule. The
+    // broader discovery bank must not flood downstream whole-molecule search
+    // with candidates already contradicted by these measured prefix cycles.
+    const kept=proposals.options.flatMap((_,i)=>proposals.scores[i].maximum<=Math.max(1e-5,4*lengths.rmse)?[i]:[]),selected=kept.indexOf(best);
+    proposals={...proposals,options:kept.map(i=>proposals.options[i]),scores:kept.map(i=>proposals.scores[i])};best=selected;expandedSearch=true;
+    progress('Validated expanded first-target profiles · '+proposals.options.length+' retained · reference '+(h+1)+' / '+refs.length);
+   }
+  }
   if(best<0)throw Error('No validated first-target profile for '+refs[h].name+' '+JSON.stringify(proposals.details));
+  onCandidates?.(proposals.options.flatMap((option,i)=>proposals.scores[i].maximum<=Math.max(1e-5,4*lengths.rmse)?option.map(g=>({reference:h,events:g.events,fraction:g.fraction})):[]));
   profileOptions.push(proposals.options.map(option=>option.map(g=>g.events)));selected.push(best);
   decoded.groups.push(...proposals.options[best].map(g=>({...g,reference:h})));decoded.details.push(...proposals.details);
  }
@@ -73,5 +92,5 @@ export function initializeOffsetProfiles(input:SignalPathInput,progress:(s:strin
  for(const group of decoded.groups)for(const e of group.events)if(!e.inserted.length)for(let start=refs[group.reference].cuts[0]-3;start<=refs[group.reference].cuts[0]+3;start++)addVariant(group.reference,[{start,end:start+e.end-e.start,inserted:''}]);
  iterations=1;
  progress('Validating offset profiles');
- return {result:sequenceGroupResult({input,refs,positions,report,anchor,end,models,cols,ids,fit,ctlScore,cc,sc,context,cr,sr,rawY,controlRepair,sampleRepair,maxDeletion,maxInsertion,fitCache,y,audit,train,test,tune,emit,iterations}),profiles:profileOptions,selected};
+ return {result:sequenceGroupResult({input,refs,positions,report,anchor,end,models,cols,ids,fit,ctlScore,cc,sc,context,cr,sr,rawY,controlRepair,sampleRepair,maxDeletion,maxInsertion,fitCache,y,audit,train,test,tune,emit,iterations}),profiles:profileOptions,selected,expandedSearch};
 }

@@ -27,13 +27,13 @@ export function certifySignalEquivalence(data:BenchmarkTruth,result:SangerAnalys
 }
 function certifyReference(data:BenchmarkTruth,result:SangerAnalysisResult,a:SangerAnnotation,tolerancePp:number):SignalEquivalenceCertificate|null {
  const truth=data.truth.filter(t=>t.reference===a.name),source=a.components;
- if(!truth.length||truth.length>64||!source.length||source.some(c=>c.unresolved)||truth.some(t=>!t.inputSequence||/[^ACGT]/.test(t.inputSequence)))return null;
+ if(!truth.length||!source.length||source.some(c=>c.unresolved)||truth.some(t=>!t.inputSequence||/[^ACGT]/.test(t.inputSequence)))return null;
  const cuts=a.cuts||[a.cut],convert=(events:typeof truth[number]['events'])=>events.map(e=>{const start=Number(e.kind==='substitution'?e.selectionStart:cuts[e.target]+e.offset),end=start+(e.kind==='insertion'?0:e.kind==='deletion'?e.length:(e.before||'').length),word=e.kind==='deletion'?'':e.sequence;return{target:e.target+1,start,end,inserted:word.length,insertedSequence:word};}),truthEvents=truth.map(t=>convert(t.events));
  if(truth.some((t,i)=>sangerEditedSequence(a.reference,truthEvents[i])!==t.inputSequence))return null;
  const oriented=(s:string)=>a.direction==='reverse'?reverseComplement(s):s,sourceSequences=source.map(c=>oriented(sangerEditedSequence(a.reference,c.events||[]))),truthSequences=truth.map(t=>oriented(t.inputSequence));
  // Prefer original fitted masses to a round trip through within-ref fractions.
  const base=result.exactAlternatives?.find(s=>s.reference===a.name)?.options[0],joint=result.joint?.groups.filter(g=>g.reference===a.name),weights=base?.exactFractions.length===source.length?base.exactFractions:joint?.length===source.length&&joint.every((g,i)=>oriented(sangerEditedSequence(a.reference,g.events))===sourceSequences[i])?joint.map(g=>exactFromNumber(g.fraction)):source.map(c=>exactFromNumber(c.fraction*a.share)),total=exactSum(weights),massAt=(percent:number)=>exactScale(exactProduct(exactFromNumber(percent),total),1,100),length=Math.max(...truthSequences.map(s=>s.length),...sourceSequences.map(s=>s.length))+2;
- if(length>4000||new Set(truthSequences).size!==truth.length||sourceSequences.some(s=>/[^ACGT]/.test(s)))return null;
+ if(length*(truth.length+source.length)>2000000||new Set(truthSequences).size!==truth.length||sourceSequences.some(s=>/[^ACGT]/.test(s)))return null;
  const column=(s:string)=>Array.from({length},(_,p)=>Array.from('ACGT',b=>Number(s[p]===b))).flat(),physical=truthSequences.map(column),original=sourceSequences.map((s,i)=>({column:column(s),weight:weights[i]}));
  type Bucket={target:number;sequence:string;percent:number};const buckets:Bucket[]=[],known=new Map<number,Set<string>>();
  for(let target=0;target<cuts.length;target++){

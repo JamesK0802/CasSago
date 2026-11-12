@@ -106,11 +106,11 @@ describe('identical-primer Sanger design',() => {
     const out=designSangerPrimers(refs,{...settings(),requirePartner:false});
     expect(out.candidates).toHaveLength(0);
   });
-  it('checks corresponding targets separately instead of sorting by strand',() => {
+  it('rejects cross-target collisions even when corresponding targets are separated',() => {
     const refs=sangerDesignExample().map(r=>({...r,cuts:[r.cuts[0],r.cuts[0]+50]}));
     const out=designSangerPrimers(refs,{...settings(),requirePartner:false});
     const c=out.candidates.find(c=>c.sequence==='CCGGCGGGTACGACCATAAC');
-    expect(c!.sites.map(s=>s.cutOffsets)).toEqual([[150,200],[200,250],[255,305]]);expect(c!.minOffset).toBe(50);
+    expect(c).toBeUndefined();expect(out.candidates).toHaveLength(0);
   });
   it('can return a sequencing primer without promising a PCR pair',() => {
     const out=designSangerPrimers(sangerDesignExample(),{...settings(),requirePartner:false,productMin:19000,productMax:20000});

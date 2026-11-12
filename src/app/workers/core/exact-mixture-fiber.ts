@@ -7,23 +7,33 @@ const q=(n:bigint,d=1n):Q=>{if(!n)return {n:0n,d:1n};if(d<0n){n=-n;d=-d;}const g
 const add=(a:Q,b:Q)=>q(a.n*b.d+b.n*a.d,a.d*b.d),sub=(a:Q,b:Q)=>q(a.n*b.d-b.n*a.d,a.d*b.d),mul=(a:Q,b:Q)=>q(a.n*b.n,a.d*b.d),div=(a:Q,b:Q)=>q(a.n*b.d,a.d*b.n),cmp=(a:Q,b:Q)=>a.n*b.d-b.n*a.d;
 const numberQ=(v:number):Q=>{if(!Number.isFinite(v))throw Error('Non-finite mixture coefficient.');if(!v)return q(0n);const view=new DataView(new ArrayBuffer(8));view.setFloat64(0,v);const bits=view.getBigUint64(0),exp=Number((bits>>52n)&2047n),mantissa=(bits&((1n<<52n)-1n))+(exp?1n<<52n:0n),power=(exp||1)-1023-52,sign=bits>>63n?-1n:1n;return power>=0?q(sign*(mantissa<<BigInt(power))):q(sign*mantissa,1n<<BigInt(-power));};
 const encode=(v:Q):ExactFraction=>({n:String(v.n),d:String(v.d)}),decode=(v:ExactFraction)=>q(BigInt(v.n),BigInt(v.d));
-export const exactNumber=(v:ExactFraction)=>Number(v.n)/Number(v.d);
+export const exactNumber=(v:ExactFraction)=>{
+ const numerator=Number(v.n),denominator=Number(v.d);if(Number.isFinite(numerator)&&Number.isFinite(denominator))return numerator/denominator;
+ let n=BigInt(v.n),d=BigInt(v.d);if(!d)throw Error('Zero mixture denominator.');if(!n)return 0;const sign=(n<0n)!==(d<0n)?-1:1;n=n<0n?-n:n;d=d<0n?-d:d;
+ let power=n.toString(2).length-d.toString(2).length;if(power>1024)return sign*Infinity;if(power< -1075)return sign*0;if(power>=0?n<(d<<BigInt(power)):(n<<BigInt(-power))<d)power--;if(power>1023)return sign*Infinity;
+ const exponent=power>=-1022?power-52:-1074,shift=-exponent,a=shift>=0?n<<BigInt(shift):n,b=shift>=0?d:d<<BigInt(-shift);let mantissa=a/b;const remainder=a%b;if(2n*remainder>b||2n*remainder===b&&(mantissa&1n)!==0n)mantissa++;
+ return sign*Number(mantissa)*Math.pow(2,exponent);
+};
 export const exactProduct=(a:ExactFraction,b:ExactFraction)=>encode(mul(decode(a),decode(b)));
 export const exactScale=(v:ExactFraction,numerator:number,denominator:number)=>encode(mul(decode(v),q(BigInt(numerator),BigInt(denominator))));
 export const exactSubtract=(a:ExactFraction,b:ExactFraction)=>encode(sub(decode(a),decode(b)));
 export const exactMin=(a:ExactFraction,b:ExactFraction)=>cmp(decode(a),decode(b))<=0?a:b;
 export const exactSum=(values:ExactFraction[])=>encode(values.reduce((sum,v)=>add(sum,decode(v)),q(0n)));
 export const exactFromNumber=(v:number)=>encode(numberQ(v));
-export function exactWeightedEquality(a:{weight:ExactFraction;column:number[]}[],b:{weight:ExactFraction;column:number[]}[]):boolean{
+const emissionDyadicView=new DataView(new ArrayBuffer(8)),cache=new Map<number,{n:bigint;e:number}>();
+function dyadic(v:number){const old=cache.get(v);if(old)return old;if(!Number.isFinite(v))throw Error('Non-finite mixture coefficient.');emissionDyadicView.setFloat64(0,v);const bits=emissionDyadicView.getBigUint64(0),exp=Number((bits>>52n)&2047n),n=((bits&((1n<<52n)-1n))+(exp?1n<<52n:0n))*(bits>>63n?-1n:1n),result={n,e:(exp||1)-1023-52};if(cache.size>=8192)cache.delete(cache.keys().next().value!);cache.set(v,result);return result;}
+/** Exact denominator clearing. IEEE values are dyadic rationals, so each
+ * channel equation can use integer sums instead of repeated rational GCDs. */
+export function exactWeightedEquality(a:{weight:ExactFraction;column:number[]}[],b:{weight:ExactFraction;column:number[]}[]){
  if(!a.length||!b.length||a[0].column.length!==b[0].column.length||[...a,...b].some(c=>c.column.length!==a[0].column.length))return false;
- const weightsA=a.map(c=>decode(c.weight)),weightsB=b.map(c=>decode(c.weight)),mass=(weights:Q[])=>weights.reduce(add,q(0n));if(cmp(mass(weightsA),mass(weightsB))!==0n)return false;
+ const rows=[...a,...b],weights=rows.map((r,i)=>{let n=BigInt(r.weight.n)*(i<a.length?1n:-1n),d=BigInt(r.weight.d);if(d<0n){n=-n;d=-d;}return{n,d};}),den=weights.reduce((v,w)=>v/gcd(v,w.d)*w.d,1n),coeff=weights.map(w=>w.n*(den/w.d));if(coeff.reduce((n,v)=>n+v,0n)!==0n)return false;
  const verified=new Set<string>();
  for(let k=0;k<a[0].column.length;k++){
-  const common=a[0].column[k];if(a.every(c=>c.column[k]===common)&&b.every(c=>c.column[k]===common))continue;
-  // Repeated channel patterns have exactly the same rational equation. Cache
-  // the equation, never a tolerance or rounded fluorescence value.
-  const pattern=JSON.stringify([...a.map(c=>c.column[k]),...b.map(c=>c.column[k])]);if(verified.has(pattern))continue;
-  const sum=(rows:typeof a,weights:Q[])=>rows.reduce((s,c,i)=>add(s,mul(weights[i],numberQ(c.column[k]))),q(0n));if(cmp(sum(a,weightsA),sum(b,weightsB))!==0n)return false;verified.add(pattern);
+  const common=a[0].column[k];if(rows.every(r=>r.column[k]===common))continue;
+  const values=rows.map(r=>r.column[k]),pattern=JSON.stringify(values);if(verified.has(pattern))continue;
+  const grouped=new Map<number,bigint>();values.forEach((v,i)=>{if(!Number.isFinite(v))throw Error('Non-finite mixture coefficient.');if(v!==0)grouped.set(v,(grouped.get(v)||0n)+coeff[i]);});
+  const terms=[...grouped].filter(([,c])=>c!==0n).map(([v,c])=>({c,...dyadic(v)}));if(terms.length){const exponent=Math.min(...terms.map(t=>t.e));if(terms.reduce((sum,t)=>sum+t.c*(t.n<<BigInt(t.e-exponent)),0n)!==0n)return false;}
+  verified.add(pattern);
  }
  return true;
 }

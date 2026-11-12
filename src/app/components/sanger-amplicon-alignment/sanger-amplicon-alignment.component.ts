@@ -19,7 +19,7 @@ export class SangerAmpliconAlignmentComponent implements OnChanges {
   this.rows=selectedAmplicons(this.result,c).map(a=>{
    const sequence=reverse?reverseComplement(a.sequence):a.sequence;
    const cuts=a.cuts.map(cut=>reverse?sequence.length-cut:cut).sort((a,b)=>a-b);
-   const primary=c.sequence.length,partner=c.partner!.sequence.length;
+   const primary=c.sequence.length,partner=(reverse?a.forwardPrimer:a.reversePrimer)?.length||c.partner!.sequence.length;
    const guides:AlignedProduct['guides']=[],raw=this.references.find(r=>r.name===a.sourceReference);
    if(raw?.mode==='guides')raw.targets.toUpperCase().split(/[\s,;]+/).filter(Boolean).forEach((g,i)=>{for(const query of new Set([g,reverseComplement(g)])){let at=sequence.indexOf(query);while(at>=0){if(cuts.some(cut=>at<=cut&&at+query.length>=cut))guides.push({start:at,end:at+query.length,name:a.targetNames?.[i]||'gRNA '+(i+1)});at=sequence.indexOf(query,at+1);}}});
    const segments:Segment[]=[];

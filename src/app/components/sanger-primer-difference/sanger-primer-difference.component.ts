@@ -1,6 +1,6 @@
 import {Component,Input,OnChanges} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {SangerCandidate,SangerDesignResult,PrimerSite,SangerReference} from '../../models/sanger-design';
+import {oppositePrimer,SangerCandidate,SangerDesignResult,PrimerSite,SangerReference} from '../../models/sanger-design';
 import {reverseComplement} from '../../utils/biology.utils';
 interface Comparison {mismatches:number|null;terminal:number|null;description:string}
 interface PairComparison {from:string;to:string;primary:Comparison;partner:Comparison|null}
@@ -17,9 +17,11 @@ export function correspondingPrimerComparison(sequence:string,site:PrimerSite,so
 @Component({selector:'app-sanger-primer-difference',standalone:true,imports:[CommonModule],templateUrl:'./sanger-primer-difference.component.html',styleUrl:'./sanger-primer-difference.component.css'})
 export class SangerPrimerDifferenceComponent implements OnChanges {
  @Input() candidate:SangerCandidate|null=null;@Input() result:SangerDesignResult|null=null;
+ @Input() showOpposite=true;
  readonly id='primer-difference-'+(++serial);pairs:PairComparison[]=[];
  label(screen?:{minimumMismatches:number;minimumExact?:boolean}|null){return !screen?'—':screen.minimumExact===false?'Unresolved':screen.minimumMismatches+' bp';}
+ partnerReference(index:number){const c=this.candidate;if(!c)return null;const screen=c.partner?.perReference?c.partnerSafety?.[index]:c.primerSafety?.partner;return screen?.references[index]||null;}
  ngOnChanges(){this.pairs=[];if(!this.result||!this.candidate)return;const c=this.candidate;
-  for(const site of c.sites){const source=this.result.references.find(r=>r.name===site.reference);if(!source)continue;for(const target of this.result.references){if(target.name===source.name)continue;const partner=c.partner?.sites.find(p=>p.reference===source.name);this.pairs.push({from:source.name,to:target.name,primary:correspondingPrimerComparison(c.sequence,site,source,target),partner:partner&&c.partner?correspondingPrimerComparison(c.partner.sequence,partner,source,target):null});}}
+  for(const site of c.sites){const source=this.result.references.find(r=>r.name===site.reference);if(!source)continue;for(const target of this.result.references){if(target.name===source.name)continue;const partner=c.partner?.sites.find(p=>p.reference===source.name);this.pairs.push({from:source.name,to:target.name,primary:correspondingPrimerComparison(c.sequence,site,source,target),partner:partner&&c.partner?correspondingPrimerComparison(oppositePrimer(c,c.sites.indexOf(site))!.sequence,partner,source,target):null});}}
  }
 }

@@ -1,5 +1,6 @@
+import {reverseComplement} from './biology.utils';
 import {validateSangerProductBounds} from './sanger-product-bounds';
-import {SangerCandidate,SangerDesignResult} from '../models/sanger-design';
+import {oppositePrimer,SangerCandidate,SangerDesignResult} from '../models/sanger-design';
 import {SANGER_ANALYSIS_DEFAULTS,SangerAnalysisSettings} from '../models/sanger-analysis';
 import {cleanReference} from './sanger-design.utils';
 import {exactBindingSites} from '../workers/core/sanger-primer-designer';
@@ -7,12 +8,12 @@ export interface DesignedAmplicon {forwardPrimer?:string;reversePrimer?:string;n
 export interface SangerAnalysisTemplate {format:'casmango-sanger-analysis-v1';primer:string;oppositePrimer?:string;amplicons:DesignedAmplicon[];settings:SangerAnalysisSettings;scopeNote:string}
 export function selectedAmplicons(result:SangerDesignResult,c:SangerCandidate):DesignedAmplicon[]{
  if(!c.partner)throw new Error('Select a candidate with an opposite PCR primer to export complete amplicons.');
- return c.sites.map((hit,i)=>{const ref=result.references[c.referenceIndex??i],other=c.partner!.sites[i],start=Math.min(hit.start,other.start),end=Math.max(hit.end,other.end);return {name:ref.name.replace(/[^a-zA-Z0-9_-]/g,'_')+'_'+(start+1)+'-'+end,sequence:ref.sequence.slice(start,end),forwardPrimer:c.direction==='forward'?c.sequence:c.partner!.sequence,reversePrimer:c.direction==='reverse'?c.sequence:c.partner!.sequence,cuts:ref.cuts.map(cut=>cut-start),sourceReference:ref.name,start,end,...(ref.targetNames?{targetNames:[...ref.targetNames]}:{}),...(ref.guides?{guides:[...ref.guides]}:{})};});
+ return c.sites.map((hit,i)=>{const ref=result.references[c.referenceIndex??i],other=c.partner!.sites[i],opposite=oppositePrimer(c,i)!,start=Math.min(hit.start,other.start),end=Math.max(hit.end,other.end),forwardPrimer=c.direction==='forward'?c.sequence:opposite.sequence,reversePrimer=c.direction==='reverse'?c.sequence:opposite.sequence;let sequence=ref.sequence.slice(start,end);if(c.sharedDesign)sequence=forwardPrimer+sequence.slice(forwardPrimer.length,sequence.length-reversePrimer.length)+reverseComplement(reversePrimer);return {name:ref.name.replace(/[^a-zA-Z0-9_-]/g,'_')+'_'+(start+1)+'-'+end,sequence,forwardPrimer,reversePrimer,cuts:ref.cuts.map(cut=>cut-start),sourceReference:ref.name,start,end,...(ref.targetNames?{targetNames:[...ref.targetNames]}:{}),...(ref.guides?{guides:[...ref.guides]}:{})};});
 }
 export function makeAnalysisTemplate(result:SangerDesignResult,c:SangerCandidate):SangerAnalysisTemplate{
  if(result.settings.platform==='ngs')throw new Error('This is an NGS design. Download Amplicon FASTA and Targets CSV for the main analysis.');
  const amplicons=selectedAmplicons(result,c),settings={...SANGER_ANALYSIS_DEFAULTS,analysisPolicy:'automatic' as const,maxDeletion:result.settings.indelRange,maxInsertion:Math.min(30,result.settings.indelRange),scope:amplicons.length===1?'single' as const:'pooled' as const,window:result.settings.window,maxIndel:Math.min(30,result.settings.indelRange),readStart:result.settings.readStart,readEnd:result.settings.readEnd,direction:amplicons.length===1?c.direction:'auto' as const};
- return validateAnalysisTemplate({format:'casmango-sanger-analysis-v1',primer:c.sequence,oppositePrimer:c.partner!.sequence,amplicons,settings,scopeNote:'Predicted PCR products. Confirm actual submitted amplicons after sequencing; no trace data or experimental validation included.'});
+ return validateAnalysisTemplate({format:'casmango-sanger-analysis-v1',primer:c.sequence,...(!c.partner!.perReference?{oppositePrimer:c.partner!.sequence}:{}),amplicons,settings,scopeNote:'Predicted PCR products, including incorporated primer sequences. Confirm actual submitted amplicons after sequencing; no trace data or experimental validation included.'});
 }
 export function validateAnalysisTemplate(value:unknown):SangerAnalysisTemplate{
  const v=value as SangerAnalysisTemplate;

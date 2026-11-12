@@ -60,7 +60,9 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "buildTarget": "cassago:build"
+            "buildTarget": "cassago:build",
+            "liveReload": false,
+            "hmr": false
           },
           "configurations": {
             "production": {

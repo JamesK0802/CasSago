@@ -7,7 +7,7 @@ export interface SangerPlacementView {
  fraction:number; tokens:AlignmentToken[]; location:string; events:SangerJointEvent[];
 }
 export interface SangerAnnotationRow {
- fractionRange?:[number,number];id:string;sequenceKey?:string;sequenceState:SequenceState;size:number; edited:boolean; patternLabel?:string; fraction:number; classification:string; tokens:AlignmentToken[];
+ marginalRole?:'wt'|'substitution';marginalProfile?:boolean;marginalMixture?:boolean;marginalFamilyId?:string;substitutionMixture?:boolean; marginal?:import('../models/sanger-analysis').SangerMarginalGroup;fractionRange?:[number,number];id:string;sequenceKey?:string;sequenceState:SequenceState;size:number; edited:boolean; patternLabel?:string; fraction:number; classification:string; tokens:AlignmentToken[];
  placements:SangerPlacementView[]; representative:SangerPlacementView|null; positionLabel:string; support:SangerGroupSupport|null;
 }
 export interface SangerAnnotationView {

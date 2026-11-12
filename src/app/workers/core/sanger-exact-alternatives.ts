@@ -1,22 +1,33 @@
+import{composeExactOptions}from'./sanger-compose-exact-options';
+import type{SangerLinearOptimizer}from'./sanger-discrete-phase';
+import{reverseComplement}from'../../utils/biology.utils';
+import {crossClassAlternatives} from './sanger-cross-class-alternatives';
+import {crossTargetAlternatives} from './sanger-cross-target-alternatives';
 import {normalizeMoleculeEdits} from './sanger-edit-normalize';
 import {SangerAnnotation,SangerExactAlternatives,SangerExactOption,SangerJointEvent} from '../../models/sanger-analysis';
 import {sangerSequenceKey} from '../../utils/sanger-sequence-groups';
 import {exactFromNumber,exactHaplotypeRepresentatives,exactSum,exactWeightedEquality} from './exact-mixture-fiber';
 import {materialize,Model,PathEdit,Prepared} from './sanger-path-common';
 interface Row {model:Model;fraction:number}
-/** Same-site insertion haplotype fibers and identical-sequence deletion placements. Every offered representative is
+/** Same-site insertion haplotype fibers and distinct final sequence profiles. Every offered representative is
  * certified under the complete fitted emitter, including context and phase.
  * This enumerates verified representatives, not all possible allele solutions. */
-export function discoverExactAlternatives(refs:Prepared[],annotations:SangerAnnotation[],rows:Row[][],toInput:(h:number,events:PathEdit[])=>SangerJointEvent[],emit:(sequence:string,p:number)=>number[],optionLimit=16):SangerExactAlternatives[]{
+export function discoverExactAlternatives(refs:Prepared[],annotations:SangerAnnotation[],rows:Row[][],toInput:(h:number,events:PathEdit[])=>SangerJointEvent[],emit:(sequence:string,p:number)=>number[],optionLimit=16,verify?:(reference:number,base:SangerExactOption,candidate:SangerExactOption)=>boolean,progress:(stage:string)=>void=()=>{},optimizer?:SangerLinearOptimizer):SangerExactAlternatives[]{
  const sets:SangerExactAlternatives[]=[];
  for(let h=0;h<refs.length;h++){
   const ref=refs[h],source=rows[h],annotation=annotations[h];if(!annotation.share||source.length!==annotation.components.length)continue;
+  const nearest=(e:PathEdit)=>{const distances=ref.cuts.map(c=>Math.min(Math.abs(e.start-c),Math.abs(e.end-c)));return distances.indexOf(Math.min(...distances));};
+  // Cost follows the disjoint target backgrounds actually searched, rather
+  // than squaring the whole cross-target molecule product.
+  const workload=ref.cuts.length===2?Math.max(...ref.cuts.map((_,target)=>{const backgrounds=new Map<string,number>();for(const row of source){const key=JSON.stringify(row.model.events.filter(e=>nearest(e)!==target));backgrounds.set(key,(backgrounds.get(key)||0)+1);}return [...backgrounds.values()].reduce((n,count)=>n+count*count,0);})):source.length**2;
+  if(workload*ref.sequence.length>20_000_000)continue;
   const base:SangerExactOption={id:'fit',components:annotation.components.map(c=>({...c})),exactFractions:source.map(c=>exactFromNumber(c.fraction))},options=[base],seen=new Set<string>(),columnCache=new Map<string,number[]>();
   const columnLength=Math.max(ref.sequence.length,...source.map(row=>row.model.sequence.length))+2;
   const column=(sequence:string)=>{let col=columnCache.get(sequence);if(!col){col=Array.from({length:columnLength},(_,p)=>emit(sequence,p)).flat();columnCache.set(sequence,col);}return col;};
 
   for(let t=0;t<ref.cuts.length&&options.length<optionLimit;t++){
-   const targetLimit=1+Math.floor((optionLimit-1)*(t+1)/ref.cuts.length);
+   progress('Certifying insertion alternatives · reference '+(h+1)+' · target '+(t+1));
+   const targetLimit=1+Math.floor((optionLimit-1)*(t+1)/(2*ref.cuts.length));
    const families=new Map<string,{indices:number[];background:PathEdit[];kind:'insert';start:number;end:number;length:number}>();
    source.forEach((row,index)=>{
     const nearest=(e:PathEdit)=>ref.cuts.map(c=>Math.min(Math.abs(e.start-c),Math.abs(e.end-c))).reduce((best,d,i,ds)=>d<ds[best]?i:best,0),local=row.model.events.filter(e=>nearest(e)===t),background=row.model.events.filter(e=>nearest(e)!==t);if(local.length>1||row.model.sequence.includes('N')||row.fraction<=0||annotation.components[index].unresolved)return;
@@ -38,10 +49,39 @@ export function discoverExactAlternatives(refs:Prepared[],annotations:SangerAnno
     }
    }
   }
-  for(let i=0;i<source.length&&options.length<optionLimit;i++)for(const alias of source[i].model.aliases){
-   if(annotation.components[i].unresolved||alias.reference!==h||materialize(ref.sequence,alias.events)!==source[i].model.sequence)continue;
-   const events=toInput(h,alias.events);if(JSON.stringify(events)===JSON.stringify(base.components[i].events||[]))continue;
-   const components=base.components.map((c,j)=>j===i?{...c,events}:c),key='placement:'+JSON.stringify(components.map(c=>c.events));if(seen.has(key))continue;seen.add(key);options.push({id:'placement-'+options.length,components,exactFractions:base.exactFractions});if(options.length>=optionLimit)break;
+  // These discovery routines already certify the complete fitted emitter.
+  // Connect them to production reporting before placement-only aliases use the
+  // option budget. This changes uncertainty reporting, never fitted coefficients.
+  for(let target=0;target<ref.cuts.length&&options.length<optionLimit;target++){
+   progress('Certifying cross-class alternatives · reference '+(h+1)+' · target '+(target+1));
+   const remaining=Math.min(Math.ceil((optionLimit-1)/2),optionLimit-options.length),toLocal=(events:PathEdit[])=>toInput(h,events),alternatives=ref.cuts.length===2?crossTargetAlternatives(ref,annotation,source,target,toLocal,emit,remaining):crossClassAlternatives(ref,annotation,source,toLocal,emit,remaining);
+   for(const option of alternatives){if(options.length>=optionLimit)break;const key='sequence:'+JSON.stringify(option.components.map((c,i)=>[sangerSequenceKey(annotation.reference,c.events||[]),option.exactFractions[i]]).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))));if(seen.has(key))continue;seen.add(key);options.push(option);}
+  }
+  // Coordinate aliases producing the same final DNA are one biological group.
+  // They must not consume alternative capacity or trigger signal certificates.
+  // Independent certified moves can be combined into a complete target
+  // profile. A single pair witness may repair only one of several linked
+  // substitutions; retaining only those isolated moves hides valid profiles.
+  if(optimizer){
+   const substitutionCost=(c:SangerExactOption['components'][number])=>(c.events||[]).reduce((n,e)=>{const word=e.insertedSequence||'';return n+(word.length===e.end-e.start?Array.from(word,(b,k)=>Number(b!==annotation.reference[e.start+k])).reduce((a,b)=>a+b,0):0);},0),toPrepared=(c:SangerExactOption['components'][number])=>(c.events||[]).map(e=>({start:(ref.reverse?ref.input.sequence.length-e.end:e.start)-ref.offset,end:(ref.reverse?ref.input.sequence.length-e.start:e.end)-ref.offset,inserted:ref.reverse?reverseComplement(e.insertedSequence||''):e.insertedSequence||''})).sort((a,b)=>a.start-b.start);
+   let current=base,choices=options.slice();
+   for(let round=0;round<64;round++){
+    const valid=verify?choices.filter(o=>o===current||verify(h,current,o)):choices,combined=composeExactOptions(current,valid,annotation.share,substitutionCost,optimizer);if(!combined||verify&&!verify(h,current,combined))break;
+    combined.id='combined-equivalent-'+round;options.push(combined);current=combined;progress('Combining certified target alternatives · reference '+(h+1)+' · '+(round+1));
+    const a={...annotation,components:current.components},localRows=current.components.map((c,i)=>{const events=toPrepared(c);return{fraction:Number(current.exactFractions[i].n)/Number(current.exactFractions[i].d),model:{reference:c.unresolved?-1:h,events,sequence:c.unresolved?'':materialize(ref.sequence,events)!,aliases:[]}};});choices=[current];
+    for(let target=0;target<ref.cuts.length;target++){const found=ref.cuts.length===2?crossTargetAlternatives(ref,a,localRows,target,events=>toInput(h,events),emit,optionLimit,current.exactFractions):crossClassAlternatives(ref,a,localRows,events=>toInput(h,events),emit,optionLimit,3,10,current.exactFractions);for(const o of found){if(verify&&!verify(h,current,o))continue;choices.push(o);options.push({...o,id:'combined-witness-'+round+'-'+options.length});}}
+   }
+  }
+  if(verify)for(let i=options.length-1;i>0;i--){progress('Verifying whole-emitter alternative · reference '+(h+1)+' · option '+i);if(!verify(h,base,options[i]))options.splice(i,1);}
+  // Deduplicate only after emission verification: different coordinate histories
+  // can have different donor-control proxies, so keep the first VALID witness.
+  // Exact summed masses distinguish genuinely different abundance profiles.
+  const dnaCache=new Map<string,string>(),profiles=new Set<string>();
+  for(let i=0;i<options.length;i++){
+   const option=options[i],mass=new Map<string,typeof option.exactFractions>();
+   option.components.forEach((c,j)=>{const eventKey=JSON.stringify(c.events||[]);let key=c.unresolved?'__unresolved__':dnaCache.get(eventKey);if(key===undefined){key=sangerSequenceKey(annotation.reference,c.events||[]);dnaCache.set(eventKey,key);}mass.set(key,[...(mass.get(key)||[]),option.exactFractions[j]]);});
+   const key=JSON.stringify([...mass].map(([sequence,weights])=>[sequence,exactSum(weights)]as const).filter(([,weight])=>weight.n!=='0').sort((a,b)=>a[0].localeCompare(b[0])));
+   if(profiles.has(key)){options.splice(i--,1);continue;}profiles.add(key);
   }
   if(options.length<2)continue;const ambiguousSequences:Record<string,string[]>={},ambiguousPlacements:Record<string,string[]>={},targets:number[]=[];
   for(let t=0;t<(annotation.cuts?.length||1);t++){

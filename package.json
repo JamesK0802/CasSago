@@ -5,6 +5,7 @@
     "start": "ng serve --host 0.0.0.0",
     "build": "ng build --configuration production",
     "test": "vitest run --config vitest.release.config.ts",
+    "test:primer": "vitest run --config vitest.primer.config.ts",
     "test:all": "vitest run",
     "build:pages": "ng build --configuration production --base-href /CasSago/"
   },

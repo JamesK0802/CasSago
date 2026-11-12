@@ -1,3 +1,4 @@
+import {assessMarginalBenchmark} from './sanger-marginal-benchmark';
 import{exactDisplayView}from'./sanger-exact-display';
 import {compareExactProfiles}from'./sanger-exact-profile-benchmark';
 import {compareExactOptions} from './sanger-exact-benchmark';
@@ -33,6 +34,6 @@ export function benchmarkCsv(rows:SynthComparison[]){const multi=rows.some(r=>r.
 
 /** Public scoring uses only the current inferred sequences and fractions.
  * Membership of an alternative signal fiber never earns detection credit. */
-export function benchmarkComparison(data:BenchmarkTruth,refs:BenchmarkReference[],result:SangerAnalysisResult,threshold=1):SynthComparison[]{return rawBenchmarkComparison(data,refs,result,threshold);}
+export function benchmarkComparison(data:BenchmarkTruth,refs:BenchmarkReference[],result:SangerAnalysisResult,threshold=1):SynthComparison[]{if(result.marginalGroups){const check=assessMarginalBenchmark(data,result);return check.families.map(f=>({reference:f.reference,target:f.target-1,group:'Length '+f.size+' bp',truth:f.truth*100,estimated:f.estimate*100,delta:(f.estimate-f.truth)*100,recovery:f.lengthPassed&&f.basePassed?'Length/base envelope compatible':'Length/base envelope mismatch',placement:'Coordinate-wise base ranges; no phased sequence claim',pattern:String(f.size),scope:'group' as const,sequenceScope:'pattern' as const}));}return rawBenchmarkComparison(data,refs,result,threshold);}
 /** Explicit research diagnostic, separate from detection scores and UI switching. */
 export function benchmarkCompatibilityDiagnostics(data:BenchmarkTruth,refs:BenchmarkReference[],result:SangerAnalysisResult):SynthComparison[]{return compareExactProfiles(data,compareExactOptions(rawBenchmarkComparison(data,refs,result),result),result);}

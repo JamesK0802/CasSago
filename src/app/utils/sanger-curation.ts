@@ -9,5 +9,5 @@ export function sangerCurationView(result:SangerAnalysisResult,index:number,targ
  const rows=retained.map(row=>({...row,fraction:mass?row.fraction/mass:0}));
  const sum=(test:(row:SangerAnnotationRow)=>boolean)=>annotation.estimable&&mass?rows.reduce((n,row)=>n+(test(row)?row.fraction:0),0):null;
  const substitution=(row:SangerAnnotationRow)=>row.edited&&!!row.representative?.events.length&&row.representative.events.every(e=>e.inserted===e.end-e.start);
- return {view,rows,mass,wt:sum(row=>!row.edited),substitution:sum(substitution),inFrame:sum(row=>row.edited&&!substitution(row)&&row.size%3===0),outOfFrame:sum(row=>row.edited&&row.size%3!==0)};
+ return {view,rows,mass,wt:annotation.marginalGroups?null:sum(row=>!row.edited),substitution:annotation.marginalGroups?null:sum(substitution),inFrame:sum(row=>row.edited&&!substitution(row)&&row.size%3===0),outOfFrame:sum(row=>row.edited&&row.size%3!==0)};
 }

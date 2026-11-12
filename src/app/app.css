@@ -5266,18 +5266,13 @@ app-result-dashboard:has(.results-dashboard){display:block;flex:1;min-height:0;o
   .results-dashboard .export-bar button{width:auto;flex:0 1 auto;padding:6px 9px!important;font-size:11px;min-height:30px}
 }
 
-/* CasSago uses page scrolling rather than the CRISPR result-card scroll shell. */
-.app-content:has(app-sanger-analysis-panel .results-dashboard){height:auto;min-height:calc(100dvh - 56px);overflow:visible;flex:1}
-.app-content:has(app-sanger-analysis-panel .results-dashboard) .crispr-shell,.app-content:has(app-sanger-analysis-panel .results-dashboard) .crispr-body{height:auto;min-height:0;overflow:visible}
-.analysis-page.sanger-analysis:has(.results-dashboard){height:auto;min-height:0;display:block;overflow:visible}
-
 /* CasSago shell, measured against the deployed CasMango at 1280 px. */
 [hidden]{display:none!important}
 .app-content{display:flex;flex-direction:column}
 .app-content:has(.results-dashboard){height:auto;min-height:0;overflow:visible}
 .app-content:has(.results-dashboard) .crispr-body{height:auto;min-height:0;padding:24px 28px;overflow:visible}
 .cassago-workspace{width:100%;max-width:1100px;margin:0 auto;padding:24px 28px 40px}
-.cassago-workspace:has(.benchmark-panes.paired){max-width:1800px}
+.cassago-workspace:has(>app-sanger-analysis-panel:not([hidden]) .result-workspace.has-companions){max-width:1800px}
 .cassago-workspace .analysis-page:has(.results-dashboard){height:auto;min-height:0;display:block;overflow:visible}
 .cassago-brand{display:flex;align-items:center}
 .cassago-brand .nav-brand-logo{width:129px;height:48px;object-fit:contain;transform:none;filter:contrast(1.08)}
@@ -5308,3 +5303,6 @@ app-landing-page{flex:1;min-height:calc(100dvh - var(--nav-height))}
 @media(max-width:1000px){.top-nav{height:auto;padding:10px 16px}.nav-left{flex-wrap:wrap;gap:8px}.cassago-links{flex-wrap:wrap;gap:4px}.cassago-links .btn-tab{padding:7px 8px;font-size:12px}.cassago-brand .nav-brand-logo{width:120px}}
 @media(max-width:850px){.cassago-workspace,.app-content:has(.results-dashboard) .crispr-body{padding:18px 14px}}
 @media(max-width:768px){.cassago-nav-right{display:flex;gap:10px;margin:4px 0}.top-nav{flex-wrap:wrap}.cassago-nav-right .btn-guide-trigger{padding:5px 9px}}
+
+.app-content .cassago-workspace.crispr-body{max-width:1100px}
+.cassago-workspace.crispr-body:has(>app-sanger-analysis-panel:not([hidden]) .result-workspace.has-companions){max-width:1800px}
