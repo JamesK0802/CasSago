@@ -39,6 +39,8 @@ jobs:
         run: npm run test:engine-certificates
       - name: Check bound-proof reuse
         run: npm run test:engine-bound-reuse
+      - name: Check read-cycle fluorescence normalization
+        run: npm run test:engine-cycle-envelope
       - name: Build for CasSago Pages
         run: npm run build -- --base-href /CasSago/
       - uses: actions/upload-pages-artifact@v3
