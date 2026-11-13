@@ -12,7 +12,8 @@
     "test:engine-calibration": "vitest run tests/core/sanger-control-dye-identification.spec.ts tests/core/sanger-reference-novel-response.spec.ts tests/core/sanger-reference-photon-integration.spec.ts --maxWorkers=1",
     "test:engine-certificates": "vitest run tests/core/sanger-conic-status-certificate.spec.ts tests/core/sanger-complete-witness-scaling.spec.ts tests/core/sanger-conic-backend-fallback.spec.ts --maxWorkers=1",
     "test:engine-bound-reuse": "vitest run tests/core/sanger-cached-linear-bound.spec.ts tests/core/sanger-hint-box.spec.ts tests/core/sanger-objective-shortcut-certificates.spec.ts tests/core/sanger-attained-box.spec.ts --maxWorkers=1",
-    "test:engine-cycle-envelope": "vitest run tests/core/sanger-cycle-envelope.spec.ts --maxWorkers=1"
+    "test:engine-cycle-envelope": "vitest run tests/core/sanger-cycle-envelope.spec.ts --maxWorkers=1",
+    "test:engine-outer-envelope": "vitest run tests/core/sanger-linear-dual-outer.spec.ts --maxWorkers=1"
   },
   "private": true,
   "dependencies": {

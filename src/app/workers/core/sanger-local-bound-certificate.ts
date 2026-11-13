@@ -1,4 +1,4 @@
-import {cachedLinearBound} from './sanger-cached-linear-bound';
+import {cachedLinearDualOuter} from './sanger-linear-dual-outer';
 import {prepareHintBox} from './sanger-hint-box';
 import {quadraticCut} from './sanger-quadratic-envelope';
 import type {SangerLinearOptimizer} from './sanger-discrete-phase';
@@ -23,8 +23,8 @@ export function localBoundCertificates(p:MarginalProgram,anchor:number[],groups:
  // Necessary cone support planes give a safe LP outer relaxation. The
  // original nonlinear model remains intact for inference and joint retrieval.
  if(geometryProgram){const x=geometryProgram.upper.map(()=>0);for(const q of geometryProgram.quadratics||[]){const columns=new Set(q.terms.flatMap(row=>row.map(([i])=>i)));for(const i of columns){x[i]=1;const cut=quadraticCut(q,x);x[i]=0;if(cut.value>0)geometryProgram.rows.push({terms:cut.terms,lower:-LP_INFINITY,upper:cut.upper+1e-10*(1+Math.abs(cut.upper))});}}geometryProgram.quadratics=undefined;}
- const geometry=geometryProgram?new MarginalLinearSolver(geometryProgram,optimizer):undefined;
- const geometryBounds=geometry?cachedLinearBound(geometry.program,geometry):undefined;
+ const geometry=geometryProgram;
+ const geometryBounds=geometry?cachedLinearDualOuter(geometry,optimizer):undefined;
  const hint={image:new Map<number,number>(),constant:0,magnitude:0};for(let k=0;k<(p.dualHint?.shadow.length||0);k++){let y=p.dualHint!.shadow[k];const r=p.rows[k];if(!Number.isFinite(y)||!r)continue;if(y>0&&r.lower<=-LP_INFINITY||y<0&&r.upper>=LP_INFINITY)y=0;if(!y)continue;const v=y*(y>0?r.lower:r.upper);hint.constant+=v;hint.magnitude+=Math.abs(v);for(const[i,w]of r.terms)hint.image.set(i,(hint.image.get(i)||0)+y*w);}
  for(const plane of p.dualHint?.planes||[]){hint.constant-=plane.upper;hint.magnitude+=Math.abs(plane.upper);for(const[i,w]of plane.terms)hint.image.set(i,(hint.image.get(i)||0)-w);}
  const shiftHint=prepareHintBox(hint.image,p.upper,geometryMap);
@@ -59,12 +59,12 @@ export function localBoundCertificates(p:MarginalProgram,anchor:number[],groups:
   const local=terms.flatMap(([i,w])=>s!.indices.has(i)?[[s!.indices.get(i)!,w]as LinearTerm]:[]),fixed=terms.reduce((n,[i,w])=>n+(s!.indices.has(i)?0:w*anchor[i]),0),answer=s.solver.solve(local,maximize),primal=fixed+answer.value,dual=s.solver.rowDuals(),sign=maximize?-1:1,reduced=new Map<number,number>();for(const[i,w]of terms)reduced.set(i,(reduced.get(i)||0)+sign*w);let lower=0,magnitude=0,budgetMultiplier=0;
   for(let k=0;k<dual.length;k++){let y=dual[k];if(!Number.isFinite(y))return;const r=s.globalRows[k];if(y>0&&r.lower<=-LP_INFINITY||y<0&&r.upper>=LP_INFINITY)y=0;if(!y)continue;if(s.rows[k]===p.dualHint?.budgetRow)budgetMultiplier=Math.max(0,-y);const v=y*(y>0?r.lower:r.upper);lower+=v;magnitude+=Math.abs(v);for(const[i,w]of r.terms)reduced.set(i,(reduced.get(i)||0)-y*w);}
   const certificate=(alpha:number)=>{const shifted=geometry?shiftHint(reduced,alpha):undefined,coefficients=shifted?.coefficients||new Map(reduced);let result=lower+alpha*hint.constant+(shifted?.constant||0),scale=magnitude+alpha*hint.magnitude+(shifted?.magnitude||0);if(alpha&&!shifted)for(const[i,w]of hint.image)coefficients.set(i,(coefficients.get(i)||0)-alpha*w);
-   if(geometry){try{const terms=[...coefficients].flatMap(([i,w])=>geometryMap.has(i)&&w?[[geometryMap.get(i)!,w]as LinearTerm]:[]),bound=geometryBounds!.lower(terms);result+=bound;scale+=Math.abs(bound);for(const[i,r]of coefficients)if(!geometryMap.has(i)&&r<0){const v=r*p.upper[i];result+=v;scale+=Math.abs(v);}return result-64*Number.EPSILON*(1+scale);}catch{/* The original box certificate remains valid if a geometry query is incomplete. */}}
+   let projected=-Infinity;if(geometry){try{const terms=[...coefficients].flatMap(([i,w])=>geometryMap.has(i)&&w?[[geometryMap.get(i)!,w]as LinearTerm]:[]),bound=geometryBounds!.lower(terms);let value=result+bound,magnitude=scale+Math.abs(bound);for(const[i,r]of coefficients)if(!geometryMap.has(i)&&r<0){const v=r*p.upper[i];value+=v;magnitude+=Math.abs(v);}projected=value-64*Number.EPSILON*(1+magnitude);}catch{/* Retain the independent equality/box certificate below. */}}
    // Coordinate ascent in ORIGINAL equality multipliers. Signed origin
    // recurrences and phase-flow conservation connect an omitted context to
    // its measured state bounds, without fixing its origin allocation.
    for(let sweep=0;sweep<3;sweep++)for(const k of (sweep%2?equalities:equalities.slice().reverse())){const r=p.rows[k];if(r.terms.some(([i])=>s!.indices.has(i)))continue;const breaks=r.terms.map(([i,w])=>({at:(coefficients.get(i)||0)/w,weight:Math.abs(w)*p.upper[i]})).sort((a,b)=>a.at-b.at);let derivative=r.lower+r.terms.reduce((n,[i,w])=>n+(w<0?-w*p.upper[i]:0),0),y=0;for(const point of breaks){derivative-=point.weight;if(derivative<=1e-15){y=point.at;break;}}if(!y||!Number.isFinite(y))continue;const gain=y*r.lower+r.terms.reduce((n,[i,w])=>{const c=coefficients.get(i)||0;return n+(Math.min(0,c-y*w)-Math.min(0,c))*p.upper[i];},0);if(gain< -1e-12)continue;result+=y*r.lower;scale+=Math.abs(y*r.lower);for(const[i,w]of r.terms)coefficients.set(i,(coefficients.get(i)||0)-y*w);}
-   for(const[i,r]of coefficients)if(r<0){const v=r*p.upper[i];result+=v;scale+=Math.abs(v);}return result-64*Number.EPSILON*(1+scale);
+   for(const[i,r]of coefficients)if(r<0){const v=r*p.upper[i];result+=v;scale+=Math.abs(v);}return Math.max(projected,result-64*Number.EPSILON*(1+scale));
   };
   // Reuse the original whole-signal departure dual. This retains mandatory
   // substitutions at other cycles when bounding an individual coordinate.
@@ -84,5 +84,5 @@ export function localBoundCertificates(p:MarginalProgram,anchor:number[],groups:
   if(exact)for(let k=0;k<s.rows.length;k++){const r=p.rows[s.rows[k]],v=s.fixed[k]+s.solver.program.rows[k].terms.reduce((n,[i,w])=>n+w*answer.x[i],0);if(v<r.lower-1e-7||v>r.upper+1e-7){stats.fallback++;return;}}
   if(exact)stats.certified++;else{stats.outer++;stats.maximumSlack=Math.max(stats.maximumSlack,gap);}return global;
  }catch{stats.fallback++;return;}finally{stats.seconds+=(performance.now()-start)/1000;}}
- return{geometryCache:geometryBounds?.stats,bound:(q:number,t:LinearTerm[],maximum=false)=>calculate(q,t,maximum,true),outerBound:(q:number,t:LinearTerm[],maximum=false)=>calculate(q,t,maximum,false),stats,dispose(){geometry?.dispose();for(const s of cache.values())s?.solver.dispose();}};
+ return{geometryCache:geometryBounds?.stats,bound:(q:number,t:LinearTerm[],maximum=false)=>calculate(q,t,maximum,true),outerBound:(q:number,t:LinearTerm[],maximum=false)=>calculate(q,t,maximum,false),stats,dispose(){geometryBounds?.dispose();for(const s of cache.values())s?.solver.dispose();}};
 }
