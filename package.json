@@ -8,7 +8,8 @@
     "test:primer": "vitest run --config vitest.primer.config.ts",
     "test:all": "vitest run",
     "build:pages": "ng build --configuration production --base-href /CasSago/",
-    "test:engine-completion": "vitest run tests/core/sanger-short-flank-admission.spec.ts tests/core/sanger-regional-calibration-budget.spec.ts tests/core/sanger-decomposition-completion.spec.ts --maxWorkers=1"
+    "test:engine-completion": "vitest run tests/core/sanger-short-flank-admission.spec.ts tests/core/sanger-regional-calibration-budget.spec.ts tests/core/sanger-decomposition-completion.spec.ts --maxWorkers=1",
+    "test:engine-calibration": "vitest run tests/core/sanger-control-dye-identification.spec.ts tests/core/sanger-reference-novel-response.spec.ts tests/core/sanger-reference-photon-integration.spec.ts --maxWorkers=1"
   },
   "private": true,
   "dependencies": {

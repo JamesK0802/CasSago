@@ -33,6 +33,8 @@ jobs:
         run: npm run test:primer -- --maxWorkers=2
       - name: Check engine completion and original-model fallback
         run: npm run test:engine-completion
+      - name: Check reference-specific photon calibration
+        run: npm run test:engine-calibration
       - name: Build for CasSago Pages
         run: npm run build -- --base-href /CasSago/
       - uses: actions/upload-pages-artifact@v3
