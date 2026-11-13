@@ -1,0 +1,19 @@
+{
+  "bindingSource": "https://github.com/SteveDiamond/cvxjs/tree/13f0994f153b12c0ac78c9decf7b622627b0dea7/wasm",
+  "clarabelVersion": "0.11.1",
+  "linearSolver": "faer",
+  "maxThreads": 1,
+  "rust": "1.100.0",
+  "wasmBindgen": "0.2.106",
+  "buildSource": "tools/clarabel-wasm",
+  "changes": [
+    "Return complete finite primal/dual witnesses under every termination status; host independently verifies original constraints and global optimality.",
+    "FAER sparse linear algebra.",
+    "WASM32 faer-traits integer index compatibility patch."
+  ],
+  "files": {
+    "clarabel.mjs": "fef0586cf0ed70c767adfcf695e9f9865479ff1b3f46adf5e16945d6f41f175b",
+    "clarabel_wasm_bg.wasm": "12e9d2d60198ae3c27296ed250a2f755337639ee028f0f0c323bd5ba337ec67e",
+    "LICENSE.txt": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  }
+}

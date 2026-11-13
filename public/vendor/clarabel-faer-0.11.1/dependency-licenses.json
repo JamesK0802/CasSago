@@ -1,0 +1,749 @@
+[
+  {
+    "package": "derive_builder-0.11.2",
+    "licenseFiles": [
+      "licenses/derive_builder-0.11.2/LICENSE-APACHE",
+      "licenses/derive_builder-0.11.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "unicode-ident-1.0.22",
+    "licenseFiles": [
+      "licenses/unicode-ident-1.0.22/LICENSE-UNICODE",
+      "licenses/unicode-ident-1.0.22/LICENSE-APACHE",
+      "licenses/unicode-ident-1.0.22/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "dyn-stack-macros-0.1.3",
+    "licenseFiles": [
+      "licenses/dyn-stack-macros-0.1.3/LICENSE"
+    ]
+  },
+  {
+    "package": "nano-gemm-f64-0.1.0",
+    "licenseFiles": []
+  },
+  {
+    "package": "fnv-1.0.7",
+    "licenseFiles": [
+      "licenses/fnv-1.0.7/LICENSE-APACHE",
+      "licenses/fnv-1.0.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "js-sys-0.3.83",
+    "licenseFiles": [
+      "licenses/js-sys-0.3.83/LICENSE-APACHE",
+      "licenses/js-sys-0.3.83/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "either-1.15.0",
+    "licenseFiles": [
+      "licenses/either-1.15.0/LICENSE-APACHE",
+      "licenses/either-1.15.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "pest_meta-2.9.6",
+    "licenseFiles": [
+      "licenses/pest_meta-2.9.6/LICENSE-APACHE",
+      "licenses/pest_meta-2.9.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde_derive-1.0.228",
+    "licenseFiles": [
+      "licenses/serde_derive-1.0.228/LICENSE-APACHE",
+      "licenses/serde_derive-1.0.228/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "raw-cpuid-11.6.0",
+    "licenseFiles": [
+      "licenses/raw-cpuid-11.6.0/LICENSE.md"
+    ]
+  },
+  {
+    "package": "heck-0.5.0",
+    "licenseFiles": [
+      "licenses/heck-0.5.0/LICENSE-APACHE",
+      "licenses/heck-0.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "num-bigint-0.4.8",
+    "licenseFiles": [
+      "licenses/num-bigint-0.4.8/LICENSE-APACHE",
+      "licenses/num-bigint-0.4.8/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "once_cell-1.21.3",
+    "licenseFiles": [
+      "licenses/once_cell-1.21.3/LICENSE-APACHE",
+      "licenses/once_cell-1.21.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "cfg-if-1.0.4",
+    "licenseFiles": [
+      "licenses/cfg-if-1.0.4/LICENSE-APACHE",
+      "licenses/cfg-if-1.0.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "darling-0.14.4",
+    "licenseFiles": [
+      "licenses/darling-0.14.4/LICENSE"
+    ]
+  },
+  {
+    "package": "zerocopy-0.8.63",
+    "licenseFiles": [
+      "licenses/zerocopy-0.8.63/LICENSE-APACHE",
+      "licenses/zerocopy-0.8.63/LICENSE-BSD",
+      "licenses/zerocopy-0.8.63/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "syn-3.0.10",
+    "licenseFiles": [
+      "licenses/syn-3.0.10/LICENSE-APACHE",
+      "licenses/syn-3.0.10/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "ucd-trie-0.1.7",
+    "licenseFiles": [
+      "licenses/ucd-trie-0.1.7/LICENSE-APACHE",
+      "licenses/ucd-trie-0.1.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "find-msvc-tools-0.1.5",
+    "licenseFiles": [
+      "licenses/find-msvc-tools-0.1.5/LICENSE-APACHE",
+      "licenses/find-msvc-tools-0.1.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "gemm-f64-0.18.2",
+    "licenseFiles": [
+      "licenses/gemm-f64-0.18.2/LICENSE"
+    ]
+  },
+  {
+    "package": "nano-gemm-c32-0.1.0",
+    "licenseFiles": []
+  },
+  {
+    "package": "bytemuck_derive-1.12.1",
+    "licenseFiles": [
+      "licenses/bytemuck_derive-1.12.1/LICENSE-APACHE",
+      "licenses/bytemuck_derive-1.12.1/LICENSE-ZLIB",
+      "licenses/bytemuck_derive-1.12.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "dyn-stack-0.13.2",
+    "licenseFiles": [
+      "licenses/dyn-stack-0.13.2/LICENSE"
+    ]
+  },
+  {
+    "package": "bitflags-2.13.2",
+    "licenseFiles": [
+      "licenses/bitflags-2.13.2/LICENSE-APACHE",
+      "licenses/bitflags-2.13.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "pest_generator-2.9.6",
+    "licenseFiles": [
+      "licenses/pest_generator-2.9.6/LICENSE-APACHE",
+      "licenses/pest_generator-2.9.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "seq-macro-0.3.6",
+    "licenseFiles": [
+      "licenses/seq-macro-0.3.6/LICENSE-APACHE",
+      "licenses/seq-macro-0.3.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "darling_core-0.14.4",
+    "licenseFiles": [
+      "licenses/darling_core-0.14.4/LICENSE"
+    ]
+  },
+  {
+    "package": "bumpalo-3.19.0",
+    "licenseFiles": [
+      "licenses/bumpalo-3.19.0/LICENSE-APACHE",
+      "licenses/bumpalo-3.19.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "wasm-bindgen-macro-support-0.2.106",
+    "licenseFiles": [
+      "licenses/wasm-bindgen-macro-support-0.2.106/LICENSE-APACHE",
+      "licenses/wasm-bindgen-macro-support-0.2.106/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "derive_builder_macro-0.11.2",
+    "licenseFiles": [
+      "licenses/derive_builder_macro-0.11.2/LICENSE-APACHE",
+      "licenses/derive_builder_macro-0.11.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "equator-0.2.2",
+    "licenseFiles": []
+  },
+  {
+    "package": "serde-big-array-0.5.1",
+    "licenseFiles": [
+      "licenses/serde-big-array-0.5.1/LICENSE-APACHE",
+      "licenses/serde-big-array-0.5.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "npyz-0.8.4",
+    "licenseFiles": []
+  },
+  {
+    "package": "py_literal-0.4.0",
+    "licenseFiles": [
+      "licenses/py_literal-0.4.0/LICENSE-APACHE",
+      "licenses/py_literal-0.4.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "quote-1.0.42",
+    "licenseFiles": [
+      "licenses/quote-1.0.42/LICENSE-APACHE",
+      "licenses/quote-1.0.42/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "faer-traits-0.21.5",
+    "licenseFiles": []
+  },
+  {
+    "package": "wasm-bindgen-0.2.106",
+    "licenseFiles": [
+      "licenses/wasm-bindgen-0.2.106/LICENSE-APACHE",
+      "licenses/wasm-bindgen-0.2.106/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "gemm-c32-0.18.2",
+    "licenseFiles": [
+      "licenses/gemm-c32-0.18.2/LICENSE"
+    ]
+  },
+  {
+    "package": "ryu-1.0.20",
+    "licenseFiles": [
+      "licenses/ryu-1.0.20/LICENSE-APACHE",
+      "licenses/ryu-1.0.20/LICENSE-BOOST"
+    ]
+  },
+  {
+    "package": "rand-0.8.8",
+    "licenseFiles": [
+      "licenses/rand-0.8.8/LICENSE-APACHE",
+      "licenses/rand-0.8.8/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "crossbeam-epoch-0.9.21",
+    "licenseFiles": [
+      "licenses/crossbeam-epoch-0.9.21/LICENSE-APACHE",
+      "licenses/crossbeam-epoch-0.9.21/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "syn-1.0.109",
+    "licenseFiles": [
+      "licenses/syn-1.0.109/LICENSE-APACHE",
+      "licenses/syn-1.0.109/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "ar_archive_writer-0.5.5",
+    "licenseFiles": [
+      "licenses/ar_archive_writer-0.5.5/LICENSE.txt"
+    ]
+  },
+  {
+    "package": "half-2.7.1",
+    "licenseFiles": [
+      "licenses/half-2.7.1/LICENSE-APACHE",
+      "licenses/half-2.7.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "cc-1.2.49",
+    "licenseFiles": [
+      "licenses/cc-1.2.49/LICENSE-APACHE",
+      "licenses/cc-1.2.49/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "autocfg-1.5.0",
+    "licenseFiles": [
+      "licenses/autocfg-1.5.0/LICENSE-APACHE",
+      "licenses/autocfg-1.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "generativity-1.2.1",
+    "licenseFiles": [
+      "licenses/generativity-1.2.1/LICENSE-APACHE",
+      "licenses/generativity-1.2.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "rand_distr-0.4.3",
+    "licenseFiles": [
+      "licenses/rand_distr-0.4.3/LICENSE-APACHE",
+      "licenses/rand_distr-0.4.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "wasm-bindgen-macro-0.2.106",
+    "licenseFiles": [
+      "licenses/wasm-bindgen-macro-0.2.106/LICENSE-APACHE",
+      "licenses/wasm-bindgen-macro-0.2.106/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "enum-as-inner-0.6.1",
+    "licenseFiles": [
+      "licenses/enum-as-inner-0.6.1/LICENSE-APACHE",
+      "licenses/enum-as-inner-0.6.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "rand_chacha-0.3.1",
+    "licenseFiles": [
+      "licenses/rand_chacha-0.3.1/LICENSE-APACHE",
+      "licenses/rand_chacha-0.3.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "rustversion-1.0.22",
+    "licenseFiles": [
+      "licenses/rustversion-1.0.22/LICENSE-APACHE",
+      "licenses/rustversion-1.0.22/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde-1.0.228",
+    "licenseFiles": [
+      "licenses/serde-1.0.228/LICENSE-APACHE",
+      "licenses/serde-1.0.228/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "pest_stack_guard-1.0.1",
+    "licenseFiles": [
+      "licenses/pest_stack_guard-1.0.1/LICENSE-APACHE",
+      "licenses/pest_stack_guard-1.0.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "web-time-0.2.4",
+    "licenseFiles": [
+      "licenses/web-time-0.2.4/LICENSE-APACHE",
+      "licenses/web-time-0.2.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "rayon-1.12.0",
+    "licenseFiles": [
+      "licenses/rayon-1.12.0/LICENSE-APACHE",
+      "licenses/rayon-1.12.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "bytemuck-1.25.2",
+    "licenseFiles": [
+      "licenses/bytemuck-1.25.2/LICENSE-APACHE",
+      "licenses/bytemuck-1.25.2/LICENSE-ZLIB",
+      "licenses/bytemuck-1.25.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "num-traits-0.2.19",
+    "licenseFiles": [
+      "licenses/num-traits-0.2.19/LICENSE-APACHE",
+      "licenses/num-traits-0.2.19/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "faer-macros-0.21.0",
+    "licenseFiles": []
+  },
+  {
+    "package": "object-0.39.1",
+    "licenseFiles": [
+      "licenses/object-0.39.1/LICENSE-APACHE",
+      "licenses/object-0.39.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "itertools-0.11.0",
+    "licenseFiles": [
+      "licenses/itertools-0.11.0/LICENSE-APACHE",
+      "licenses/itertools-0.11.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde_json-1.0.145",
+    "licenseFiles": [
+      "licenses/serde_json-1.0.145/LICENSE-APACHE",
+      "licenses/serde_json-1.0.145/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "gemm-f16-0.18.2",
+    "licenseFiles": [
+      "licenses/gemm-f16-0.18.2/LICENSE"
+    ]
+  },
+  {
+    "package": "faer-0.21.9",
+    "licenseFiles": []
+  },
+  {
+    "package": "pest-2.9.6",
+    "licenseFiles": [
+      "licenses/pest-2.9.6/LICENSE-APACHE",
+      "licenses/pest-2.9.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "gemm-f32-0.18.2",
+    "licenseFiles": [
+      "licenses/gemm-f32-0.18.2/LICENSE"
+    ]
+  },
+  {
+    "package": "crossbeam-deque-0.8.8",
+    "licenseFiles": [
+      "licenses/crossbeam-deque-0.8.8/LICENSE-APACHE",
+      "licenses/crossbeam-deque-0.8.8/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde-wasm-bindgen-0.6.5",
+    "licenseFiles": [
+      "licenses/serde-wasm-bindgen-0.6.5/LICENSE"
+    ]
+  },
+  {
+    "package": "shlex-1.3.0",
+    "licenseFiles": [
+      "licenses/shlex-1.3.0/LICENSE-APACHE",
+      "licenses/shlex-1.3.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "rand_core-0.6.4",
+    "licenseFiles": [
+      "licenses/rand_core-0.6.4/LICENSE-APACHE",
+      "licenses/rand_core-0.6.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "reborrow-0.5.5",
+    "licenseFiles": [
+      "licenses/reborrow-0.5.5/LICENSE"
+    ]
+  },
+  {
+    "package": "version_check-0.9.5",
+    "licenseFiles": [
+      "licenses/version_check-0.9.5/LICENSE-APACHE",
+      "licenses/version_check-0.9.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "derive_builder_core-0.11.2",
+    "licenseFiles": [
+      "licenses/derive_builder_core-0.11.2/LICENSE-APACHE",
+      "licenses/derive_builder_core-0.11.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "paste-1.0.15",
+    "licenseFiles": [
+      "licenses/paste-1.0.15/LICENSE-APACHE",
+      "licenses/paste-1.0.15/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "thiserror-1.0.69",
+    "licenseFiles": [
+      "licenses/thiserror-1.0.69/LICENSE-APACHE",
+      "licenses/thiserror-1.0.69/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "nano-gemm-codegen-0.1.0",
+    "licenseFiles": []
+  },
+  {
+    "package": "getrandom-0.2.17",
+    "licenseFiles": [
+      "licenses/getrandom-0.2.17/LICENSE-APACHE",
+      "licenses/getrandom-0.2.17/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "num-complex-0.4.6",
+    "licenseFiles": [
+      "licenses/num-complex-0.4.6/LICENSE-APACHE",
+      "licenses/num-complex-0.4.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "memchr-2.7.6",
+    "licenseFiles": [
+      "licenses/memchr-2.7.6/COPYING",
+      "licenses/memchr-2.7.6/UNLICENSE",
+      "licenses/memchr-2.7.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "libm-0.2.15",
+    "licenseFiles": [
+      "licenses/libm-0.2.15/LICENSE.txt"
+    ]
+  },
+  {
+    "package": "amd-0.2.2",
+    "licenseFiles": [
+      "licenses/amd-0.2.2/LICENSE"
+    ]
+  },
+  {
+    "package": "rayon-core-1.13.0",
+    "licenseFiles": [
+      "licenses/rayon-core-1.13.0/LICENSE-APACHE",
+      "licenses/rayon-core-1.13.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "byteorder-1.5.0",
+    "licenseFiles": [
+      "licenses/byteorder-1.5.0/COPYING",
+      "licenses/byteorder-1.5.0/UNLICENSE",
+      "licenses/byteorder-1.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "libc-0.2.191",
+    "licenseFiles": [
+      "licenses/libc-0.2.191/LICENSE-APACHE",
+      "licenses/libc-0.2.191/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "psm-0.1.32",
+    "licenseFiles": [
+      "licenses/psm-0.1.32/LICENSE-APACHE",
+      "licenses/psm-0.1.32/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "nano-gemm-0.1.3",
+    "licenseFiles": []
+  },
+  {
+    "package": "gemm-0.18.2",
+    "licenseFiles": [
+      "licenses/gemm-0.18.2/LICENSE"
+    ]
+  },
+  {
+    "package": "lazy_static-1.5.0",
+    "licenseFiles": [
+      "licenses/lazy_static-1.5.0/LICENSE-APACHE",
+      "licenses/lazy_static-1.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "enum_dispatch-0.3.13",
+    "licenseFiles": [
+      "licenses/enum_dispatch-0.3.13/LICENSE"
+    ]
+  },
+  {
+    "package": "pulp-0.21.5",
+    "licenseFiles": [
+      "licenses/pulp-0.21.5/LICENSE"
+    ]
+  },
+  {
+    "package": "wasm-bindgen-shared-0.2.106",
+    "licenseFiles": [
+      "licenses/wasm-bindgen-shared-0.2.106/LICENSE-APACHE",
+      "licenses/wasm-bindgen-shared-0.2.106/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "nano-gemm-f32-0.1.0",
+    "licenseFiles": []
+  },
+  {
+    "package": "equator-0.4.2",
+    "licenseFiles": [
+      "licenses/equator-0.4.2/LICENSE"
+    ]
+  },
+  {
+    "package": "crossbeam-utils-0.8.23",
+    "licenseFiles": [
+      "licenses/crossbeam-utils-0.8.23/LICENSE-APACHE",
+      "licenses/crossbeam-utils-0.8.23/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "pest_derive-2.9.6",
+    "licenseFiles": [
+      "licenses/pest_derive-2.9.6/LICENSE-APACHE",
+      "licenses/pest_derive-2.9.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "zerocopy-derive-0.8.63",
+    "licenseFiles": [
+      "licenses/zerocopy-derive-0.8.63/LICENSE-APACHE",
+      "licenses/zerocopy-derive-0.8.63/LICENSE-BSD",
+      "licenses/zerocopy-derive-0.8.63/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "itoa-1.0.15",
+    "licenseFiles": [
+      "licenses/itoa-1.0.15/LICENSE-APACHE",
+      "licenses/itoa-1.0.15/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "stacker-0.1.25",
+    "licenseFiles": [
+      "licenses/stacker-0.1.25/LICENSE-APACHE",
+      "licenses/stacker-0.1.25/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde_core-1.0.228",
+    "licenseFiles": [
+      "licenses/serde_core-1.0.228/LICENSE-APACHE",
+      "licenses/serde_core-1.0.228/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "num-integer-0.1.47",
+    "licenseFiles": [
+      "licenses/num-integer-0.1.47/LICENSE-APACHE",
+      "licenses/num-integer-0.1.47/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "darling_macro-0.14.4",
+    "licenseFiles": [
+      "licenses/darling_macro-0.14.4/LICENSE"
+    ]
+  },
+  {
+    "package": "ppv-lite86-0.2.21",
+    "licenseFiles": [
+      "licenses/ppv-lite86-0.2.21/LICENSE-APACHE",
+      "licenses/ppv-lite86-0.2.21/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "equator-macro-0.4.2",
+    "licenseFiles": [
+      "licenses/equator-macro-0.4.2/LICENSE"
+    ]
+  },
+  {
+    "package": "proc-macro2-1.0.103",
+    "licenseFiles": [
+      "licenses/proc-macro2-1.0.103/LICENSE-APACHE",
+      "licenses/proc-macro2-1.0.103/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "syn-2.0.111",
+    "licenseFiles": [
+      "licenses/syn-2.0.111/LICENSE-APACHE",
+      "licenses/syn-2.0.111/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "clarabel-0.11.1",
+    "licenseFiles": [
+      "licenses/clarabel-0.11.1/LICENSE.md"
+    ]
+  },
+  {
+    "package": "ident_case-1.0.1",
+    "licenseFiles": [
+      "licenses/ident_case-1.0.1/LICENSE"
+    ]
+  },
+  {
+    "package": "thiserror-impl-1.0.69",
+    "licenseFiles": [
+      "licenses/thiserror-impl-1.0.69/LICENSE-APACHE",
+      "licenses/thiserror-impl-1.0.69/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "equator-macro-0.2.1",
+    "licenseFiles": []
+  },
+  {
+    "package": "strsim-0.10.0",
+    "licenseFiles": [
+      "licenses/strsim-0.10.0/LICENSE"
+    ]
+  },
+  {
+    "package": "gemm-c64-0.18.2",
+    "licenseFiles": [
+      "licenses/gemm-c64-0.18.2/LICENSE"
+    ]
+  },
+  {
+    "package": "sysctl-0.6.0",
+    "licenseFiles": [
+      "licenses/sysctl-0.6.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "nano-gemm-core-0.1.0",
+    "licenseFiles": []
+  },
+  {
+    "package": "gemm-common-0.18.2",
+    "licenseFiles": [
+      "licenses/gemm-common-0.18.2/LICENSE"
+    ]
+  },
+  {
+    "package": "nano-gemm-c64-0.1.0",
+    "licenseFiles": []
+  }
+]

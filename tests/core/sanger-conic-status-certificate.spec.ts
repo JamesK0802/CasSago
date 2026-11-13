@@ -1,8 +1,8 @@
 import {it,expect} from 'vitest';
 import loadHighs from '../../public/vendor/highs-1.15.4/highs.mjs';
-import initializeConic,* as conic from '../../public/vendor/clarabel-cvxjs-0.1.4/clarabel.mjs';
+import initializeConic,* as conic from '../../public/vendor/clarabel-faer-0.11.1/clarabel.mjs';
 import {readFileSync} from 'node:fs';
-async function loadCommon(){await initializeConic({module_or_path:readFileSync('public/vendor/clarabel-cvxjs-0.1.4/clarabel_wasm_bg.wasm')});const o=await loadHighs();o.conic=conic;return o;}
+async function loadCommon(){await initializeConic({module_or_path:readFileSync('public/vendor/clarabel-faer-0.11.1/clarabel_wasm_bg.wasm')});const o=await loadHighs();o.conic=conic;return o;}
 
 import {VerifiedConicSolver} from '../../src/app/workers/core/sanger-conic-solver';
 import {OptimizationPending,MarginalLinearSolver,validMarginalSolution,type MarginalProgram} from '../../src/app/workers/core/sanger-marginal-lp';
@@ -31,6 +31,6 @@ it('does not accept a feasible suboptimal point on the basis of an unattained bo
  const optimizer=await loadCommon();optimizer.conic={solve:(...args:any[])=>({status:'unknown',x:[.5],z:Array(args[9]).fill(0),iterations:1})};const s=new MarginalLinearSolver({upper:[1],cost:[1],rows:[]},optimizer,'conic');try{expect(()=>s.solve()).toThrow('did not certify');}finally{s.dispose();}
 });
 it('polishes an unknown feasible proposal until its original objective has a verified global certificate',async()=>{
- const optimizer=await loadCommon(),tolerances:number[]=[];optimizer.conic={solve:(...args:any[])=>{tolerances.push(JSON.parse(args[11]).tol_gap_abs);const z=Array(args[9]).fill(0);if(tolerances.length>1)z[0]=-1;return{status:'unknown',x:[.25],z,iterations:1};}};
+ const optimizer=await loadCommon(),tolerances:number[]=[];optimizer.conic={solve:(...args:any[])=>{tolerances.push(JSON.parse(args[11]).tol_gap_abs);const z=Array(args[9]).fill(0);if(tolerances.length>1)z[0]=-args[3][0];return{status:'unknown',x:[.25],z,iterations:1};}};
  const s=new MarginalLinearSolver({upper:[1],cost:[1],rows:[{terms:[[0,1]],lower:.25,upper:.25}]},optimizer,'conic');try{expect(s.solve().value).toBe(.25);expect(s.objectiveLowerBound()).toBeCloseTo(.25,10);expect(tolerances).toEqual([1e-8,1e-10]);expect(s.diagnostics.conic!.certificationRetries).toBe(1);}finally{s.dispose();}
 });

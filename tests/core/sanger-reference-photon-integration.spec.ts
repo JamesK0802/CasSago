@@ -1,9 +1,9 @@
 import {it,expect,vi} from 'vitest';
 import {writeFileSync,mkdirSync} from 'node:fs';
 import loadHighs from '../../public/vendor/highs-1.15.4/highs.mjs';
-import initializeConic,* as conic from '../../public/vendor/clarabel-cvxjs-0.1.4/clarabel.mjs';
+import initializeConic,* as conic from '../../public/vendor/clarabel-faer-0.11.1/clarabel.mjs';
 import {readFileSync} from 'node:fs';
-async function loadOptimizer(){await initializeConic({module_or_path:readFileSync('public/vendor/clarabel-cvxjs-0.1.4/clarabel_wasm_bg.wasm')});const o=await loadHighs();o.conic=conic;return o;}
+async function loadOptimizer(){await initializeConic({module_or_path:readFileSync('public/vendor/clarabel-faer-0.11.1/clarabel_wasm_bg.wasm')});const o=await loadHighs();o.conic=conic;return o;}
 import * as intensity from '../../src/app/workers/core/sanger-intensity-response';
 import {analyzeAutomaticSanger} from '../../src/app/workers/core/sanger-automatic';
 import {marginalModelDiagnostics} from '../../src/app/workers/core/sanger-marginal-engine';

@@ -1,0 +1,20 @@
+2026-11-13 — Browser conic runtime validation
+
+Change
+Clarabel 0.11.1 / FAER sparse, one WASM thread, replaces the cvxjs 0.1.4 / Clarabel 0.9.0 product runtime. Official cvxjs bindings were dropping complete primal/dual witnesses unless the termination status was exactly Solved. Finite full-sized witnesses are now returned under other statuses, but acceptance still requires independent ORIGINAL primal feasibility and global dual gap <=1e-7. No genotype truth, separately inferred profile, extra noise, or allele cap enters inference.
+
+Equivalent positive objective scaling multiplies both P and c. Dual multipliers are converted back BEFORE checking the original model. The units portfolio tries a tighter equivalent objective before exhausting precision-only retries. Failed certificates remain failures. Interrupted work remains pending.
+
+Evidence
+- Four original measured inputs: signal QC, frozen prediction limit, and technical negative checks pass. Common WASM under Node: HDR15.137s / Good29.246s / Sub13.413s / WT2.405s. These are development timings, not browser UI latency, and are not faster than the preceding release on every input.
+- Frozen five-case 5/8/12-indel subset: full assessment, post-inference truth retrieval, and actual GT color logic pass with the modern runtime.
+- Independent original compiled 3-reference Good+1 bound, n69302/m202326: modern WASM scale10 original global gap1.3916e-8, primal7.17e-12. Repeat is numerically identical. Original binding-only patch still failed the original certificate (~2e-7); no tolerance was relaxed to accept it.
+- Actual Chrome dedicated worker, the SAME single original bound with default objective units/tol1e-8: 234.362s, original primal1.27e-13/global gap9.7087e-8 PASS. Scale10/tol1e-10 initially exceeded120s and did NOT pass. This is a single-bound browser measurement, not whole-analysis latency. Node58.849s for the default bound must not be presented as Chrome speed.
+- Current read-cycle-corrected 3-reference model: previous complete workflow failed Good+1 with gap2.1111e-7. Cold scale10/tol1e-10 on the independently extracted SAME original model passes, primal1.07e-11/global gap2.1098e-8,49.492s under Node. The original unscaled objective and constraints are checked.
+- Precision-first parent retry subsequently certifies that current bound,235.987s. Equivalent-units-first parent retry also PASS:178.260s, same value/gap,299 total iterations vs395 in precision-first min+max diagnostic. Timings were collected during concurrent development jobs, not a controlled browser benchmark; no whole-workflow speedup is claimed.
+- Product runtime regression tests:35 cases across7 files pass. Primer/navigation regressions:87 cases across10 files pass. Production Angular build PASS (local sandbox aborted; identical build outside sandbox passed with2 workers).
+
+Open work
+Full56 frozen validation and full3-reference digital measured pool runs remain separately supervised. Do not infer scientific PASS from a Vitest process exit0: the measured-pool probe records failures in summary.json. The first modern-runtime full pool attempt failed at a certificate; the equivalent-units retry is intended to fix that failure and is being rerun. Measured pooled representative fractions and conditional base points were NOT previously stable within2pp, even though separately inferred profiles were jointly compatible. Compatibility is not unique genotype recovery.
+
+The original packed 12-indel long run remains running. It has not passed. Source, build recipe, exact Cargo.lock, WASM32 index patch, binary hashes, and dependency notices are included in tools/clarabel-wasm and public/vendor/clarabel-faer-0.11.1. Size-oriented vs speed-oriented compilation gave no convincing speed gain; the size-oriented artifact remains selected.

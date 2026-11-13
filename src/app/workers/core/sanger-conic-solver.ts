@@ -37,9 +37,18 @@ export class VerifiedConicSolver {
  }
  solve(terms?:LinearTerm[],maximize=false):{x:number[];value:number}{
   this.certifiedLower=undefined;if(maximize&&this.p.quadraticCost?.length)throw Error('Convex quadratic objectives require minimization.');
-  for(;;){try{return this.attempt(terms,maximize);}catch(error){if(this.tolerance<=1e-12||!this.retryableCertificate)throw error;this.tolerance=Math.max(1e-12,this.tolerance/100);this.stats.certificationRetries++;}}
+  // Equivalent units are tried before spending more iterations on a poorly
+  // conditioned objective. Every candidate is checked in the original units.
+  const initial=this.tolerance,tight=Math.min(initial,1e-10),plans:{scale?:number;tol:number}[]=[{tol:initial},{scale:10,tol:tight},{scale:.1,tol:tight}];
+  if(initial>1e-10)plans.push({tol:1e-10});
+  if(initial>1e-12)plans.push({tol:1e-12},{scale:10,tol:1e-12},{scale:.1,tol:1e-12});
+  for(let i=0;;i++){
+   const plan=plans[i];if(plan.tol!==this.tolerance)this.stats.certificationRetries++;this.tolerance=plan.tol;
+   try{return this.attempt(terms,maximize,plan.scale);}catch(error){if(!this.retryableCertificate||i===plans.length-1)throw error;}
+  }
  }
- private attempt(terms?:LinearTerm[],maximize=false){
+
+ private attempt(terms?:LinearTerm[],maximize=false,equivalentScale?:number){
   this.retryableCertificate=false;
   if(this.timeLimit===0)throw new OptimizationPending();
   const start=performance.now(),m=this.compiled??=this.compile(),cost=new Float64Array(m.n);if(terms){for(const[i,w]of terms)if(m.index[i]>=0)cost[m.index[i]]+=(maximize?-1:1)*w;}else m.columns.forEach((i,j)=>cost[j]=this.p.cost[i]);if(!m.n){const x=this.p.upper.map(()=>0),violation=marginalViolation(this.p,x);if(violation>1e-7)throw Error('Zero-box model violates original constraints.');this.certifiedLower=0;this.dual=this.p.rows.map(()=>0);this.planes=[];return{x,value:0};}
@@ -48,8 +57,8 @@ export class VerifiedConicSolver {
   // unchanged. A numerical failure may be sensitive to that scale. Convert
   // dual multipliers back BEFORE checking the original certificate below.
   // Retries share the existing time slice; they never relax a tolerance.
-  for(const scale of [1,10,.1]){
-   if(scale!==1&&!(result?.status==='unknown'&&!(result.z?.length)))break;
+  for(const scale of equivalentScale===undefined?[1,10,.1]:[equivalentScale]){
+   if(result&&scale!==1&&!(result.status==='unknown'&&!(result.z?.length)))break;
    const remaining=scale===1?this.timeLimit:this.timeLimit>0?this.timeLimit-(performance.now()-start)/1000:this.timeLimit;if(this.timeLimit>0&&remaining<=0)throw new OptimizationPending();
    lastTimeLimit=remaining;if(scale!==1)this.stats.scalingRetries++;
    const answer=this.runtime.solve(m.pStarts,m.pIndices,scale===1?m.pValues:Float64Array.from(m.pValues,v=>v*scale),scale===1?cost:Float64Array.from(cost,v=>v*scale),m.starts,m.indices,m.values,m.b,m.n,m.rowCount,m.cones,JSON.stringify({verbose:false,max_iter:this.iterationLimit,time_limit:remaining,tol_gap_abs:this.tolerance,tol_gap_rel:this.tolerance}));

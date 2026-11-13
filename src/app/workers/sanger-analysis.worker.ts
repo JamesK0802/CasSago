@@ -8,7 +8,7 @@ import {marginalAlternativePage} from './core/sanger-marginal-alternatives';
 import type {SangerAnalysisResult} from '../models/sanger-analysis';
 let lastResult:SangerAnalysisResult|undefined;
 let optimizer:Promise<any>|undefined;
-const localOptimizer=()=>optimizer??=import(/* @vite-ignore */new URL('vendor/highs-1.15.4/highs.mjs',self.location.href).href).then(async module=>{const engine=await module.default(),conic=await import(/* @vite-ignore */new URL('vendor/clarabel-cvxjs-0.1.4/clarabel.mjs',self.location.href).href);await conic.default();engine.conic=conic;return engine;});
+const localOptimizer=()=>optimizer??=import(/* @vite-ignore */new URL('vendor/highs-1.15.4/highs.mjs',self.location.href).href).then(async module=>{const engine=await module.default(),conic=await import(/* @vite-ignore */new URL('vendor/clarabel-faer-0.11.1/clarabel.mjs',self.location.href).href);await conic.default();engine.conic=conic;return engine;});
 addEventListener('message',async({data})=>{
  try{
   if(data.action==='marginal-truth'){if(!lastResult)throw Error('Analyze the original traces before checking GT retrieval.');const retrieval=retrieveMarginalTruth(lastResult,data.annotations,s=>postMessage({type:'marginal-truth-progress',requestId:data.requestId,stage:s}));postMessage({type:'marginal-truth',retrieval,requestId:data.requestId});return;}

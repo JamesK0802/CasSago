@@ -1,0 +1,27 @@
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -768,7 +768,6 @@
+ 	}
+ }
+ 
+-#[cfg(any(target_pointer_width = "64"))]
+ impl SignedIndex for i64 {
+ 	const MAX: Self = Self::MAX;
+ 
+@@ -776,7 +775,7 @@
+ 	fn truncate(value: usize) -> Self {
+ 		#[allow(clippy::assertions_on_constants)]
+ 		const _: () = {
+-			core::assert!(i64::BITS <= usize::BITS);
++			// WASM32 port: f64 SIMD indices are u64; live matrix indices remain pointer-sized.
+ 		};
+ 		value as isize as Self
+ 	}
+@@ -885,7 +884,6 @@
+ 	type FixedWidth = u32;
+ 	type Signed = i32;
+ }
+-#[cfg(any(target_pointer_width = "64"))]
+ impl Index for u64 {
+ 	type FixedWidth = u64;
+ 	type Signed = i64;

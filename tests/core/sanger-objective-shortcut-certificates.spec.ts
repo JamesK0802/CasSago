@@ -1,8 +1,8 @@
 import {it,expect} from 'vitest';
 import {readFileSync} from 'node:fs';
 import loadHighs from '../../public/vendor/highs-1.15.4/highs.mjs';
-import initializeConic,* as conic from '../../public/vendor/clarabel-cvxjs-0.1.4/clarabel.mjs';
-async function loadCommon(){await initializeConic({module_or_path:readFileSync('public/vendor/clarabel-cvxjs-0.1.4/clarabel_wasm_bg.wasm')});const o=await loadHighs();o.conic=conic;return o;}
+import initializeConic,* as conic from '../../public/vendor/clarabel-faer-0.11.1/clarabel.mjs';
+async function loadCommon(){await initializeConic({module_or_path:readFileSync('public/vendor/clarabel-faer-0.11.1/clarabel_wasm_bg.wasm')});const o=await loadHighs();o.conic=conic;return o;}
 import {MarginalLinearSolver,marginalViolation} from '../../src/app/workers/core/sanger-marginal-lp';
 it('exports a fresh equality dual and clears obsolete cone planes for the new objective',async()=>{const solver=new MarginalLinearSolver({upper:[1],cost:[0],rows:[{terms:[[0,1]],lower:.3,upper:.3}],quadratics:[{name:'original cone',terms:[[[0,1]]],upper:1}]},await loadCommon(),'conic');try{solver.solve([[0,1]]);expect(solver.solve([[0,1]],true).value).toBe(.3);expect(solver.objectiveLowerBound()).toBe(-.3);expect(solver.rowDuals()).toEqual([-1]);expect(solver.supportPlanes()).toEqual([]);expect(solver.solve([]).value).toBe(0);expect(solver.objectiveLowerBound()).toBe(0);expect(solver.rowDuals()).toEqual([0]);}finally{solver.dispose();}});
 it('does not reuse an invalid full-model witness even for a known equality',async()=>{const p={upper:[1],cost:[0],rows:[{terms:[[0,1]]as[number,number][],lower:.3,upper:.3}],quadratics:[{name:'original cone',terms:[[[0,1]]]as[number,number][][],upper:1}]},solver=new MarginalLinearSolver(p,await loadCommon(),'conic');try{solver.solve([[0,1]]);(solver as any).point=[0];const a=solver.solve([[0,1]],true);expect(marginalViolation(p,a.x)).toBeLessThanOrEqual(1e-7);}finally{solver.dispose();}});
