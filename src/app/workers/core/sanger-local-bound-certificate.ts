@@ -1,3 +1,5 @@
+import {cachedLinearBound} from './sanger-cached-linear-bound';
+import {prepareHintBox} from './sanger-hint-box';
 import {quadraticCut} from './sanger-quadratic-envelope';
 import type {SangerLinearOptimizer} from './sanger-discrete-phase';
 import type {MarginalInternalGroup} from './sanger-marginal-engine';
@@ -14,7 +16,7 @@ export function localBoundCertificates(p:MarginalProgram,anchor:number[],groups:
  const geometryColumns=p.localBlocks?p.upper.flatMap((_,i)=>!allLocal.has(i)?[i]:[]):[];
  const geometryMap=new Map(geometryColumns.map((i,j)=>[i,j]));
  const geometryProgram:MarginalProgram|undefined=p.localBlocks?{
-  upper:geometryColumns.map(i=>p.upper[i]),cost:geometryColumns.map(()=>0),
+  immutableRows:true,upper:geometryColumns.map(i=>p.upper[i]),cost:geometryColumns.map(()=>0),
   rows:p.rows.filter(r=>r.terms.every(([i])=>geometryMap.has(i))).map(r=>({...r,terms:r.terms.map(([i,w])=>[geometryMap.get(i)!,w]as LinearTerm)})),
   quadratics:p.quadratics?.map(q=>({...q,terms:q.terms.map(r=>r.map(([i,w])=>[geometryMap.get(i)!,w]as LinearTerm))}))
  }:undefined;
@@ -22,8 +24,10 @@ export function localBoundCertificates(p:MarginalProgram,anchor:number[],groups:
  // original nonlinear model remains intact for inference and joint retrieval.
  if(geometryProgram){const x=geometryProgram.upper.map(()=>0);for(const q of geometryProgram.quadratics||[]){const columns=new Set(q.terms.flatMap(row=>row.map(([i])=>i)));for(const i of columns){x[i]=1;const cut=quadraticCut(q,x);x[i]=0;if(cut.value>0)geometryProgram.rows.push({terms:cut.terms,lower:-LP_INFINITY,upper:cut.upper+1e-10*(1+Math.abs(cut.upper))});}}geometryProgram.quadratics=undefined;}
  const geometry=geometryProgram?new MarginalLinearSolver(geometryProgram,optimizer):undefined;
+ const geometryBounds=geometry?cachedLinearBound(geometry.program,geometry):undefined;
  const hint={image:new Map<number,number>(),constant:0,magnitude:0};for(let k=0;k<(p.dualHint?.shadow.length||0);k++){let y=p.dualHint!.shadow[k];const r=p.rows[k];if(!Number.isFinite(y)||!r)continue;if(y>0&&r.lower<=-LP_INFINITY||y<0&&r.upper>=LP_INFINITY)y=0;if(!y)continue;const v=y*(y>0?r.lower:r.upper);hint.constant+=v;hint.magnitude+=Math.abs(v);for(const[i,w]of r.terms)hint.image.set(i,(hint.image.get(i)||0)+y*w);}
  for(const plane of p.dualHint?.planes||[]){hint.constant-=plane.upper;hint.magnitude+=Math.abs(plane.upper);for(const[i,w]of plane.terms)hint.image.set(i,(hint.image.get(i)||0)-w);}
+ const shiftHint=prepareHintBox(hint.image,p.upper,geometryMap);
  const budgetTerms=new Map(p.dualHint?p.rows[p.dualHint.budgetRow].terms:[]),sameDepartureCost=p.cost.every((c,i)=>c===(budgetTerms.get(i)||0));let required=hint.constant,requiredMagnitude=hint.magnitude;for(const[i,w]of hint.image){const v=Math.min(0,p.cost[i]-w)*p.upper[i];required+=v;requiredMagnitude+=Math.abs(v);}
  function create(q:number){
   const columns=[...new Set(groups.flatMap(g=>{const f=g.flow?.get(q);return f?[...f.unchanged.map(c=>c.column),...f.changed]:[];}))],indices=new Map(columns.map((v,i)=>[v,i]));if(!columns.length)return null;
@@ -49,13 +53,13 @@ export function localBoundCertificates(p:MarginalProgram,anchor:number[],groups:
   // Guard cycles can contain only phase/origin expressions and no local
   // substitution variables. Their existing geometry relaxation already
   // supplies a valid global outer bound; a full joint solve is unnecessary.
-  if(!exact&&geometry&&terms.every(([i])=>geometryMap.has(i))){try{const answer=geometry.solve(terms.map(([i,w])=>[geometryMap.get(i)!,w]as LinearTerm),maximize),lower=geometry.objectiveLowerBound()??((maximize?-1:1)*answer.value-1e-7),bound=maximize?-lower:lower,at=terms.reduce((n,[i,w])=>n+w*anchor[i],0);if(Number.isFinite(bound)){stats.outer++;return maximize?Math.max(bound,at):Math.min(bound,at);}}catch{/* Preserve the full-model fallback if this certificate is incomplete. */}}
+  if(!exact&&geometry&&terms.every(([i])=>geometryMap.has(i))){try{const lower=geometryBounds!.lower(terms.map(([i,w])=>[geometryMap.get(i)!,w]as LinearTerm),maximize),bound=maximize?-lower:lower,at=terms.reduce((n,[i,w])=>n+w*anchor[i],0);if(Number.isFinite(bound)){stats.outer++;return maximize?Math.max(bound,at):Math.min(bound,at);}}catch{/* Preserve the full-model fallback if this certificate is incomplete. */}}
   stats.fallback++;return;
  }
   const local=terms.flatMap(([i,w])=>s!.indices.has(i)?[[s!.indices.get(i)!,w]as LinearTerm]:[]),fixed=terms.reduce((n,[i,w])=>n+(s!.indices.has(i)?0:w*anchor[i]),0),answer=s.solver.solve(local,maximize),primal=fixed+answer.value,dual=s.solver.rowDuals(),sign=maximize?-1:1,reduced=new Map<number,number>();for(const[i,w]of terms)reduced.set(i,(reduced.get(i)||0)+sign*w);let lower=0,magnitude=0,budgetMultiplier=0;
   for(let k=0;k<dual.length;k++){let y=dual[k];if(!Number.isFinite(y))return;const r=s.globalRows[k];if(y>0&&r.lower<=-LP_INFINITY||y<0&&r.upper>=LP_INFINITY)y=0;if(!y)continue;if(s.rows[k]===p.dualHint?.budgetRow)budgetMultiplier=Math.max(0,-y);const v=y*(y>0?r.lower:r.upper);lower+=v;magnitude+=Math.abs(v);for(const[i,w]of r.terms)reduced.set(i,(reduced.get(i)||0)-y*w);}
-  const certificate=(alpha:number)=>{const coefficients=new Map(reduced);let result=lower+alpha*hint.constant,scale=magnitude+alpha*hint.magnitude;if(alpha)for(const[i,w]of hint.image)coefficients.set(i,(coefficients.get(i)||0)-alpha*w);
-   if(geometry){try{const terms=[...coefficients].flatMap(([i,w])=>geometryMap.has(i)&&w?[[geometryMap.get(i)!,w]as LinearTerm]:[]),answer=geometry.solve(terms),bound=geometry.objectiveLowerBound()??answer.value-1e-7;result+=bound;scale+=Math.abs(bound);for(const[i,r]of coefficients)if(!geometryMap.has(i)&&r<0){const v=r*p.upper[i];result+=v;scale+=Math.abs(v);}return result-64*Number.EPSILON*(1+scale);}catch{/* The original box certificate remains valid if a geometry query is incomplete. */}}
+  const certificate=(alpha:number)=>{const shifted=geometry?shiftHint(reduced,alpha):undefined,coefficients=shifted?.coefficients||new Map(reduced);let result=lower+alpha*hint.constant+(shifted?.constant||0),scale=magnitude+alpha*hint.magnitude+(shifted?.magnitude||0);if(alpha&&!shifted)for(const[i,w]of hint.image)coefficients.set(i,(coefficients.get(i)||0)-alpha*w);
+   if(geometry){try{const terms=[...coefficients].flatMap(([i,w])=>geometryMap.has(i)&&w?[[geometryMap.get(i)!,w]as LinearTerm]:[]),bound=geometryBounds!.lower(terms);result+=bound;scale+=Math.abs(bound);for(const[i,r]of coefficients)if(!geometryMap.has(i)&&r<0){const v=r*p.upper[i];result+=v;scale+=Math.abs(v);}return result-64*Number.EPSILON*(1+scale);}catch{/* The original box certificate remains valid if a geometry query is incomplete. */}}
    // Coordinate ascent in ORIGINAL equality multipliers. Signed origin
    // recurrences and phase-flow conservation connect an omitted context to
    // its measured state bounds, without fixing its origin allocation.
@@ -80,5 +84,5 @@ export function localBoundCertificates(p:MarginalProgram,anchor:number[],groups:
   if(exact)for(let k=0;k<s.rows.length;k++){const r=p.rows[s.rows[k]],v=s.fixed[k]+s.solver.program.rows[k].terms.reduce((n,[i,w])=>n+w*answer.x[i],0);if(v<r.lower-1e-7||v>r.upper+1e-7){stats.fallback++;return;}}
   if(exact)stats.certified++;else{stats.outer++;stats.maximumSlack=Math.max(stats.maximumSlack,gap);}return global;
  }catch{stats.fallback++;return;}finally{stats.seconds+=(performance.now()-start)/1000;}}
- return{bound:(q:number,t:LinearTerm[],maximum=false)=>calculate(q,t,maximum,true),outerBound:(q:number,t:LinearTerm[],maximum=false)=>calculate(q,t,maximum,false),stats,dispose(){geometry?.dispose();for(const s of cache.values())s?.solver.dispose();}};
+ return{geometryCache:geometryBounds?.stats,bound:(q:number,t:LinearTerm[],maximum=false)=>calculate(q,t,maximum,true),outerBound:(q:number,t:LinearTerm[],maximum=false)=>calculate(q,t,maximum,false),stats,dispose(){geometry?.dispose();for(const s of cache.values())s?.solver.dispose();}};
 }

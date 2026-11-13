@@ -190,7 +190,7 @@ export function analyzeMarginalSanger(input:SignalPathInput,progress:(s:string)=
     if(ref.reverse)result.bases=result.bases.map(p=>({...p,estimate:[...p.estimate].reverse(),lower:[...p.lower].reverse(),upper:[...p.upper].reverse()}));
     groups.push(result);
    }
-  }finally{optimization.push({target:target+1,variables:program.upper.length,rows:program.rows.length,coefficients:program.rows.reduce((n,r)=>n+r.terms.length,0),bounds:{localQueries:localBounds.stats.queries,localSeconds:localBounds.stats.seconds,fallbackQueries,fallbackSeconds},solver:structuredClone(solver.diagnostics)});localBounds.dispose();}targets.push(draft);
+  }finally{optimization.push({target:target+1,variables:program.upper.length,rows:program.rows.length,coefficients:program.rows.reduce((n,r)=>n+r.terms.length,0),bounds:{geometrySolves:localBounds.geometryCache?.solves||0,geometryCacheHits:localBounds.geometryCache?.hits||0,localQueries:localBounds.stats.queries,localSeconds:localBounds.stats.seconds,fallbackQueries,fallbackSeconds},solver:structuredClone(solver.diagnostics)});localBounds.dispose();}targets.push(draft);
   }
  }finally{solver.dispose();}
  tick('Bounding substitution signal across length groups');

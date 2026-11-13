@@ -4,7 +4,7 @@ import {evaluateQuadratic,quadraticCut,type QuadraticEnvelope} from './sanger-qu
 import {FactorizedMarginalSolver} from './sanger-factorized-lp';
 import type {SangerLinearOptimizer} from './sanger-discrete-phase';
 export type LinearTerm=[number,number];
-export interface MarginalProgram {quadraticCost?:LinearTerm[][];dualHint?:{shadow:number[];budgetRow:number;planes?:{terms:LinearTerm[];upper:number}[]};zeroCostSubstitutions?:{column:number;terms:LinearTerm[]}[];quadratics?:QuadraticEnvelope[];localBlocks?:number[][];originPricing?:{columns:number[];seed:number[]};upper:number[];cost:number[];rows:{terms:LinearTerm[];lower:number;upper:number}[]}
+export interface MarginalProgram {/** Coefficients are immutable; numeric row/box changes still invalidate caches. */immutableRows?:boolean;quadraticCost?:LinearTerm[][];dualHint?:{shadow:number[];budgetRow:number;planes?:{terms:LinearTerm[];upper:number}[]};zeroCostSubstitutions?:{column:number;terms:LinearTerm[]}[];quadratics?:QuadraticEnvelope[];localBlocks?:number[][];originPricing?:{columns:number[];seed:number[]};upper:number[];cost:number[];rows:{terms:LinearTerm[];lower:number;upper:number}[]}
 export const LP_INFINITY=1e30;
 export class OptimizationPending extends Error {constructor(){super('Optimization is still in progress; no solution was accepted.');}}
 const formKey=(terms:LinearTerm[])=>{const m=new Map<number,number>();for(const[i,w]of terms)m.set(i,(m.get(i)||0)+w);return[...m].filter(([,w])=>w!==0).sort((a,b)=>a[0]-b[0]).map(([i,w])=>i+':'+w).join(',');};
@@ -52,7 +52,8 @@ export class MarginalLinearSolver {
  private spectralFeasibility={attempts:0,feasible:0,infeasible:0,fallbacks:0,seconds:0,minimum:undefined as number|undefined,lower:undefined as number|undefined,originalViolation:undefined as number|undefined};
  private costs:number[];
  private point?:number[];
- private equalities?:Map<string,number>;
+ private equalities?:Map<string,{value:number;row:number}>;
+ private shortcut?:{row?:number;multiplier?:number};
  private inactive=new Set<number>();
  private incidence=new Map<number,LinearTerm[]>();
  readonly pricingStats={rounds:0,activated:0,fullRestores:0};
@@ -95,11 +96,12 @@ export class MarginalLinearSolver {
   for(;;){try{return this.solve(terms,maximize);}catch(error){if(!(error instanceof OptimizationPending))throw error;}}
  }
  solve(terms?:LinearTerm[],maximize=false):{x:number[];value:number}{
-  this.lowerObjectiveIsCurrent=false;this.linearLower=undefined;if(this.conicFallbackReason&&this.coneRecoveryStarted===undefined)this.coneRecoveryStarted=performance.now();
+  this.lowerObjectiveIsCurrent=false;this.linearLower=undefined;this.shortcut=undefined;if(this.conicFallbackReason&&this.coneRecoveryStarted===undefined)this.coneRecoveryStarted=performance.now();
   if(terms&&this.point&&!this.program.quadraticCost?.length){
-   if(!this.equalities){this.equalities=new Map();for(const r of this.program.rows)if(r.lower===r.upper&&Math.abs(r.lower)<LP_INFINITY)this.equalities.set(formKey(r.terms),r.lower);}
-   const value=this.equalities.get(formKey(terms));if(value!==undefined)return{x:this.point.slice(),value};
-   if(terms.every(([i,w])=>w===0||this.program.upper[i]===0))return{x:this.point.slice(),value:0};
+   if(!this.equalities){this.equalities=new Map();for(const[row,r]of this.program.rows.entries())if(r.lower===r.upper&&Math.abs(r.lower)<LP_INFINITY)this.equalities.set(formKey(r.terms),{value:r.lower,row});}
+   const fixed=this.equalities.get(formKey(terms));if(fixed!==undefined&&validMarginalSolution(this.program,this.point)){this.linearLower=(maximize?-1:1)*fixed.value;this.shortcut={row:fixed.row,multiplier:maximize?-1:1};return{x:this.point.slice(),value:fixed.value};}
+   if(terms.every(([i,w])=>w===0||this.program.upper[i]===0)&&validMarginalSolution(this.program,this.point)){this.linearLower=0;this.shortcut={};return{x:this.point.slice(),value:0};}
+
   }
   if(this.conic){try{const answer=this.conic.solve(terms,maximize);this.lowerObjectiveIsCurrent=true;this.point=answer.x;if(this.initialSliceSeconds!==undefined){this.sliceSeconds=this.initialSliceSeconds;this.conic.setTimeLimit(this.sliceSeconds);}return answer;}catch(error){if(error instanceof OptimizationPending)this.pending();if(!this.program.quadraticCost?.length&&String(error).includes('Conic optimization returned no dual witness: unknown')){this.conicFallbackReason=String(error);this.conic.dispose();this.conic=undefined;this.initializeNative();this.winner='flat';if(this.sliceSeconds!==undefined)this.native.options.set({time_limit:this.sliceSeconds});return this.solve(terms,maximize);}throw error;}}
   if(this.decomposed){
@@ -210,14 +212,14 @@ export class MarginalLinearSolver {
   }
   try{return this.solve(terms,true);}catch(error){if(/did not complete: 8(?:;|$)/.test(String(error)))return null;throw error;}
  }
- objectiveLowerBound():number|undefined{if(this.winner==='flat'&&this.fullCompetitor)return this.fullCompetitor.objectiveLowerBound();return this.lowerObjectiveIsCurrent?this.conic?.objectiveLowerBound():this.linearLower;}
- supportPlanes():{terms:LinearTerm[];upper:number}[]{return this.conic?.supportPlanes()||(this.winner==='flat'?this.fullCompetitor?.supportPlanes():[])||[];}
- rowDuals():number[]{if(this.conic)return this.conic.rowDuals();if(this.zeroFaceCertified)return this.program.rows.map(()=>0);return this.fullCompetitor?(this.winner==='flat'?this.fullCompetitor.rowDuals():[]):this.native?Array.from(this.native.getSolution().rowDual as ArrayLike<number>):[];}
+ objectiveLowerBound():number|undefined{if(this.linearLower!==undefined)return this.linearLower;if(this.winner==='flat'&&this.fullCompetitor)return this.fullCompetitor.objectiveLowerBound();return this.lowerObjectiveIsCurrent?this.conic?.objectiveLowerBound():this.linearLower;}
+ supportPlanes():{terms:LinearTerm[];upper:number}[]{if(this.shortcut)return[];return this.conic?.supportPlanes()||(this.winner==='flat'?this.fullCompetitor?.supportPlanes():[])||[];}
+ rowDuals():number[]{if(this.shortcut){const shadow=this.program.rows.map(()=>0);if(this.shortcut.row!==undefined)shadow[this.shortcut.row]=this.shortcut.multiplier!;return shadow;}if(this.conic)return this.conic.rowDuals();if(this.zeroFaceCertified)return this.program.rows.map(()=>0);return this.fullCompetitor?(this.winner==='flat'?this.fullCompetitor.rowDuals():[]):this.native?Array.from(this.native.getSolution().rowDual as ArrayLike<number>):[];}
  dispose(){
   this.conic?.dispose();this.factorized?.dispose();this.fullCompetitor?.dispose();this.native?.dispose();
   // Completed phases must not retain duplicated block graphs or witnesses
   // while the next phase constructs its full physical model.
   this.factorized=undefined;this.fullCompetitor=undefined;this.native=undefined;
-  this.point=undefined;this.equalities=undefined;this.costs=[];this.incidence.clear();this.inactive.clear();
+  this.point=undefined;this.equalities=undefined;this.shortcut=undefined;this.costs=[];this.incidence.clear();this.inactive.clear();
  }
 }
