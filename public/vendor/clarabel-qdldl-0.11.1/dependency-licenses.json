@@ -1,0 +1,337 @@
+[
+  {
+    "package": "derive_builder-0.11.2",
+    "licenseFiles": [
+      "licenses/derive_builder-0.11.2/LICENSE-APACHE",
+      "licenses/derive_builder-0.11.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "unicode-ident-1.0.22",
+    "licenseFiles": [
+      "licenses/unicode-ident-1.0.22/LICENSE-UNICODE",
+      "licenses/unicode-ident-1.0.22/LICENSE-APACHE",
+      "licenses/unicode-ident-1.0.22/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "fnv-1.0.7",
+    "licenseFiles": [
+      "licenses/fnv-1.0.7/LICENSE-APACHE",
+      "licenses/fnv-1.0.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "js-sys-0.3.83",
+    "licenseFiles": [
+      "licenses/js-sys-0.3.83/LICENSE-APACHE",
+      "licenses/js-sys-0.3.83/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "either-1.15.0",
+    "licenseFiles": [
+      "licenses/either-1.15.0/LICENSE-APACHE",
+      "licenses/either-1.15.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde_derive-1.0.228",
+    "licenseFiles": [
+      "licenses/serde_derive-1.0.228/LICENSE-APACHE",
+      "licenses/serde_derive-1.0.228/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "once_cell-1.21.3",
+    "licenseFiles": [
+      "licenses/once_cell-1.21.3/LICENSE-APACHE",
+      "licenses/once_cell-1.21.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "cfg-if-1.0.4",
+    "licenseFiles": [
+      "licenses/cfg-if-1.0.4/LICENSE-APACHE",
+      "licenses/cfg-if-1.0.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "darling-0.14.4",
+    "licenseFiles": [
+      "licenses/darling-0.14.4/LICENSE"
+    ]
+  },
+  {
+    "package": "find-msvc-tools-0.1.5",
+    "licenseFiles": [
+      "licenses/find-msvc-tools-0.1.5/LICENSE-APACHE",
+      "licenses/find-msvc-tools-0.1.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "darling_core-0.14.4",
+    "licenseFiles": [
+      "licenses/darling_core-0.14.4/LICENSE"
+    ]
+  },
+  {
+    "package": "bumpalo-3.19.0",
+    "licenseFiles": [
+      "licenses/bumpalo-3.19.0/LICENSE-APACHE",
+      "licenses/bumpalo-3.19.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "wasm-bindgen-macro-support-0.2.106",
+    "licenseFiles": [
+      "licenses/wasm-bindgen-macro-support-0.2.106/LICENSE-APACHE",
+      "licenses/wasm-bindgen-macro-support-0.2.106/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "derive_builder_macro-0.11.2",
+    "licenseFiles": [
+      "licenses/derive_builder_macro-0.11.2/LICENSE-APACHE",
+      "licenses/derive_builder_macro-0.11.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde-big-array-0.5.1",
+    "licenseFiles": [
+      "licenses/serde-big-array-0.5.1/LICENSE-APACHE",
+      "licenses/serde-big-array-0.5.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "quote-1.0.42",
+    "licenseFiles": [
+      "licenses/quote-1.0.42/LICENSE-APACHE",
+      "licenses/quote-1.0.42/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "wasm-bindgen-0.2.106",
+    "licenseFiles": [
+      "licenses/wasm-bindgen-0.2.106/LICENSE-APACHE",
+      "licenses/wasm-bindgen-0.2.106/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "ryu-1.0.20",
+    "licenseFiles": [
+      "licenses/ryu-1.0.20/LICENSE-APACHE",
+      "licenses/ryu-1.0.20/LICENSE-BOOST"
+    ]
+  },
+  {
+    "package": "syn-1.0.109",
+    "licenseFiles": [
+      "licenses/syn-1.0.109/LICENSE-APACHE",
+      "licenses/syn-1.0.109/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "cc-1.2.49",
+    "licenseFiles": [
+      "licenses/cc-1.2.49/LICENSE-APACHE",
+      "licenses/cc-1.2.49/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "autocfg-1.5.0",
+    "licenseFiles": [
+      "licenses/autocfg-1.5.0/LICENSE-APACHE",
+      "licenses/autocfg-1.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "wasm-bindgen-macro-0.2.106",
+    "licenseFiles": [
+      "licenses/wasm-bindgen-macro-0.2.106/LICENSE-APACHE",
+      "licenses/wasm-bindgen-macro-0.2.106/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "rustversion-1.0.22",
+    "licenseFiles": [
+      "licenses/rustversion-1.0.22/LICENSE-APACHE",
+      "licenses/rustversion-1.0.22/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde-1.0.228",
+    "licenseFiles": [
+      "licenses/serde-1.0.228/LICENSE-APACHE",
+      "licenses/serde-1.0.228/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "web-time-0.2.4",
+    "licenseFiles": [
+      "licenses/web-time-0.2.4/LICENSE-APACHE",
+      "licenses/web-time-0.2.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "num-traits-0.2.19",
+    "licenseFiles": [
+      "licenses/num-traits-0.2.19/LICENSE-APACHE",
+      "licenses/num-traits-0.2.19/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "itertools-0.11.0",
+    "licenseFiles": [
+      "licenses/itertools-0.11.0/LICENSE-APACHE",
+      "licenses/itertools-0.11.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde_json-1.0.145",
+    "licenseFiles": [
+      "licenses/serde_json-1.0.145/LICENSE-APACHE",
+      "licenses/serde_json-1.0.145/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde-wasm-bindgen-0.6.5",
+    "licenseFiles": [
+      "licenses/serde-wasm-bindgen-0.6.5/LICENSE"
+    ]
+  },
+  {
+    "package": "shlex-1.3.0",
+    "licenseFiles": [
+      "licenses/shlex-1.3.0/LICENSE-APACHE",
+      "licenses/shlex-1.3.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "derive_builder_core-0.11.2",
+    "licenseFiles": [
+      "licenses/derive_builder_core-0.11.2/LICENSE-APACHE",
+      "licenses/derive_builder_core-0.11.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "thiserror-1.0.69",
+    "licenseFiles": [
+      "licenses/thiserror-1.0.69/LICENSE-APACHE",
+      "licenses/thiserror-1.0.69/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "getrandom-0.2.17",
+    "licenseFiles": [
+      "licenses/getrandom-0.2.17/LICENSE-APACHE",
+      "licenses/getrandom-0.2.17/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "memchr-2.7.6",
+    "licenseFiles": [
+      "licenses/memchr-2.7.6/COPYING",
+      "licenses/memchr-2.7.6/UNLICENSE",
+      "licenses/memchr-2.7.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "libm-0.2.15",
+    "licenseFiles": [
+      "licenses/libm-0.2.15/LICENSE.txt"
+    ]
+  },
+  {
+    "package": "amd-0.2.2",
+    "licenseFiles": [
+      "licenses/amd-0.2.2/LICENSE"
+    ]
+  },
+  {
+    "package": "libc-0.2.191",
+    "licenseFiles": [
+      "licenses/libc-0.2.191/LICENSE-APACHE",
+      "licenses/libc-0.2.191/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "lazy_static-1.5.0",
+    "licenseFiles": [
+      "licenses/lazy_static-1.5.0/LICENSE-APACHE",
+      "licenses/lazy_static-1.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "enum_dispatch-0.3.13",
+    "licenseFiles": [
+      "licenses/enum_dispatch-0.3.13/LICENSE"
+    ]
+  },
+  {
+    "package": "wasm-bindgen-shared-0.2.106",
+    "licenseFiles": [
+      "licenses/wasm-bindgen-shared-0.2.106/LICENSE-APACHE",
+      "licenses/wasm-bindgen-shared-0.2.106/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "itoa-1.0.15",
+    "licenseFiles": [
+      "licenses/itoa-1.0.15/LICENSE-APACHE",
+      "licenses/itoa-1.0.15/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "serde_core-1.0.228",
+    "licenseFiles": [
+      "licenses/serde_core-1.0.228/LICENSE-APACHE",
+      "licenses/serde_core-1.0.228/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "darling_macro-0.14.4",
+    "licenseFiles": [
+      "licenses/darling_macro-0.14.4/LICENSE"
+    ]
+  },
+  {
+    "package": "proc-macro2-1.0.103",
+    "licenseFiles": [
+      "licenses/proc-macro2-1.0.103/LICENSE-APACHE",
+      "licenses/proc-macro2-1.0.103/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "syn-2.0.111",
+    "licenseFiles": [
+      "licenses/syn-2.0.111/LICENSE-APACHE",
+      "licenses/syn-2.0.111/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "clarabel-0.11.1",
+    "licenseFiles": [
+      "licenses/clarabel-0.11.1/LICENSE.md"
+    ]
+  },
+  {
+    "package": "ident_case-1.0.1",
+    "licenseFiles": [
+      "licenses/ident_case-1.0.1/LICENSE"
+    ]
+  },
+  {
+    "package": "thiserror-impl-1.0.69",
+    "licenseFiles": [
+      "licenses/thiserror-impl-1.0.69/LICENSE-APACHE",
+      "licenses/thiserror-impl-1.0.69/LICENSE-MIT"
+    ]
+  },
+  {
+    "package": "strsim-0.10.0",
+    "licenseFiles": [
+      "licenses/strsim-0.10.0/LICENSE"
+    ]
+  }
+]

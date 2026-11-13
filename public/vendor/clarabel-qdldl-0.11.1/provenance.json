@@ -1,0 +1,15 @@
+{
+  "bindingSource": "https://github.com/SteveDiamond/cvxjs/tree/13f0994f153b12c0ac78c9decf7b622627b0dea7/wasm",
+  "clarabelVersion": "0.11.1",
+  "linearSolver": "qdldl",
+  "maxThreads": 1,
+  "rust": "1.100.0",
+  "wasmBindgen": "0.2.106",
+  "buildSource": "tools/clarabel-wasm-fast",
+  "acceptance": "Explicit linear queries only. Independently verify every ORIGINAL row/cone/box and original global dual gap <=1e-7. Otherwise use established FAER runtime. Inference fits remain on FAER.",
+  "files": {
+    "clarabel.mjs": "fef0586cf0ed70c767adfcf695e9f9865479ff1b3f46adf5e16945d6f41f175b",
+    "clarabel_wasm_bg.wasm": "f74afa018913086872603d876687febb105f7f1bd1f9ba314d7e3d47bfc8234d",
+    "LICENSE.txt": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  }
+}

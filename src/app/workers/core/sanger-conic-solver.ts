@@ -1,5 +1,5 @@
 import {marginalViolation,LP_INFINITY,OptimizationPending,type MarginalProgram,type LinearTerm} from './sanger-marginal-lp';
-export interface SangerConicRuntime {solve:(pointers:Uint32Array,indices:Uint32Array,values:Float64Array,cost:Float64Array,aPointers:Uint32Array,aIndices:Uint32Array,aValues:Float64Array,b:Float64Array,n:number,m:number,cones:string,settings:string)=>any}
+export interface SangerConicRuntime {solve:(pointers:Uint32Array,indices:Uint32Array,values:Float64Array,cost:Float64Array,aPointers:Uint32Array,aIndices:Uint32Array,aValues:Float64Array,b:Float64Array,n:number,m:number,cones:string,settings:string)=>any;fallback?:SangerConicRuntime}
 /** The same feasible set, represented directly by nonnegative and Euclidean
  * cones. Independently validate the original primal and a repaired conic dual
  * certificate, including all original variable boxes. Solver status alone is
@@ -10,14 +10,15 @@ export class VerifiedConicSolver {
  private tolerance=1e-8;
  private certifiedLower?:number;
  private retryableCertificate=false;
+ private primaryTimedOut=false;
  objectiveLowerBound(){return this.certifiedLower;}
  setTimeLimit(seconds:number){this.timeLimit=seconds;}
  private compiled?:ReturnType<VerifiedConicSolver['compile']>;
  private dual:number[]=[];
  private planes:{terms:LinearTerm[];upper:number}[]=[];
- readonly stats={queries:0,seconds:0,iterations:0,maximumViolation:0,maximumGap:0,certificationRetries:0,maximumRejectedGap:0,scalingRetries:0,statusIndependentCertificates:0,boxCertificates:0};
+ readonly stats={queries:0,seconds:0,iterations:0,maximumViolation:0,maximumGap:0,certificationRetries:0,maximumRejectedGap:0,scalingRetries:0,statusIndependentCertificates:0,boxCertificates:0,backendFallbacks:0};
  constructor(private p:MarginalProgram,private runtime:SangerConicRuntime){}
- invalidate(){this.compiled=undefined;}
+ invalidate(){this.compiled=undefined;this.primaryTimedOut=false;}
  private compile(){
   const p=this.p,columns=Int32Array.from(p.upper.flatMap((u,i)=>u===0?[]:[i])),index=new Int32Array(p.upper.length).fill(-1);columns.forEach((i,j)=>index[i]=j);const n=columns.length,upper=Float64Array.from(columns,i=>p.upper[i]),equalities:number[]=[],linear:number[]=[],sizes=(p.quadratics||[]).map(q=>q.terms.length+1),counts=new Uint32Array(n);let finiteUpper=0;
   // Keep row indices and signs, rather than duplicating millions of sparse
@@ -37,6 +38,16 @@ export class VerifiedConicSolver {
  }
  solve(terms?:LinearTerm[],maximize=false):{x:number[];value:number}{
   this.certifiedLower=undefined;if(maximize&&this.p.quadraticCost?.length)throw Error('Convex quadratic objectives require minimization.');
+  if(this.runtime.fallback){
+   const primary=this.runtime,fallback=primary.fallback!;
+   // Keep inference fits on the established kernel. Explicit linear queries
+   // can use the cheaper kernel only after the SAME original proof.
+   if(terms!==undefined&&!this.p.quadraticCost?.length&&!this.primaryTimedOut){
+    const precision=this.tolerance;this.tolerance=1e-8;
+    try{return this.attempt(terms,maximize,1);}catch(error){this.stats.backendFallbacks++;if(error instanceof OptimizationPending)this.primaryTimedOut=true;}finally{this.tolerance=precision;}
+   }
+   this.runtime=fallback;try{return this.solve(terms,maximize);}finally{this.runtime=primary;}
+  }
   // Equivalent units are tried before spending more iterations on a poorly
   // conditioned objective. Every candidate is checked in the original units.
   const initial=this.tolerance,tight=Math.min(initial,1e-10),plans:{scale?:number;tol:number}[]=[{tol:initial},{scale:10,tol:tight},{scale:.1,tol:tight}];

@@ -46,7 +46,7 @@ export class MarginalLinearSolver {
  private winner?:'flat'|'factorized';
  private optimizer:SangerLinearOptimizer;
  private factorizationFallbackReason?:string;
- get diagnostics(){return{attainedBoxHits:this.totalAttainedBoxHits(),directProbe:this.directProbe,spectralFeasibility:this.spectralFeasibility,conicFallbackReason:this.conicFallbackReason,conic:this.conic?.stats,zeroFaceProjection:this.fullCompetitor?.zeroFaceProjection||this.zeroFaceProjection,selected:this.conic?'conic' as const:this.winner,factorization:this.factorized?.stats,factorizationFallbackReason:this.factorizationFallbackReason,pricing:this.fullCompetitor?.pricingStats||this.pricingStats};}
+ get diagnostics(){return{attainedBoxHits:this.totalAttainedBoxHits(),directProbe:this.directProbe,spectralFeasibility:this.spectralFeasibility,conicFallbackReason:this.conicFallbackReason,conic:this.conicDiagnostics(),zeroFaceProjection:this.fullCompetitor?.zeroFaceProjection||this.zeroFaceProjection,selected:this.conic?'conic' as const:this.winner,factorization:this.factorized?.stats,factorizationFallbackReason:this.factorizationFallbackReason,pricing:this.fullCompetitor?.pricingStats||this.pricingStats};}
  private conicFallbackReason?:string;
  private parentFallbackBudget?:number;
  private coneRecoveryStarted?:number;
@@ -54,6 +54,7 @@ export class MarginalLinearSolver {
  private costs:number[];
  private attainedBoxHits=0;
  private totalAttainedBoxHits():number{return this.attainedBoxHits+(this.fullCompetitor?.totalAttainedBoxHits()||0);}
+ private conicDiagnostics():VerifiedConicSolver['stats']|undefined{return this.conic?.stats||this.fullCompetitor?.conicDiagnostics();}
  private point?:number[];
  private equalities?:Map<string,{value:number;row:number}>;
  private shortcut?:{row?:number;multiplier?:number};

@@ -1,0 +1,37 @@
+[package]
+name = "clarabel-wasm"
+version = "0.1.0"
+edition = "2021"
+authors = ["cvxjs contributors"]
+description = "WebAssembly bindings for Clarabel convex optimization solver"
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# WASM bindings
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+
+# Clarabel solver (serde feature needed for internal data structures, wasm for WASM compatibility)
+clarabel = { version = "=0.11.1", default-features = false, features = ["serde"] }
+
+getrandom = { version = "0.2", features = ["js"] }
+
+# Serialization for passing data to/from JS
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde-wasm-bindgen = "0.6"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[profile.release]
+opt-level = "s"
+lto = true
+panic = "unwind"
+
+[features]
+default = []
+
