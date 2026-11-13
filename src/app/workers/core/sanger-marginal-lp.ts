@@ -115,7 +115,14 @@ export class MarginalLinearSolver {
    // Complete the common exact decomposition before constructing a second
    // full-model factorization. Racing both representations duplicates a
    // large model's memory while neither scientific hypothesis set changes.
-   if(!this.factorizationFailed&&!this.fullCompetitor){try{this.factorized??=this.makeFactorized();const answer=this.factorized.solve(terms,maximize);this.point=answer.x;this.winner='factorized';return answer;}catch(error){this.factorizationFallbackReason=String(error);this.factorizationFailed=true;this.factorized?.dispose();this.factorized=undefined;}}
+   if(!this.factorizationFailed&&!this.fullCompetitor){try{
+    this.factorized??=this.makeFactorized();const started=performance.now(),steps=this.factorized.steps(terms,maximize);
+    try{for(;;){const next=steps.next();if(next.done){this.point=next.value.x;this.winner='factorized';return next.value;}
+     // A representation-selection budget never accepts an approximate answer
+     // or removes a hypothesis. Finish the identical full model below.
+     if((performance.now()-started)/1000>15)throw Error('Exact decomposition exceeded its numerical selection budget; completing the unrestricted original parent.');
+    }}finally{steps.return(undefined as never);}
+   }catch(error){this.factorizationFallbackReason=String(error);this.factorizationFailed=true;this.factorized?.dispose();this.factorized=undefined;}}
    if(!this.fullCompetitor){this.fullCompetitor=new MarginalLinearSolver({...this.program,localBlocks:undefined},this.optimizer,'conic');this.fullCompetitor.setTimeSlice(this.initialSliceSeconds&&this.initialSliceSeconds>0?this.initialSliceSeconds:600);}
    for(;;){try{const answer=this.fullCompetitor.solve(terms,maximize);this.point=answer.x;this.winner='flat';return answer;}catch(error){if(!(error instanceof OptimizationPending))throw error;}}
   }

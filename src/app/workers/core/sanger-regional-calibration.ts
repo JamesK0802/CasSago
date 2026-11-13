@@ -11,7 +11,8 @@ export function calibrateRegionalResponse(windows:RegionalLengthWindow[],positio
  const predict=(r:ReturnType<typeof signals>[number],params:number[])=>{const v=r.v.map((a,h)=>a.map(v=>v*at(h,r.p,params))),total=v.reduce((s,a)=>s+a.reduce((a,b)=>a+b,0),0),y=[0,1,2,3].map(b=>v.reduce((s,a)=>s+a[b],0)/Math.max(1e-30,total));return{v,total,y};};
  const loss=(rows:ReturnType<typeof signals>,params:number[])=>rows.reduce((s,r)=>s+predict(r,params).y.reduce((s,v,b)=>{const e=Math.abs(v-r.y[b]);return s+(e<=delta?e*e:2*delta*e-delta*delta);},0),0);
  let converged=theta.length===0,iterations=0;
- for(;iterations<80;iterations++){
+ // Completion budget only; retain the original parameter-step tolerance.
+ for(;iterations<256;iterations++){
   weights=train.map(w=>phase(w,w.positions,theta).weights);if(!theta.length)break;const rows=signals(),before=loss(rows,theta),n=theta.length,a=Array.from({length:n},(_,i)=>Array.from({length:n+1},(_,j)=>i===j?1e-8:0));
   for(const r of rows){const p=predict(r,theta);for(let b=0;b<4;b++){const e=p.y[b]-r.y[b],weight=Math.min(1,delta/Math.max(1e-30,Math.abs(e))),jac=theta.map((_,j)=>(p.v[j>>1][b]-p.y[b]*p.v[j>>1].reduce((a,b)=>a+b,0))/Math.max(1e-30,p.total)*(j%2?x(r.p):1));for(let i=0;i<n;i++){a[i][n]-=weight*jac[i]*e;for(let j=0;j<n;j++)a[i][j]+=weight*jac[i]*jac[j];}}}
   for(let i=0;i<n;i++){let pivot=i;for(let j=i+1;j<n;j++)if(Math.abs(a[j][i])>Math.abs(a[pivot][i]))pivot=j;[a[i],a[pivot]]=[a[pivot],a[i]];const d=a[i][i];for(let j=i;j<=n;j++)a[i][j]/=d;for(let k=0;k<n;k++)if(k!==i){const d=a[k][i];for(let j=i;j<=n;j++)a[k][j]-=d*a[i][j];}}

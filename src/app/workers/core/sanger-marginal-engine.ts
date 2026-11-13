@@ -50,7 +50,11 @@ export function analyzeMarginalSanger(input:SignalPathInput,progress:(s:string)=
  const flankPositions:number[][]=[],flowWindows:RegionalLengthWindow[]=[];
  for(let t=0;t<count;t++){
   const left=Math.max(...refs.map(r=>r.cuts[t]))+Math.max(SUB_RADIUS+t*maxInsertion,(t+1)*maxInsertion+3)+5,right=Math.min(analysisEnd,...refs.map(r=>t+1<count?r.cuts[t+1]-Math.max(SUB_RADIUS+(t+1)*maxDeletion,(t+2)*maxDeletion+3)-5:analysisEnd)),ps=Array.from({length:Math.max(0,right-left)},(_,i)=>left+i);
-  if(ps.length<Math.max(20,Math.ceil(refs.length*((t+1)*(maxDeletion+maxInsertion)+1)/2)))throw Error('Insufficient invariant flank to distinguish the requested reference/length classes.');
+  // Hypothesis count alone cannot establish identifiability under known
+  // control spectra, nonnegativity and the complete joint constraints.
+  // Require independent flank validation; preserve every requested class and
+  // let original-model certificates, predictive QC and bounds decide support.
+  if(ps.length<20)throw Error('Insufficient invariant flank for independent signal validation.');
   flankPositions.push(ps);flowWindows.push({classes:refs.flatMap((_,h)=>Array.from({length:(t+1)*(maxDeletion+maxInsertion)+1},(_,i)=>({reference:h,size:i-(t+1)*maxDeletion}))).map(c=>({...c,column:ps.flatMap(p=>mixPhase(emit(c.reference,c.size,p),emit(c.reference,c.size,phaseNeighbor(p,calibration.lag)),calibration.lag))})),observed:ps.flatMap(p=>raw[p])});
  }
  const preliminary=regionalLengthInitialization(flowWindows,flankPositions,shares,observation.fitDelta,observation.transferByReference),initialization=calibrateRegionalResponse(flowWindows,flankPositions,shares,preliminary.delta,{positions:observation.trainingPositions,columns:refs.map((_,h)=>observation.trainingPositions.flatMap(p=>mixPhase(emit(h,0,p),emit(h,0,phaseNeighbor(p,calibration.lag)),calibration.lag))),observed:observation.trainingPositions.flatMap(p=>raw[p])}),robustDelta=initialization.delta;

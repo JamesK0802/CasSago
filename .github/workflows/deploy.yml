@@ -31,6 +31,8 @@ jobs:
         run: npm ci
       - name: Check primer workflow and application navigation
         run: npm run test:primer -- --maxWorkers=2
+      - name: Check engine completion and original-model fallback
+        run: npm run test:engine-completion
       - name: Build for CasSago Pages
         run: npm run build -- --base-href /CasSago/
       - uses: actions/upload-pages-artifact@v3
