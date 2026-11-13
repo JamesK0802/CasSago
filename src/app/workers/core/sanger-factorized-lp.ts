@@ -86,6 +86,12 @@ class ElasticBlock {
   return this.program=p;
  }
  solve(master:number[],masterUpper:number[]):{x:number[];cut:{terms:LinearTerm[];upper:number;violation:number}}{
+  // Once phase I is required, resume that SAME model. Retrying the known
+  // infeasible hard block first would release its pending secondary workspace
+  // on every yield, losing both the basis and the extended execution budget.
+  // The secondary updates its own bounds when the master changes, and returns
+  // the same original-row feasibility certificate (including zero slack).
+  if(this.secondary)return this.secondary.solve(master,masterUpper);
   const lower=this.sides.map(s=>s.lower?s.row.lower-dot(s.row.master,master):-LP_INFINITY),upper=this.sides.map(s=>s.lower?LP_INFINITY:s.row.upper-dot(s.row.master,master)),changed=lower.flatMap((v,i)=>v!==this.lastLower[i]||upper[i]!==this.lastUpper[i]?[i]:[]);
   if(changed.length){if(this.solver)this.solver.setRowBounds(changed,changed.map(i=>lower[i]),changed.map(i=>upper[i]));this.cached=undefined;this.lastLower=lower;this.lastUpper=upper;}
   if(!this.cached){try{if(!this.solver){this.solver=this.flat(this.materialize(lower,upper));this.solver.useDualForBoundChanges();}const answer=this.solver.solve();this.cached={x:answer.x.slice(0,this.upper.length),dual:this.solver.rowDuals()};this.releaseWorkspace();}catch(error){if(error instanceof OptimizationPending)throw error;this.releaseWorkspace();if(!this.allElastic&&/did not complete: 8(?:;|$)/.test(String(error))){this.secondary??=new ElasticBlock(this.upper,this.rows,this.flat,true);return this.secondary.solve(master,masterUpper);}throw error;}}
