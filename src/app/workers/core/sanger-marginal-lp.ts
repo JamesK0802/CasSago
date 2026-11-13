@@ -1,3 +1,4 @@
+import {attainedBoxObjective} from './sanger-attained-box';
 import {VerifiedConicSolver} from './sanger-conic-solver';
 import {zeroCostProjection} from './sanger-zero-cost-projection';
 import {evaluateQuadratic,quadraticCut,type QuadraticEnvelope} from './sanger-quadratic-envelope';
@@ -45,12 +46,14 @@ export class MarginalLinearSolver {
  private winner?:'flat'|'factorized';
  private optimizer:SangerLinearOptimizer;
  private factorizationFallbackReason?:string;
- get diagnostics(){return{directProbe:this.directProbe,spectralFeasibility:this.spectralFeasibility,conicFallbackReason:this.conicFallbackReason,conic:this.conic?.stats,zeroFaceProjection:this.fullCompetitor?.zeroFaceProjection||this.zeroFaceProjection,selected:this.conic?'conic' as const:this.winner,factorization:this.factorized?.stats,factorizationFallbackReason:this.factorizationFallbackReason,pricing:this.fullCompetitor?.pricingStats||this.pricingStats};}
+ get diagnostics(){return{attainedBoxHits:this.totalAttainedBoxHits(),directProbe:this.directProbe,spectralFeasibility:this.spectralFeasibility,conicFallbackReason:this.conicFallbackReason,conic:this.conic?.stats,zeroFaceProjection:this.fullCompetitor?.zeroFaceProjection||this.zeroFaceProjection,selected:this.conic?'conic' as const:this.winner,factorization:this.factorized?.stats,factorizationFallbackReason:this.factorizationFallbackReason,pricing:this.fullCompetitor?.pricingStats||this.pricingStats};}
  private conicFallbackReason?:string;
  private parentFallbackBudget?:number;
  private coneRecoveryStarted?:number;
  private spectralFeasibility={attempts:0,feasible:0,infeasible:0,fallbacks:0,seconds:0,minimum:undefined as number|undefined,lower:undefined as number|undefined,originalViolation:undefined as number|undefined};
  private costs:number[];
+ private attainedBoxHits=0;
+ private totalAttainedBoxHits():number{return this.attainedBoxHits+(this.fullCompetitor?.totalAttainedBoxHits()||0);}
  private point?:number[];
  private equalities?:Map<string,{value:number;row:number}>;
  private shortcut?:{row?:number;multiplier?:number};
@@ -101,6 +104,7 @@ export class MarginalLinearSolver {
    if(!this.equalities){this.equalities=new Map();for(const[row,r]of this.program.rows.entries())if(r.lower===r.upper&&Math.abs(r.lower)<LP_INFINITY)this.equalities.set(formKey(r.terms),{value:r.lower,row});}
    const fixed=this.equalities.get(formKey(terms));if(fixed!==undefined&&validMarginalSolution(this.program,this.point)){this.linearLower=(maximize?-1:1)*fixed.value;this.shortcut={row:fixed.row,multiplier:maximize?-1:1};return{x:this.point.slice(),value:fixed.value};}
    if(terms.every(([i,w])=>w===0||this.program.upper[i]===0)&&validMarginalSolution(this.program,this.point)){this.linearLower=0;this.shortcut={};return{x:this.point.slice(),value:0};}
+   const attained=attainedBoxObjective(this.program.upper,this.point,terms,maximize);if(attained&&validMarginalSolution(this.program,this.point)){this.linearLower=attained.lower;this.shortcut={};this.attainedBoxHits++;return{x:this.point.slice(),value:attained.value};}
 
   }
   if(this.conic){try{const answer=this.conic.solve(terms,maximize);this.lowerObjectiveIsCurrent=true;this.point=answer.x;if(this.initialSliceSeconds!==undefined){this.sliceSeconds=this.initialSliceSeconds;this.conic.setTimeLimit(this.sliceSeconds);}return answer;}catch(error){if(error instanceof OptimizationPending)this.pending();if(!this.program.quadraticCost?.length&&String(error).includes('Conic optimization returned no dual witness: unknown')){this.conicFallbackReason=String(error);this.conic.dispose();this.conic=undefined;this.initializeNative();this.winner='flat';if(this.sliceSeconds!==undefined)this.native.options.set({time_limit:this.sliceSeconds});return this.solve(terms,maximize);}throw error;}}
