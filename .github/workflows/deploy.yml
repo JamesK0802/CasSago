@@ -35,6 +35,8 @@ jobs:
         run: npm run test:engine-completion
       - name: Check reference-specific photon calibration
         run: npm run test:engine-calibration
+      - name: Check original primal and global dual certificates
+        run: npm run test:engine-certificates
       - name: Build for CasSago Pages
         run: npm run build -- --base-href /CasSago/
       - uses: actions/upload-pages-artifact@v3
