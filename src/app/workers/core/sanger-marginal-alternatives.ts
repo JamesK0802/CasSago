@@ -1,3 +1,4 @@
+import {marginalOriginReadBaseFree} from './sanger-marginal-domain';
 import {originBaseQuantities} from './sanger-origin-base-support';
 import type {SangerAnalysisResult,SangerMarginalCandidate,SangerMarginalPage} from '../../models/sanger-analysis';
 import {sangerSequenceKey} from '../../utils/sanger-sequence-groups';
@@ -14,7 +15,7 @@ function createSearch(session:MarginalSession,target:MarginalTargetState,group:M
  const coordinates=[...group.bases.keys()].sort((a,b)=>a-b),baseRows=new Map<number,number[]>(),edgeRows:number[]=[],add=(terms:LinearTerm[])=>{const id=p.rows.length;p.rows.push({terms,lower:-LP_INFINITY,upper:LP_INFINITY});return id;};
  for(const q of coordinates)baseRows.set(q,group.bases.get(q)!.map(f=>add([...f,[z,-1]])));
  for(const e of group.edges)edgeRows.push(add([[e.mass,1],[z,-1]]));
- const free=group.edges.map(e=>coordinates.filter(q=>Math.abs(q-e.incoming-session.refs[e.reference].cuts[e.target])<=45||q>=e.start+e.incoming&&q<e.start+e.incoming+Math.max(0,e.size)));
+ const free=group.edges.map(e=>coordinates.filter(q=>marginalOriginReadBaseFree(q,e,session.refs[e.reference].cuts[e.target])));
  for(const coordinates of free)coordinates.sort((a,b)=>{const certainty=(q:number)=>Math.max(...group.bases.get(q)!.map(f=>f.reduce((n,[i,w])=>n+w*target.point[i],0)));return certainty(a)-certainty(b)||a-b;});
  const solver=new MarginalLinearSolver(p,session.optimizer);return{embeddingRows:new Map(),embeddingEdges:new Set(),session,target,group,program:p,solver,z,rootIndex:0,counter:0,frontier:new Frontier(),seedFrontier:new Frontier(),seedInitialized:false,seedDone:false,seedPoint:target.point,proposalIndex:0,coordinates,free,baseRows,edgeRows,active:new Set(),candidates:[],seen:new Set(),witnesses:new Map(),exhausted:false};
 }
@@ -62,7 +63,7 @@ function seedBound(s:Search,node:Node){const e=s.group.edges[node.edge],free=s.f
  * Cursor indexes emitted unique DNA sequences; it is never a total-search cap.
  * A time slice retains the frontier and returns incomplete, not "exhausted". */
 export function marginalAlternativePage(result:SangerAnalysisResult,groupId:string,cursor=0,progress:(s:string)=>void=()=>{},timeSliceSeconds=20):SangerMarginalPage{
- const started=performance.now();if(!Number.isInteger(cursor)||cursor<0)throw Error('Invalid alternative cursor.');const session=marginalSessions.get(result);if(!session)throw Error('The measured analysis session is unavailable. Analyze the original traces before requesting alternatives.');const child=result.marginalGroups?.flatMap(g=>g.displayComponents||[]).find(c=>c.id===groupId),parentId=child?groupId.split('::profile:')[0]:groupId.endsWith('::sub')?groupId.slice(0,-5):groupId,target=session.targets.find(t=>t.groups.some(g=>g.id===parentId)),group=target?.groups.find(g=>g.id===parentId);if(!target||!group)throw Error('Select an existing reference/target length group.');
+ const started=performance.now();if(!Number.isInteger(cursor)||cursor<0)throw Error('Invalid alternative cursor.');const session=marginalSessions.get(result);if(!session)throw Error('The measured analysis session is unavailable. Analyze the original traces before requesting alternatives.');const owner=result.marginalGroups?.find(g=>g.displayComponents?.some(c=>c.id===groupId)),child=owner?.displayComponents?.find(c=>c.id===groupId),parentId=owner?owner.id:groupId.endsWith('::sub')?groupId.slice(0,-5):groupId,target=session.targets.find(t=>t.groups.some(g=>g.id===parentId)),group=target?.groups.find(g=>g.id===parentId);if(!target||!group)throw Error('Select an existing reference/target length group.');
  let s=session.pages.get(groupId)as Search|undefined;if(!s){s=createSearch(session,target,group);s.onlySub=groupId.endsWith('::sub');s.selection=child?.selection;session.pages.set(groupId,s);}if(cursor>s.candidates.length)throw Error('Alternative cursor is beyond the computed frontier.');const wanted=cursor+PAGE_SIZE;let incomplete=false,message:string|undefined;
  const expired=()=>performance.now()-started>=timeSliceSeconds*1000;
  try{

@@ -1,0 +1,5 @@
+import {it,expect} from 'vitest';
+import {sharedCanonicalRows} from '../probes/shared-canonical-rows';
+import type {MarginalProgram} from '../../src/app/workers/core/sanger-marginal-lp';
+it('shares already canonical sparse storage without cloning its coefficients',()=>{const rows:MarginalProgram['rows']=[{terms:[[0,1],[1,-2]],lower:0,upper:1}],before=JSON.stringify(rows),out=sharedCanonicalRows(rows);expect(out).not.toBe(rows);expect(out[0]).toBe(rows[0]);expect(out[0].terms).toBe(rows[0].terms);expect(JSON.stringify(rows)).toBe(before);});
+it('combines duplicates without removing small signals or changing the original rows',()=>{const rows:MarginalProgram['rows']=[{terms:[[0,1],[0,-.5],[1,0],[2,1e-20]],lower:0,upper:1}],before=JSON.stringify(rows),out=sharedCanonicalRows(rows);expect(out[0].terms).toEqual([[0,.5],[2,1e-20]]);expect(out[0]).not.toBe(rows[0]);for(const x of [[0,0,1],[1,-3,4],[-1,2,0]])expect(out[0].terms.reduce((s,[i,w])=>s+w*x[i],0)).toBe(rows[0].terms.reduce((s,[i,w])=>s+w*x[i],0));expect(JSON.stringify(rows)).toBe(before);});

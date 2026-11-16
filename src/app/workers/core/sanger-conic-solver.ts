@@ -11,6 +11,7 @@ export class VerifiedConicSolver {
  private certifiedLower?:number;
  private retryableCertificate=false;
  private primaryTimedOut=false;
+ private preferObjectiveUnits=false;
  objectiveLowerBound(){return this.certifiedLower;}
  setTimeLimit(seconds:number){this.timeLimit=seconds;}
  private compiled?:ReturnType<VerifiedConicSolver['compile']>;
@@ -18,7 +19,7 @@ export class VerifiedConicSolver {
  private planes:{terms:LinearTerm[];upper:number}[]=[];
  readonly stats={queries:0,seconds:0,iterations:0,maximumViolation:0,maximumGap:0,certificationRetries:0,maximumRejectedGap:0,scalingRetries:0,statusIndependentCertificates:0,boxCertificates:0,backendFallbacks:0};
  constructor(private p:MarginalProgram,private runtime:SangerConicRuntime){}
- invalidate(){this.compiled=undefined;this.primaryTimedOut=false;}
+ invalidate(){this.compiled=undefined;this.primaryTimedOut=false;this.preferObjectiveUnits=false;}
  private compile(){
   const p=this.p,columns=Int32Array.from(p.upper.flatMap((u,i)=>u===0?[]:[i])),index=new Int32Array(p.upper.length).fill(-1);columns.forEach((i,j)=>index[i]=j);const n=columns.length,upper=Float64Array.from(columns,i=>p.upper[i]),equalities:number[]=[],linear:number[]=[],sizes=(p.quadratics||[]).map(q=>q.terms.length+1),counts=new Uint32Array(n);let finiteUpper=0;
   // Keep row indices and signs, rather than duplicating millions of sparse
@@ -50,16 +51,25 @@ export class VerifiedConicSolver {
   }
   // Equivalent units are tried before spending more iterations on a poorly
   // conditioned objective. Every candidate is checked in the original units.
-  const initial=this.tolerance,tight=Math.min(initial,1e-10),plans:{scale?:number;tol:number}[]=[{tol:initial},{scale:10,tol:tight},{scale:.1,tol:tight}];
+  const initial=this.tolerance,tight=Math.min(initial,1e-10),plans:{scale?:number;tol:number;nativeTol?:number;retryPrimal?:boolean;unitPlan?:boolean}[]=[{tol:initial},{scale:10,tol:tight},{scale:.1,tol:tight}];
   if(initial>1e-10)plans.push({tol:1e-10});
   if(initial>1e-12)plans.push({tol:1e-12},{scale:10,tol:1e-12},{scale:.1,tol:1e-12});
+  if(this.p.objectiveUnitScale!==undefined){
+   const scale=this.p.objectiveUnitScale;if(!(Number.isFinite(scale)&&scale>0))throw Error('Objective units must be finite and positive.');
+   if(this.p.quadraticCost?.length&&scale!==1){
+    // Preserve successful established solves. Equivalent units are a numerical
+    // recovery path, or the first representation on resuming a timed-out solve.
+    plans[0].retryPrimal=true;const units={scale,tol:tight,nativeTol:tight*Math.min(1,scale),retryPrimal:true,unitPlan:true};
+    if(this.preferObjectiveUnits)plans.unshift(units);else plans.splice(1,0,units);
+   }
+  }
   for(let i=0;;i++){
    const plan=plans[i];if(plan.tol!==this.tolerance)this.stats.certificationRetries++;this.tolerance=plan.tol;
-   try{return this.attempt(terms,maximize,plan.scale);}catch(error){if(!this.retryableCertificate||i===plans.length-1)throw error;}
+   try{return this.attempt(terms,maximize,plan.scale,plan.nativeTol,plan.retryPrimal);}catch(error){if(this.p.objectiveUnitScale!==undefined&&error instanceof OptimizationPending)this.preferObjectiveUnits=!plan.unitPlan;if(!this.retryableCertificate||i===plans.length-1)throw error;}
   }
  }
 
- private attempt(terms?:LinearTerm[],maximize=false,equivalentScale?:number){
+ private attempt(terms?:LinearTerm[],maximize=false,equivalentScale?:number,nativeTolerance?:number,retryPrimal=false){
   this.retryableCertificate=false;
   if(this.timeLimit===0)throw new OptimizationPending();
   const start=performance.now(),m=this.compiled??=this.compile(),cost=new Float64Array(m.n);if(terms){for(const[i,w]of terms)if(m.index[i]>=0)cost[m.index[i]]+=(maximize?-1:1)*w;}else m.columns.forEach((i,j)=>cost[j]=this.p.cost[i]);if(!m.n){const x=this.p.upper.map(()=>0),violation=marginalViolation(this.p,x);if(violation>1e-7)throw Error('Zero-box model violates original constraints.');this.certifiedLower=0;this.dual=this.p.rows.map(()=>0);this.planes=[];return{x,value:0};}
@@ -72,11 +82,21 @@ export class VerifiedConicSolver {
    if(result&&scale!==1&&!(result.status==='unknown'&&!(result.z?.length)))break;
    const remaining=scale===1?this.timeLimit:this.timeLimit>0?this.timeLimit-(performance.now()-start)/1000:this.timeLimit;if(this.timeLimit>0&&remaining<=0)throw new OptimizationPending();
    lastTimeLimit=remaining;if(scale!==1)this.stats.scalingRetries++;
-   const answer=this.runtime.solve(m.pStarts,m.pIndices,scale===1?m.pValues:Float64Array.from(m.pValues,v=>v*scale),scale===1?cost:Float64Array.from(cost,v=>v*scale),m.starts,m.indices,m.values,m.b,m.n,m.rowCount,m.cones,JSON.stringify({verbose:false,max_iter:this.iterationLimit,time_limit:remaining,tol_gap_abs:this.tolerance,tol_gap_rel:this.tolerance}));
+   const answer=this.runtime.solve(m.pStarts,m.pIndices,scale===1?m.pValues:Float64Array.from(m.pValues,v=>v*scale),scale===1?cost:Float64Array.from(cost,v=>v*scale),m.starts,m.indices,m.values,m.b,m.n,m.rowCount,m.cones,JSON.stringify({verbose:false,max_iter:this.iterationLimit,time_limit:remaining,tol_gap_abs:nativeTolerance??this.tolerance,tol_gap_rel:nativeTolerance??this.tolerance}));
    result=scale===1||!answer.z?answer:{...answer,z:Array.from(answer.z as ArrayLike<number>,v=>v/scale)};
   }
   if(result.status==='max_iterations'&&((result.x?.length||0)!==m.n||(result.z?.length||0)!==m.rowCount)&&(result.iterations>=this.iterationLimit||lastTimeLimit>0&&Number.isFinite(lastTimeLimit)&&result.solve_time>=lastTimeLimit*.8)){if(result.iterations>=this.iterationLimit)this.iterationLimit*=2;throw new OptimizationPending();}
-  const raw=result.x||[],x=this.p.upper.map(()=>0);m.columns.forEach((i,j)=>x[i]=raw[j]);const violation=raw.length===m.n?marginalViolation(this.p,x):Infinity,y=Float64Array.from(result.z||[]);if(y.length!==m.rowCount)throw Error('Conic optimization returned no dual witness: '+result.status);
+  const raw=result.x||[],x=this.p.upper.map(()=>0);m.columns.forEach((i,j)=>x[i]=raw[j]);const violation=raw.length===m.n?marginalViolation(this.p,x):Infinity;
+  // A literally constant-zero objective has the exact global bound zero.
+  // Redundant native multipliers can produce a spurious positive lower bound
+  // even for a verified feasible point. No dual is needed for feasibility.
+  // Do not infer constancy from rounded/cancelled objective coefficients.
+  const constantZero=!this.p.quadraticCost?.length&&(terms!==undefined?terms.every(([,w])=>w===0):this.p.cost.every(c=>c===0));
+  if(constantZero&&Number.isFinite(violation)&&violation<=1e-7){
+   this.stats.queries++;this.stats.seconds+=(performance.now()-start)/1000;this.stats.iterations+=result.iterations||0;this.stats.maximumViolation=Math.max(this.stats.maximumViolation,violation);this.stats.boxCertificates++;if(result.status!=='optimal')this.stats.statusIndependentCertificates++;
+   this.certifiedLower=0;this.dual=this.p.rows.map(()=>0);this.planes=[];return{x,value:0};
+  }
+  const y=Float64Array.from(result.z||[]);if(y.length!==m.rowCount){this.retryableCertificate=retryPrimal&&result.status==='unknown';throw Error('Conic optimization returned no dual witness: '+result.status);}
   for(let k=m.zero;k<m.zero+m.nonneg;k++)y[k]=Math.max(0,y[k]);let offset=m.zero+m.nonneg;for(const size of m.sizes){let norm=0;for(let j=1;j<size;j++)norm=Math.hypot(norm,y[offset+j]);y[offset]=Math.max(y[offset],norm);offset+=size;}
   const gradient=cost.slice();let quadraticValue=0;for(const form of this.p.quadraticCost||[]){const value=form.reduce((s,[i,w])=>s+w*x[i],0);quadraticValue+=value*value;for(const[i,w]of form)if(m.index[i]>=0)gradient[m.index[i]]+=2*w*value;}
   // Remove stationarity roundoff using existing bound multipliers before
@@ -95,7 +115,7 @@ export class VerifiedConicSolver {
   const value=quadraticValue+cost.reduce((s,v,i)=>s+v*(x[m.columns[i]]||0),0),gap=value-lower;this.stats.queries++;this.stats.seconds+=(performance.now()-start)/1000;this.stats.iterations+=result.iterations||0;
   if(!Number.isFinite(violation)||violation>1e-7||!Number.isFinite(gap)||gap< -1e-7||gap>1e-7){
    if(result.status==='max_iterations'&&(result.iterations>=this.iterationLimit||lastTimeLimit>0&&Number.isFinite(lastTimeLimit)&&result.solve_time>=lastTimeLimit*.8)){if(result.iterations>=this.iterationLimit)this.iterationLimit*=2;throw new OptimizationPending();}
-   this.retryableCertificate=Number.isFinite(violation)&&violation<=1e-7&&Number.isFinite(gap);this.stats.maximumRejectedGap=Math.max(this.stats.maximumRejectedGap,Math.abs(gap));throw Error('Conic optimization did not certify the original model: '+result.status+'; violation='+violation+'; primal-dual gap='+gap);
+   this.retryableCertificate=Number.isFinite(violation)&&(violation<=1e-7||retryPrimal)&&Number.isFinite(gap);this.stats.maximumRejectedGap=Math.max(this.stats.maximumRejectedGap,Math.abs(gap));throw Error('Conic optimization did not certify the original model: '+result.status+'; violation='+violation+'; primal-dual gap='+gap);
   }
   // The original feasible primal and independently repaired global dual are
   // the proof. A backend termination label cannot override that certificate.

@@ -1,0 +1,6 @@
+import {it,expect} from 'vitest';import loadHighs from '../../public/vendor/highs-1.15.4/highs.mjs';
+import {rebasePhotonForms} from '../../src/app/workers/core/sanger-photon-state-rebase';
+import {MarginalLinearSolver,type MarginalProgram,type LinearTerm} from '../../src/app/workers/core/sanger-marginal-lp';
+it('preserves the entire measured feasible set with arbitrary origin and substitution allocations',async()=>{
+ const old=[[[6,1],[7,1]],[[8,1],[9,1]],[[10,1],[11,1],[12,1],[13,1]],[]]as LinearTerm[][],baseline=[[[2,1],[3,1]],[[4,1],[5,1]],[],[]]as LinearTerm[][],replacement=[[[0,1]],[[1,1]],[],[]]as LinearTerm[][],rebased=rebasePhotonForms(old,baseline,replacement),eq=(terms:LinearTerm[],v=0)=>({terms,lower:v,upper:v}),rows=[eq([[0,1],[1,1]],1),eq([[2,1],[3,1],[0,-1]]),eq([[4,1],[5,1],[1,-1]]),...Array.from({length:4},(_,i)=>eq([[6+i,1],[10+i,1],[2+i,-1]]))],make=(forms:LinearTerm[][]):MarginalProgram=>({upper:Array(14).fill(1),cost:Array(14).fill(0),rows:[...rows,...forms.map((terms,b)=>({terms,lower:[.3,.3,0,0][b],upper:[.65,.65,.2,0][b]}))]}),optimizer=await loadHighs(),a=new MarginalLinearSolver(make(old),optimizer),b=new MarginalLinearSolver(make(rebased),optimizer);try{for(let i=0;i<14;i++)for(const maximum of [false,true])expect(b.solve([[i,1]],maximum).value).toBeCloseTo(a.solve([[i,1]],maximum).value,8);}finally{a.dispose();b.dispose();}
+});

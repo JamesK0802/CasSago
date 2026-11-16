@@ -1,3 +1,4 @@
+import {marginalGroupBounds} from './core/sanger-marginal-group-bounds';
 import {retrieveMarginalTruth} from './core/sanger-marginal-truth-retrieval';
 /// <reference lib="webworker" />
 import{certifyNativeBenchmark}from'../utils/sanger-native-signal-certificate';
@@ -19,6 +20,7 @@ const localOptimizer=()=>optimizer??=import(/* @vite-ignore */new URL('vendor/hi
 });
 addEventListener('message',async({data})=>{
  try{
+  if(data.action==='marginal-bounds'){if(!lastResult)throw Error('Analyze the original traces before requesting ranges.');const bounds=marginalGroupBounds(lastResult,data.groupId,s=>postMessage({type:'marginal-progress',requestId:data.requestId,stage:s}));postMessage({type:'marginal-bounds',groupId:data.groupId,bounds,requestId:data.requestId});return;}
   if(data.action==='marginal-truth'){if(!lastResult)throw Error('Analyze the original traces before checking GT retrieval.');const retrieval=retrieveMarginalTruth(lastResult,data.annotations,s=>postMessage({type:'marginal-truth-progress',requestId:data.requestId,stage:s}));postMessage({type:'marginal-truth',retrieval,requestId:data.requestId});return;}
   if(data.action==='marginal-alternatives'){
    if(!lastResult)throw Error('Analyze the original traces before requesting alternatives.');
@@ -31,8 +33,8 @@ addEventListener('message',async({data})=>{
    postMessage({type:'benchmark',assessment});return;
   }
   if(data.action!=='automatic')throw Error('Unsupported Sanger request. Use automatic analysis.');
-  if(data.groupRecovery&&data.primer)postMessage({type:'progress',stage:'Loading common sequence optimizer'});
-  const solver=data.groupRecovery&&data.primer?await localOptimizer():undefined;
+  postMessage({type:'progress',stage:'Loading common sequence optimizer'});
+  const solver=await localOptimizer();
   // Only the active result can serve lazy queries. Release the preceding
   // physical model before constructing its replacement, even if UI rows remain.
   if(lastResult)marginalSessions.delete(lastResult);

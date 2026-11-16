@@ -5,11 +5,17 @@ import {evaluateQuadratic,quadraticCut,type QuadraticEnvelope} from './sanger-qu
 import {FactorizedMarginalSolver} from './sanger-factorized-lp';
 import type {SangerLinearOptimizer} from './sanger-discrete-phase';
 export type LinearTerm=[number,number];
-export interface MarginalProgram {/** Coefficients are immutable; numeric row/box changes still invalidate caches. */immutableRows?:boolean;quadraticCost?:LinearTerm[][];dualHint?:{shadow:number[];budgetRow:number;planes?:{terms:LinearTerm[];upper:number}[]};zeroCostSubstitutions?:{column:number;terms:LinearTerm[]}[];quadratics?:QuadraticEnvelope[];localBlocks?:number[][];originPricing?:{columns:number[];seed:number[]};upper:number[];cost:number[];rows:{terms:LinearTerm[];lower:number;upper:number}[]}
+export interface MarginalProgram {/** Numerical units only; all certificates remain in original objective units. */objectiveUnitScale?:number;/** Coefficients are immutable; numeric row/box changes still invalidate caches. */immutableRows?:boolean;quadraticCost?:LinearTerm[][];dualHint?:{shadow:number[];budgetRow:number;planes?:{terms:LinearTerm[];upper:number}[]};zeroCostSubstitutions?:{column:number;terms:LinearTerm[]}[];quadratics?:QuadraticEnvelope[];localBlocks?:number[][];originPricing?:{columns:number[];seed:number[]};upper:number[];cost:number[];rows:{terms:LinearTerm[];lower:number;upper:number}[]}
 export const LP_INFINITY=1e30;
 export class OptimizationPending extends Error {constructor(){super('Optimization is still in progress; no solution was accepted.');}}
 const formKey=(terms:LinearTerm[])=>{const m=new Map<number,number>();for(const[i,w]of terms)m.set(i,(m.get(i)||0)+w);return[...m].filter(([,w])=>w!==0).sort((a,b)=>a[0]-b[0]).map(([i,w])=>i+':'+w).join(',');};
-export function nativeMarginalProgram(p:MarginalProgram){const starts=[0],indices:number[]=[],values:number[]=[];for(const r of p.rows){for(const[i,v]of r.terms){if(!v)continue;indices.push(i);values.push(v);}starts.push(indices.length);}return{numCols:p.upper.length,numRows:p.rows.length,colCost:p.cost,colLower:p.upper.map(()=>0),colUpper:p.upper,integrality:p.upper.map(()=>0),rowLower:p.rows.map(r=>r.lower),rowUpper:p.rows.map(r=>r.upper),matrix:{format:'csr',numCols:p.upper.length,numRows:p.rows.length,starts,indices,values}};}
+export function nativeMarginalProgram(p:MarginalProgram){
+ const limit=0x7fffffff;if(p.upper.length>limit||p.rows.length>limit)throw Error('Sparse matrix exceeds the native index range.');
+ const starts=new Int32Array(p.rows.length+1);let entries=0;for(let r=0;r<p.rows.length;r++){for(const[i,w]of p.rows[r].terms){if(!Number.isFinite(w))throw Error('Invalid sparse coefficient.');if(!w)continue;if(!Number.isSafeInteger(i)||i<0||i>=p.upper.length)throw Error('Invalid sparse column index.');if(++entries>limit)throw Error('Sparse matrix exceeds the native index range.');}starts[r+1]=entries;}
+ const indices=new Int32Array(entries),values=new Float64Array(entries);let at=0;for(const r of p.rows)for(const[i,w]of r.terms)if(w){indices[at]=i;values[at++]=w;}if(at!==entries)throw Error('Sparse matrix changed during conversion.');
+ return{numCols:p.upper.length,numRows:p.rows.length,colCost:Float64Array.from(p.cost),colLower:new Float64Array(p.upper.length),colUpper:Float64Array.from(p.upper),integrality:new Int32Array(p.upper.length),rowLower:Float64Array.from(p.rows,r=>r.lower),rowUpper:Float64Array.from(p.rows,r=>r.upper),matrix:{format:'csr',numCols:p.upper.length,numRows:p.rows.length,starts,indices,values}};
+}
+
 export function marginalViolation(p:MarginalProgram,x:number[]){if(x.length!==p.upper.length)return Infinity;let violation=0;for(let i=0;i<x.length;i++){if(!Number.isFinite(x[i]))return Infinity;violation=Math.max(violation,-x[i],x[i]-p.upper[i]);}for(const r of p.rows){const v=r.terms.reduce((n,[i,w])=>n+w*x[i],0);violation=Math.max(violation,r.lower-v,v-r.upper);}for(const q of p.quadratics||[])violation=Math.max(violation,evaluateQuadratic(q,x)-q.upper);return violation;}
 export function validMarginalSolution(p:MarginalProgram,x:number[],tolerance=1e-7){return marginalViolation(p,x)<=tolerance;}
 /** Convex tangent + arbitrary row multipliers + complete box minimization.
@@ -38,15 +44,13 @@ export class MarginalLinearSolver {
  private sliceSeconds?:number;
  private initialSliceSeconds?:number;
  private factorizationFailed=false;
- private directProbeAttempted=false;
- private directProbe={attempts:0,certified:0,seconds:0};
  private faceAttempted=false;
  private zeroFaceProjection?:{variables:number;rows:number;seconds:number;verified:boolean;failure?:string};
  private zeroFaceCertified=false;
  private winner?:'flat'|'factorized';
  private optimizer:SangerLinearOptimizer;
  private factorizationFallbackReason?:string;
- get diagnostics(){return{attainedBoxHits:this.totalAttainedBoxHits(),directProbe:this.directProbe,spectralFeasibility:this.spectralFeasibility,conicFallbackReason:this.conicFallbackReason,conic:this.conicDiagnostics(),zeroFaceProjection:this.fullCompetitor?.zeroFaceProjection||this.zeroFaceProjection,selected:this.conic?'conic' as const:this.winner,factorization:this.factorized?.stats,factorizationFallbackReason:this.factorizationFallbackReason,pricing:this.fullCompetitor?.pricingStats||this.pricingStats};}
+ get diagnostics(){return{attainedBoxHits:this.totalAttainedBoxHits(),spectralFeasibility:this.spectralFeasibility,conicFallbackReason:this.conicFallbackReason,conic:this.conicDiagnostics(),zeroFaceProjection:this.fullCompetitor?.zeroFaceProjection||this.zeroFaceProjection,selected:this.conic?'conic' as const:this.winner,factorization:this.factorized?.stats,factorizationFallbackReason:this.factorizationFallbackReason,pricing:this.fullCompetitor?.pricingStats||this.pricingStats};}
  private conicFallbackReason?:string;
  private parentFallbackBudget?:number;
  private coneRecoveryStarted?:number;
@@ -72,10 +76,13 @@ export class MarginalLinearSolver {
  private initializeNative(){const program=this.program,optimizer=this.optimizer;this.costs=program.cost.slice();this.inactive.clear();this.incidence.clear();
   this.native=optimizer.createModel!();
   if(program.originPricing){const seed=new Set(program.originPricing.seed);for(const i of program.originPricing.columns){this.incidence.set(i,[]);if(program.upper[i]>0&&!seed.has(i))this.inactive.add(i);}program.rows.forEach((r,k)=>{for(const[i,w]of r.terms)this.incidence.get(i)?.push([k,w]);});}
-  this.native.options.set({output_flag:false,solver:'simplex',simplex_strategy:4,time_limit:300,primal_feasibility_tolerance:program.quadratics?.length?1e-10:1e-8,dual_feasibility_tolerance:program.quadratics?.length?1e-10:1e-8});
-  const model=nativeMarginalProgram(program);model.colUpper=program.upper.map((u,i)=>this.inactive.has(i)?0:u);this.native.passModel(model);
+  // Local consensus residuals are recombined into larger original photon
+  // rows. Solve each LP more tightly so their sum still meets the unchanged
+  // original1e-7 primal/global certificate, regardless of reference count.
+  this.native.options.set({output_flag:false,solver:'simplex',simplex_strategy:4,time_limit:300,primal_feasibility_tolerance:1e-10,dual_feasibility_tolerance:1e-10});
+  const model=nativeMarginalProgram(program);model.colUpper=Float64Array.from(program.upper,(u,i)=>this.inactive.has(i)?0:u);this.native.passModel(model);
  }
- private makeFactorized(){return new FactorizedMarginalSolver(this.program,p=>{const solver=new MarginalLinearSolver({...p,localBlocks:undefined},this.optimizer);solver.setTimeSlice(p.quadratics?.length?30:.25);solver.parentFallbackBudget=120;return solver;});}
+ private makeFactorized(){return new FactorizedMarginalSolver(this.program,p=>{const solver=new MarginalLinearSolver({...p,localBlocks:undefined},this.optimizer);solver.setTimeSlice(p.quadratics?.length?120:2);solver.parentFallbackBudget=600;return solver;});}
  setTimeSlice(seconds:number){this.initialSliceSeconds=seconds;this.sliceSeconds=seconds;if(this.fullCompetitor)this.fullCompetitor.setTimeSlice(seconds);else if(this.conic)this.conic.setTimeLimit(seconds);else if(this.native)this.native.options.set({time_limit:seconds});}
  private pending():never{if(this.sliceSeconds!==undefined&&this.sliceSeconds>0){this.sliceSeconds*=2;if(this.conic)this.conic.setTimeLimit(this.sliceSeconds);else this.native.options.set({time_limit:this.sliceSeconds});}throw new OptimizationPending();}
  private tryZeroCostFace():number[]|undefined{
@@ -110,24 +117,12 @@ export class MarginalLinearSolver {
   }
   if(this.conic){try{const answer=this.conic.solve(terms,maximize);this.lowerObjectiveIsCurrent=true;this.point=answer.x;if(this.initialSliceSeconds!==undefined){this.sliceSeconds=this.initialSliceSeconds;this.conic.setTimeLimit(this.sliceSeconds);}return answer;}catch(error){if(error instanceof OptimizationPending)this.pending();if(!this.program.quadraticCost?.length&&String(error).includes('Conic optimization returned no dual witness: unknown')){this.conicFallbackReason=String(error);this.conic.dispose();this.conic=undefined;this.initializeNative();this.winner='flat';if(this.sliceSeconds!==undefined)this.native.options.set({time_limit:this.sliceSeconds});return this.solve(terms,maximize);}throw error;}}
   if(this.decomposed){
-   // Sequential numeric probe of the identical full program. No decomposition
-   // has been allocated yet; unfinished/uncertified proposals are disposed.
-   // The short limit selects a representation, never a scientific result.
-   if(!this.directProbeAttempted&&!this.fullCompetitor&&this.optimizer.conic){
-    this.directProbeAttempted=true;this.directProbe.attempts++;const started=performance.now();let probe:MarginalLinearSolver|undefined;
-    try{probe=new MarginalLinearSolver({...this.program,localBlocks:undefined},this.optimizer,'conic');probe.conic!.setTimeLimit(2);const a=probe.conic!.solve(terms,maximize);probe.point=a.x;probe.lowerObjectiveIsCurrent=true;probe.setTimeSlice(this.initialSliceSeconds||600);this.fullCompetitor=probe;probe=undefined;this.factorizationFailed=true;this.factorizationFallbackReason='Identical full program certified during common sequential probe.';this.directProbe.certified++;this.point=a.x;this.winner='flat';return a;}
-    catch{/* Retain the complete exact decomposition and unrestricted fallback. */}
-    finally{this.directProbe.seconds+=(performance.now()-started)/1000;probe?.dispose();}
-   }
-   // Complete the common exact decomposition before constructing a second
-   // full-model factorization. Racing both representations duplicates a
-   // large model's memory while neither scientific hypothesis set changes.
+   // Complete the same exact decomposition for every structured program.
+   // Wall-clock probes must not lock later objectives onto a less robust
+   // representation or discard verified decomposition progress.
    if(!this.factorizationFailed&&!this.fullCompetitor){try{
-    this.factorized??=this.makeFactorized();const started=performance.now(),steps=this.factorized.steps(terms,maximize);
+    this.factorized??=this.makeFactorized();const steps=this.factorized.steps(terms,maximize);
     try{for(;;){const next=steps.next();if(next.done){this.point=next.value.x;this.winner='factorized';return next.value;}
-     // A representation-selection budget never accepts an approximate answer
-     // or removes a hypothesis. Finish the identical full model below.
-     if((performance.now()-started)/1000>15)throw Error('Exact decomposition exceeded its numerical selection budget; completing the unrestricted original parent.');
     }}finally{steps.return(undefined as never);}
    }catch(error){this.factorizationFallbackReason=String(error);this.factorizationFailed=true;this.factorized?.dispose();this.factorized=undefined;}}
    if(!this.fullCompetitor){this.fullCompetitor=new MarginalLinearSolver({...this.program,localBlocks:undefined},this.optimizer,'conic');this.fullCompetitor.setTimeSlice(this.initialSliceSeconds&&this.initialSliceSeconds>0?this.initialSliceSeconds:600);}
@@ -149,7 +144,7 @@ export class MarginalLinearSolver {
     if(this.inactive.size){this.pricingStats.fullRestores++;this.activate([...this.inactive]);this.native.clearSolver();continue;}
     this.native.options.set({primal_feasibility_tolerance:1e-10,dual_feasibility_tolerance:1e-10});
     try{this.native.clearSolver();solved=run();if(solved.status===13&&this.sliceSeconds!==undefined)this.pending();if(solved.status!==7&&solved.status!==8||solved.violation>1e-7&&solved.status===7){this.native.clearSolver();this.native.options.set({solver:'ipm'});solved=run();}}
-    finally{this.native.options.set({solver:'simplex',primal_feasibility_tolerance:1e-8,dual_feasibility_tolerance:1e-8});}
+    finally{this.native.options.set({solver:'simplex',primal_feasibility_tolerance:1e-10,dual_feasibility_tolerance:1e-10});}
    }
    if(solved.status===13&&this.sliceSeconds!==undefined)this.pending();
    // Polish an unverified local LP in the same cone representation before
@@ -217,7 +212,7 @@ export class MarginalLinearSolver {
   }
   try{return this.solve(terms,true);}catch(error){if(/did not complete: 8(?:;|$)/.test(String(error)))return null;throw error;}
  }
- objectiveLowerBound():number|undefined{if(this.linearLower!==undefined)return this.linearLower;if(this.winner==='flat'&&this.fullCompetitor)return this.fullCompetitor.objectiveLowerBound();return this.lowerObjectiveIsCurrent?this.conic?.objectiveLowerBound():this.linearLower;}
+ objectiveLowerBound():number|undefined{if(this.linearLower!==undefined)return this.linearLower;if(this.winner==='flat'&&this.fullCompetitor)return this.fullCompetitor.objectiveLowerBound();if(this.winner==='factorized')return this.factorized?.objectiveLowerBound();return this.lowerObjectiveIsCurrent?this.conic?.objectiveLowerBound():this.linearLower;}
  supportPlanes():{terms:LinearTerm[];upper:number}[]{if(this.shortcut)return[];return this.conic?.supportPlanes()||(this.winner==='flat'?this.fullCompetitor?.supportPlanes():[])||[];}
  rowDuals():number[]{if(this.shortcut){const shadow=this.program.rows.map(()=>0);if(this.shortcut.row!==undefined)shadow[this.shortcut.row]=this.shortcut.multiplier!;return shadow;}if(this.conic)return this.conic.rowDuals();if(this.zeroFaceCertified)return this.program.rows.map(()=>0);return this.fullCompetitor?(this.winner==='flat'?this.fullCompetitor.rowDuals():[]):this.native?Array.from(this.native.getSolution().rowDual as ArrayLike<number>):[];}
  dispose(){

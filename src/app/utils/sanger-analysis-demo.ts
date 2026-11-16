@@ -1,6 +1,6 @@
 import { TRACE_BASES } from '../models/sanger-analysis';
 /** Constructed ABIF fixture: explicitly synthetic, exercises the real file reader. */
-export function sangerAnalysisDemo():{reference:string;cut:number;control:ArrayBuffer;sample:ArrayBuffer} {
+export function sangerAnalysisDemo():{reference:string;cut:number;primer:string;control:ArrayBuffer;sample:ArrayBuffer} {
   let seed=718223;const dna=(n:number)=>Array.from({length:n},()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return 'ACGT'[seed>>>30];}).join('');
   const sequence=dna(650),cut=230,flank=dna(60);
   const make=(mixed:boolean)=>{
@@ -13,7 +13,7 @@ export function sangerAnalysisDemo():{reference:string;cut:number;control:ArrayB
     for(const c of channels)for(let j=0;j<c.length;j++)c[j]+=2;
     return writeAbif(sequence,peaks,channels,mixed?'Synthetic_sample_60WT_25del1_15ins1':'Synthetic_control');
   };
-  return {reference:flank+sequence+dna(60),cut:flank.length+cut,control:make(false),sample:make(true)};
+  return {reference:flank+sequence+dna(60),cut:flank.length+cut,primer:flank.slice(-20),control:make(false),sample:make(true)};
 }
 /** Minimal standards-shaped ABIF writer used only for the labelled demo. */
 export function writeAbif(sequence:string,peaks:number[],channels:Uint16Array[],name:string,order='ACGT',quality=40):ArrayBuffer {

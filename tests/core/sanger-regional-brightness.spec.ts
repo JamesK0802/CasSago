@@ -1,0 +1,5 @@
+import {it,expect} from 'vitest';
+import {regionalLengthInitialization} from '../../src/app/workers/core/sanger-regional-length-fit';
+it('separates reference brightness from within-reference allele proportions with a common predictive prior',()=>{
+ const positions=Array.from({length:80},(_,i)=>100+i),classes=Array.from({length:4},(_,j)=>({reference:Math.floor(j/2),size:j%2,column:positions.flatMap(p=>{const row=Array.from({length:4},(_,b)=>.1+((p*29+j*31+b*17+(p*j)%19)%53)/53),sum=row.reduce((a,b)=>a+b,0);return row.map(v=>v/sum);})})),weights=[.42,.18,.1,.3],observed=classes[0].column.map((_,k)=>classes.reduce((s,c,j)=>s+weights[j]*c.column[k],0)),fit=regionalLengthInitialization([{classes,observed}],[positions],[.5,.5],1e-4,{logVariance:.01,first:0,span:80});expect(fit.referenceShares[0]).toBeCloseTo(.6,4);expect(fit.lengths[0][0][0].fraction/.5).toBeCloseTo(.7,4);expect(fit.lengths[0][1][0].fraction/.5).toBeCloseTo(.25,4);expect(fit.contributionPrior[0].weight).toBeGreaterThan(0);
+});

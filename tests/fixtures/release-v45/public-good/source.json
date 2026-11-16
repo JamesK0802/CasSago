@@ -1,0 +1,15 @@
+{
+  "url": "https://github.com/synthego-open/ice",
+  "revision": "310495fe536b7d2eafcee80f145c55f7c65d947c",
+  "control": "good_example_control.ab1",
+  "sample": "good_example_edited.ab1",
+  "guides": [
+    {
+      "guide": "AACCAGTTGCAGGCGCCCCA",
+      "start": 214,
+      "cut": 231,
+      "direction": "forward"
+    }
+  ],
+  "referenceBasis": "control consensus; sequencing primer/full submitted product not supplied"
+}

@@ -16,6 +16,7 @@ export function marginalSequenceResolved(g:SangerMarginalGroup){
  * their weighted coordinate proportions, not each allele as 100% at every base.
  * This is not a phased-haplotype certificate or a benchmark/quantification pass. */
 export function marginalTruthStatus(truth:SangerAnnotation,g:SangerMarginalGroup,row:SangerAnnotationRow):{status:MarginalComparisonStatus;reason:string}{
+ if(g.status==='estimated')return{status:'mismatch',reason:'Feasible ranges have not been calculated. Point estimates alone do not certify GT coverage; use the separate joint profile retrieval check.'};
  const target=g.target-1,components=truth.components.filter(c=>(c.pathSizes?.[target]??targetEvents(c.events||[],target).reduce((n,e)=>n+e.inserted-(e.end-e.start),0))===g.size),mass=components.reduce((n,c)=>n+c.fraction,0);
  if(!components.length||mass<=0||Math.abs(g.fraction-mass)>.02+1e-10)return{status:'mismatch',reason:'No matching length family within 2 percentage points.'};
  if(!g.bases.length||components.some(c=>c.unresolved))return{status:'mismatch',reason:'Base-range coverage is unavailable for this GT family.'};

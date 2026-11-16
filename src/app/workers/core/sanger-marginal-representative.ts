@@ -1,3 +1,4 @@
+import {marginalOriginReadBaseFree} from './sanger-marginal-domain';
 import {originBaseMass} from './sanger-origin-base-support';
 import type {MarginalInternalGroup} from './sanger-marginal-engine';
 import type {Prepared} from './sanger-path-common';
@@ -13,7 +14,7 @@ export function fittedMarginalRepresentative(g:MarginalInternalGroup,point:numbe
   let support=Math.max(0,point[e.mass]);if(support<=1e-7)continue;
   const word=new Map<number,string>();
   for(const[q]of g.bases){
-   const insertion=q>=e.start+e.incoming&&q<e.start+e.incoming+Math.max(0,e.size),free=insertion||Math.abs(q-e.incoming-ref.cuts[e.target])<=45,at=q<e.start+e.incoming?q-e.incoming:q-e.outgoing;
+   const free=marginalOriginReadBaseFree(q,e,ref.cuts[e.target]),at=q<e.start+e.incoming?q-e.incoming:q-e.outgoing;
    const values=Array.from({length:4},(_,b)=>originBaseMass(g,e,q,b,ref.sequence,point)),base=free?values.indexOf(Math.max(...values)):DNA.indexOf(ref.sequence[at]);
    if(base<0){support=0;break;}support=Math.min(support,Math.max(0,values[base]));if(free)word.set(q,DNA[base]);
   }

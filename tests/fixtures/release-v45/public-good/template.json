@@ -1,0 +1,21 @@
+{
+  "primer": "ACGTCGTAGCTAGGATCCGA",
+  "amplicons": [
+    {
+      "name": "good",
+      "sequence": "ACGTCGTAGCTAGGATCCGAGGGGCATCCTGTGTTCTACCTGGCACCTGTCCCCATAGAAATGAGCGTGAGTGCCCGGGATCTGCTGCGGGGCTGTGCTGGGCTCTTTCTCAGCCTGGCCCGAAGTTTCCAGATCTGATTGAGCGAGAGAGCAGCAGGACCTGCCCCTCTGCTGGGCTCTTACCTTCGCGGCACTCGCCACTGCCCAGCAGCAGGTGAGGCCCAACACAACCAGTTGCAGGCGCCCCATGGTGAGCATCAGCCTCTGGGTGGCCCTCCCTCTGGGCCTCGGGTATTTATGGAGCTGGATCCAAGGTCACATGCTTGTTCATGAGCTCTCAGGCA",
+      "cuts": [
+        245
+      ]
+    }
+  ],
+  "maxDeletion": 20,
+  "maxInsertion": 10,
+  "traceAdapter": {
+    "controlStart": 6,
+    "sampleStart": 8,
+    "controlEnd": 330,
+    "sampleEnd": 332
+  },
+  "adapterNote": "Virtual registration prefix, not a claimed experimental sequencing primer; control-consensus reference; original channels/PCON preserved in retained interval. Sample start aligned only on pre-cut WT sequence."
+}

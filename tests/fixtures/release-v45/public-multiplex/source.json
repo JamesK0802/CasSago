@@ -1,0 +1,21 @@
+{
+  "url": "https://github.com/synthego-open/ice",
+  "revision": "310495fe536b7d2eafcee80f145c55f7c65d947c",
+  "control": "multiplex1_control.ab1",
+  "sample": "multiplex1_edited.ab1",
+  "guides": [
+    {
+      "guide": "TTCCCCTTATTTAGATAACT",
+      "start": 159,
+      "cut": 162,
+      "direction": "reverse"
+    },
+    {
+      "guide": "TGTTAACCAAATTATGATGA",
+      "start": 132,
+      "cut": 135,
+      "direction": "reverse"
+    }
+  ],
+  "referenceBasis": "control consensus; sequencing primer/full submitted product not supplied"
+}

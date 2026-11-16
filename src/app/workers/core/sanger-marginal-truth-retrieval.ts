@@ -9,6 +9,8 @@ import {MarginalLinearSolver,type MarginalProgram,type LinearTerm} from './sange
 interface Profile{sequenceKey:string;fraction:number;sequence:string}
 interface Family{group:MarginalInternalGroup;reference:string;target:number;share:number;profiles:Profile[];truthMass:number}
 const DNA='ACGT';
+/** Read-only post-inference diagnostics. Never called during blind fitting. */
+export const marginalTruthDiagnostics:{observe?:(query:{program:MarginalProgram;originalColumns:number;originalRows:number;families:number})=>void}={};
 /** POST-INFERENCE hypothesis check only. Freeze group creation/ranking first.
  * Reconstruct the complete requested within-family allele mixture, including
  * its proportions, rather than accepting independent coordinate bounds. */
@@ -51,6 +53,7 @@ function solveFamilies(session:MarginalSession,target:MarginalTargetState,famili
   atoms.set(f,profileAtoms);for(const i of owned)row([[i,1],...(byVariable.get(i)||[]).map(([j,v])=>[j,-v]as LinearTerm)]);
  }
  let x:number[]|undefined,status:'retrieved'|'not-retrieved'|'incomplete'='not-retrieved',reason:string|undefined;
+ marginalTruthDiagnostics.observe?.({program:p,originalColumns:target.program.upper.length,originalRows:target.program.rows.length,families:families.length});
  if(!impossible){let solver:MarginalLinearSolver|undefined;try{solver=new MarginalLinearSolver(p,session.optimizer);const answer=solver.feasibleMaximum([]);if(answer){x=answer.x;status='retrieved';}}catch(error){status='incomplete';reason=String(error);}finally{solver?.dispose();}}
  const seconds=(performance.now()-began)/1000;
  const checks=families.map(f=>({reference:f.reference,target:f.target,familyId:f.group.id,status,seconds,reason,profiles:f.profiles.map((profile,k)=>({sequenceKey:profile.sequenceKey,expectedFraction:profile.fraction,estimatedFraction:x?atoms.get(f)![k].reduce((n,i)=>n+x![i],0)/f.share:undefined}))}));

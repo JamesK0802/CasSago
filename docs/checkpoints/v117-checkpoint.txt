@@ -1,0 +1,13 @@
+WIP checkpoint: v117 point-first common Sanger workflow
+
+Same physical candidate domain and strict original 1e-7 primal/global-dual certificates. No indel-species cap or synthetic/count-specific inference. Reporting threshold defaults to2%; no candidate pruning.
+
+Default returns representative sequences and fitted proportions; complete original-domain bounds are requested for the selected group only. Alternatives remain10/page. A common fluorescence residual objective refines representative base proportions with noise-scale stabilization; this intentionally changes the phase-1 point. Bounds are model-feasible envelopes, not statistical confidence intervals. WT/Sub marker partitions preserve minor base signals and unresolved linkage.
+
+Validation:62 development cases native median1.785s/max3.677s. Aggregate base TV .058599->.020616pp, conditional length-family TV3.102412->3.078267pp (small). Literal DNA245->251/583 before later marker display repair, with5 cases worse. New independent3-case holdout numeric errors improved without inference retuning. This is NOT overall scientific PASS.
+
+Portable identical-chromatogram fixtures prove three selected ambiguities.5indel +8G100->0% balanced by -2 placement+3->+1;12indel +2T/+4A100->0% balanced only by other inserted bases. All raw channels/PBAS/PLOC identical, length-class masses preserved, no new Sub; finite sequence species increase. Official ICE returns identical coefficients for each same-signal pair; current engine also returns identical point profiles. This does not excuse every discrepancy.
+
+Run npm run test:point-first and npm run build for this checkpoint. The retained historical release suite has known failures; this branch is an experimental checkpoint, not a release or a claim of full accuracy. Main-branch Pages deployment was not triggered.
+
+Checkpoint packaging validation:75 tests in17 focused files passed in the isolated Git tree; actual production build passed. Runtime licenses retained; package-lock dependency parity checked.

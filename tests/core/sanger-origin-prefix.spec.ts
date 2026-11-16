@@ -1,0 +1,10 @@
+import {it,expect} from 'vitest';
+import {originPrefixes,originContextContains} from '../../src/app/workers/core/sanger-origin-prefix';
+import {MarginalLinearSolver,validMarginalSolution,type MarginalProgram,type LinearTerm} from '../../src/app/workers/core/sanger-marginal-lp';
+import loadHighs from '../../public/vendor/highs-1.15.4/highs.mjs';
+it('retains every origin and its exact before/after/insertion membership using sparse prefixes',async()=>{
+ const edges=[0,0,0,1,1,1].map((incoming,mass)=>({reference:0,target:0,incoming,outgoing:incoming+2,size:2,start:mass%3+5,mass,free:new Map()})),g:any={edges,mass:edges.map(e=>[e.mass,1])},p:MarginalProgram={upper:[.4,.4,.4,.6,.6,.6],cost:Array(6).fill(0),rows:[{terms:[[0,1],[1,1],[2,1]],lower:.4,upper:.4},{terms:[[3,1],[4,1],[5,1]],lower:.6,upper:.6}]},old=structuredClone(p),buckets=originPrefixes(g,p,u=>{p.upper.push(u);p.cost.push(0);return p.upper.length-1;},(terms,lower,upper)=>p.rows.push({terms,lower,upper})),point=[.1,.2,.1,.25,.15,.2];
+ for(const b of buckets)for(let j=1;j<b.edges.length;j++)point.push(b.edges.slice(0,j+1).reduce((n,e)=>n+point[e.mass],0));expect(validMarginalSolution(p,point)).toBe(true);
+ for(let q=4;q<12;q++)for(const b of buckets){const before:LinearTerm[]=[[b.total,1],...b.at(q-b.incoming).map(([i,w])=>[i,-w]as LinearTerm)],after=b.at(q-b.incoming-2),value=(f:LinearTerm[])=>f.reduce((n,[i,w])=>n+w*point[i],0);expect(value(before)).toBeCloseTo(b.edges.filter(e=>q<e.start+e.incoming).reduce((n,e)=>n+point[e.mass],0),12);expect(value(after)).toBeCloseTo(b.edges.filter(e=>q>=e.start+e.incoming+2).reduce((n,e)=>n+point[e.mass],0),12);for(const e of b.edges){expect(originContextContains(before,e)).toBe(q<e.start+e.incoming);expect(originContextContains(after,e)).toBe(q>=e.start+e.incoming+2);}}
+ const optimizer=await loadHighs(),a=new MarginalLinearSolver(old,optimizer),b=new MarginalLinearSolver(p,optimizer);try{for(let k=0;k<12;k++){const form=edges.map((e,j)=>[j,Math.sin(3*k+7*j)]as LinearTerm);for(const max of [false,true])expect(b.solve(form,max).value).toBeCloseTo(a.solve(form,max).value,9);}}finally{a.dispose();b.dispose();}
+});

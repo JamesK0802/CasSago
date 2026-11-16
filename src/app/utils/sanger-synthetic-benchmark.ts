@@ -63,7 +63,9 @@ export function synthPattern(ref:SynthReference,events:SynthEvent[]){const sizes
 export function synthDescription(events:SynthEvent[]){return events.length?events.map(e=>e.kind==='substitution'?`${e.before}→${dna(e.sequence)} at amplicon ${Number(e.selectionStart)+1}`:`T${e.target+1} ${e.kind} ${e.offset>=0?'+':''}${e.offset}: ${e.kind==='insertion'?dna(e.sequence):e.length+' bp'}`).join('; '):'WT';}
 export function writeSynthTrace(parts:{sequence:string;weight:number}[],cycles:number,name:string){const peaks=Array.from({length:cycles},(_,i)=>14+i*10),channels=TRACE_BASES.map(()=>new Uint16Array(cycles*10+30).fill(2)),calls:string[]=[];
  for(let i=0;i<cycles;i++){const values=TRACE_BASES.map(b=>parts.reduce((s,p)=>s+(p.sequence[i]===b?p.weight:0),0));calls.push(TRACE_BASES[values.indexOf(Math.max(...values))]);for(let b=0;b<4;b++)for(let d=-5;d<=5;d++)channels[b][peaks[i]+d]+=Math.round(1200*values[b]*Math.exp(-d*d/4));}
- return writeAbif(calls.join(''),peaks,channels,'SYNTHETIC_'+name);
+ // Synthetic metadata is not a measured Phred calibration. Q60 keeps the
+ // error-free fixture compatible with tools requiring a strict Q>40 window.
+ return writeAbif(calls.join(''),peaks,channels,'SYNTHETIC_'+name,'ACGT',60);
 }
 export function generateSangerSynth(result:SangerDesignResult,c:SangerCandidate,refs:SynthReference[],mixSeed?:number):SynthDataset {
  const seed=(mixSeed??Math.floor(Math.random()*4294967296))>>>0;let randomState=seed;const random=()=>{randomState=(Math.imul(randomState,1664525)+1013904223)>>>0;return randomState/4294967296;};

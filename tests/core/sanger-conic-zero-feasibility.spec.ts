@@ -1,0 +1,9 @@
+import {it,expect}from'vitest';
+import {VerifiedConicSolver}from'../../src/app/workers/core/sanger-conic-solver';
+import type {MarginalProgram}from'../../src/app/workers/core/sanger-marginal-lp';
+const p=():MarginalProgram=>({upper:[1],cost:[0],rows:[{terms:[[0,1]],lower:.25,upper:.25}]});
+it.each([false,true])('uses exact zero-objective bound despite bad or missing duals: missing=%s',missing=>{const s=new VerifiedConicSolver(p(),{solve:(...a)=>({status:'unknown',x:[.25],z:missing?undefined:Array(a[9]).fill(-1e12),iterations:1})});try{expect(s.solve([])).toEqual({x:[.25],value:0});expect(s.objectiveLowerBound()).toBe(0);expect(s.rowDuals()).toEqual([0]);expect(s.stats.boxCertificates).toBe(1);}finally{s.dispose();}});
+it('still rejects an original-infeasible zero-objective point',()=>{const s=new VerifiedConicSolver(p(),{solve:(...a)=>({status:'unknown',x:[.5],z:Array(a[9]).fill(0),iterations:1})});try{expect(()=>s.solve([])).toThrow('did not certify');expect(s.objectiveLowerBound()).toBeUndefined();}finally{s.dispose();}});
+it('does not apply the zero-feasibility shortcut to a positive objective',()=>{const q=p();q.rows=[];q.cost=[1];const s=new VerifiedConicSolver(q,{solve:(...a)=>({status:'unknown',x:[.25],z:Array(a[9]).fill(0),iterations:1})});try{expect(()=>s.solve()).toThrow('did not certify');}finally{s.dispose();}});
+it('does not mistake rounded objective cancellation for literal zero',()=>{const q=p();q.rows=[];const s=new VerifiedConicSolver(q,{solve:()=>({status:'unknown',x:[.25],iterations:1})});try{expect(()=>s.solve([[0,1e20],[0,1],[0,-1e20]])).toThrow('no dual');}finally{s.dispose();}});
+it('keeps quadratic objectives outside the zero-feasibility shortcut',()=>{const q=p();q.quadraticCost=[[[0,1]]];const s=new VerifiedConicSolver(q,{solve:(...a)=>({status:'unknown',x:[.25],z:Array(a[9]).fill(0),iterations:1})});try{expect(()=>s.solve([])).toThrow('did not certify');}finally{s.dispose();}});

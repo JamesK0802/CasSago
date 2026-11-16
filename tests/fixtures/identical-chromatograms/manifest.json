@@ -1,0 +1,26 @@
+{
+  "scope": "Synthetic identifiability counterexamples only, not experimental truth or all-case accuracy PASS. Masses in ten-thousandths of sample. All variants keep length-class masses; sequence-species counts may increase. PCON60 metadata for external-tool compatibility.",
+  "cases": [
+    {
+      "id": "isolated-5-0-0",
+      "names": [
+        "baseline",
+        "alternative"
+      ],
+      "primerLength": 20,
+      "positionOneBased": 173,
+      "scope": "Explicit different finite synthetic DNA populations, all raw channels/PBAS/PLOC identical. No engine output or GT used for inference."
+    },
+    {
+      "id": "isolated-12-0-0",
+      "names": [
+        "baseline",
+        "alternative-2-T",
+        "alternative-4-A"
+      ],
+      "primerLength": 20,
+      "positionOneBased": 173,
+      "scope": "Explicit different finite synthetic DNA populations, all raw channels/PBAS/PLOC identical. No engine output or GT used for inference."
+    }
+  ]
+}

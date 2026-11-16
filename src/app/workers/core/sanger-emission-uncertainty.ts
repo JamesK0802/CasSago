@@ -3,6 +3,8 @@ import {LP_INFINITY,type MarginalProgram,type LinearTerm} from './sanger-margina
  * WT photons are conserved exactly at every shared-colour donor position.
  * McCormick envelopes retain every physical product of allele mass and unknown
  * donor response. This uncertainty carries no biological substitution cost. */
+/** Optional research-only audit; never supplies data or policy to inference. */
+export const emissionProductDiagnostics:{observe?:(value:{column:number;donor:number;cap:LinearTerm[];lo:number;range:number;reference:number;donorPosition:number;readPosition:number})=>void}={};
 export function emissionUncertainty(program:MarginalProgram,shares:number[],sequences:string[],responses:number[][][],bounds:[number,number][][],blocks:Map<number,Set<number>>){
  const groups=new Map<string,Map<number,{column:number;lo:number;range:number}>>(),products=new Map<string,LinearTerm[]>(),seeds:{u:number;cap:LinearTerm[];column:number}[]=[],variable=(upper:number)=>{const i=program.upper.length;program.upper.push(upper);program.cost.push(0);return i;};
  const donor=(h:number,q:number)=>{
@@ -14,7 +16,7 @@ export function emissionUncertainty(program:MarginalProgram,shares:number[],sequ
  const correction=(cap:LinearTerm[],h:number,q:number,p:number):LinearTerm[]=>{
   const d=donor(h,q);if(!d||!cap.length)return[];const key=h+':'+q+':'+JSON.stringify(cap),known=products.get(key);if(known)return known;const share=shares[h],u=variable(share*d.range),rows=program.rows;
   rows.push({terms:[[u,1],...cap.map(([i,w])=>[i,-w*d.range]as LinearTerm)],lower:-LP_INFINITY,upper:0},{terms:[[u,1],[d.column,-share]],lower:-LP_INFINITY,upper:0},{terms:[[u,1],...cap.map(([i,w])=>[i,-w*d.range]as LinearTerm),[d.column,-share]],lower:-share*d.range,upper:LP_INFINITY});
-  const set=blocks.get(p)||new Set<number>();set.add(u);blocks.set(p,set);const result:LinearTerm[]=[...cap.map(([i,w])=>[i,w*d.lo]as LinearTerm),[u,1]];products.set(key,result);seeds.push({u,cap,column:d.column});return result;
+  const set=blocks.get(p)||new Set<number>();set.add(u);blocks.set(p,set);const result:LinearTerm[]=[...cap.map(([i,w])=>[i,w*d.lo]as LinearTerm),[u,1]];products.set(key,result);seeds.push({u,cap,column:d.column});emissionProductDiagnostics.observe?.({column:u,donor:d.column,cap,lo:d.lo,range:d.range,reference:h,donorPosition:q,readPosition:p});return result;
  };
- return Object.assign(correction,{seed:(x:number[])=>{for(const group of groups.values())for(const d of group.values())x[d.column]=-d.lo;for(const s of seeds)x[s.u]=s.cap.reduce((v,[i,w])=>v+w*x[i],0)*x[s.column];}});
+ return Object.assign(correction,{products:()=>seeds as readonly{u:number;cap:LinearTerm[];column:number}[],seed:(x:number[])=>{for(const group of groups.values())for(const d of group.values())x[d.column]=-d.lo;for(const s of seeds)x[s.u]=s.cap.reduce((v,[i,w])=>v+w*x[i],0)*x[s.column];}});
 }

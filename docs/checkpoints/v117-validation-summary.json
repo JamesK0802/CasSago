@@ -1,0 +1,41 @@
+{
+  "algorithmVersion": "sanger-marginals-v117-stable-photon-refinement",
+  "scientificAcceptance": false,
+  "nativeDevelopmentPanel": {
+    "scope": "POST-INFERENCE comparison. No interval/alternative credit or new PASS cutoff.\n\nMetrics: maximum reportable length-bin error; pooled molecular base TV across\ncut +/-25; conditional length-family base TV at reportable >=2% families;\nliteral default local-DNA recovery, WT included. Reverse coordinates follow the\nexisting benchmark mapping. Individual DNA identity is not an ambiguity proof.\n",
+    "cases": 62,
+    "medianNativeSeconds": 1.7851469374999942,
+    "maximumNativeSeconds": 3.677256625000002,
+    "aggregateBaseErrorImproved": 62,
+    "conditionalBaseErrorImproved": 62,
+    "exactDefaultGroupsIncreasedCases": 10,
+    "exactDefaultGroupsDecreasedCases": 5,
+    "totalExactDefaultGtGroupsBefore": 245,
+    "totalExactDefaultGtGroupsAfter": 251,
+    "meanAggregateBaseTVPpBefore": 0.058599054387320264,
+    "meanAggregateBaseTVPpAfter": 0.020615852803554074,
+    "meanConditionalBaseTVPpBefore": 3.1024118633997717,
+    "meanConditionalBaseTVPpAfter": 3.078266668200446,
+    "maximumLengthErrorPpBefore": 0.04397701344495131,
+    "maximumLengthErrorPpAfter": 0.047554233985536154
+  },
+  "caveats": [
+    "Numeric inference source frozen before generation. The later dominant-SNP marker/display repair changes reporting only; literal DNA counts in the panel/holdout files predate that repair and are not final UI scores. No retuning of inference after GT scoring.",
+    "Group sequence recovery remains partial. GT retrieval blue is not accuracy PASS. Full legacy test suite is not green.",
+    "Native timings are not browser timings; final actual-browser comparison still required.",
+    "Only three selected ambiguity positions have explicit raw waveform counterexamples; do not generalize to all differences."
+  ],
+  "sourceSha256": {
+    "src/app/workers/core/sanger-representative-selection.ts": "60234e23054722e570f96ab29051839061038e25349cb28d174d3b937f471e90",
+    "src/app/workers/core/sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a",
+    "src/app/workers/core/sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
+    "src/app/workers/core/sanger-marginal-point-report.ts": "0550051387e17fb1b5ba9fe8aa6ea47d64b35702b5e9ce4b8315b24e400664f6",
+    "src/app/workers/core/sanger-marginal-group-bounds.ts": "89f5069c3534abeea90908de27b26b71d7fbfeb0a5993273de3a43664ae9a110",
+    "src/app/workers/core/sanger-marginal-engine.ts": "f0b93a4fde27bc7b2d7f900fe867e594a82c7d10c9aa22e1ec033940b2972f79"
+  },
+  "next": [
+    "Resolve distinguishable single group-DNA and substitution-carrier errors.",
+    "Compare matched measured results; retain signal QC separately.",
+    "Multiplex deferred until single results are informative."
+  ]
+}
