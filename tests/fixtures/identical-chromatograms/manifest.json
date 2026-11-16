@@ -21,6 +21,25 @@
       "primerLength": 20,
       "positionOneBased": 173,
       "scope": "Explicit different finite synthetic DNA populations, all raw channels/PBAS/PLOC identical. No engine output or GT used for inference."
+    },
+    {
+      "id": "sub-with-12-indels",
+      "names": [
+        "baseline",
+        "alternative"
+      ],
+      "primerLength": 20,
+      "positionOneBased": 191,
+      "globalSubMass": 500,
+      "subCarrierMassByName": {
+        "baseline": {
+          "0": 500
+        },
+        "alternative": {
+          "6": 500
+        }
+      },
+      "scope": "Global Sub remains5%; carrier moves from length0 to+6 with identical actual original raw channels, no indel mass or placement change."
     }
   ]
 }

@@ -42,7 +42,10 @@ export function summarizeMarginalPoint(model:MarginalModel,point:number[],displa
     // every position marginal without claiming pure WT/SNP haplotypes.
     const baseline=(position:number)=>DNA.indexOf(ref.input.sequence[position+group.baselineReadOffset!]);
     const mixed=group.bases.filter(p=>{const b=baseline(p.position);return b>=0&&1-p.estimate[b]>1e-5;});
-    if(mixed.length===0)group.unmodifiedEstimate=group.fraction;
+    // This fitted-marginal WT lower amount exists even when several major
+    // SNP sites prevent a marker partition. Missing linkage must not turn
+    // the engine's WT lower amount into an implicit zero via a missing field.
+    group.unmodifiedEstimate=Math.max(0,group.fraction*(1-mixed.reduce((n,p)=>n+1-p.estimate[baseline(p.position)],0)));
     const reportable=mixed.filter(p=>group.fraction*(1-p.estimate[baseline(p.position)])+1e-12>=displayThreshold/100),site=reportable.length===1?reportable[0]:mixed.length===1?mixed[0]:undefined;
     if(site){
      const mixture=mixed.length>1;
@@ -51,9 +54,6 @@ export function summarizeMarginalPoint(model:MarginalModel,point:number[],displa
       const events=group.bases.flatMap(p=>{const base=p.position===site.position?b:p.estimate.indexOf(Math.max(...p.estimate)),position=p.position+group.baselineReadOffset!;return base===baseline(p.position)?[]:[{target:group.target,start:position,end:position+1,inserted:1,insertedSequence:DNA[base]}];}).sort((a,b)=>a.start-b.start);
       return[{rangeStatus:'estimated',id:g.id+'::base:'+b,fraction:group.fraction*v,fractionRange:[0,1],events,mixture,selection:{marker:{position:ref.reverse?ref.input.sequence.length-ref.offset-site.position-1:site.position-ref.offset,bases:[ref.reverse?3-b:b]}},bases:group.bases.map(p=>({...p,estimate:p.position===site.position?[0,1,2,3].map(j=>Number(j===b)):p.estimate}))}];
      });
-     // Conservative WT amount within the FITTED marginal allocation (not a
-     // full-model confidence bound); additional SNP linkage remains unknown.
-     group.unmodifiedEstimate=Math.max(0,group.fraction*(1-mixed.reduce((n,p)=>n+1-p.estimate[baseline(p.position)],0)));
     }
    }
    return group;

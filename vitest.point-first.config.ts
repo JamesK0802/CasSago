@@ -14,6 +14,7 @@ export default defineConfig({test:{maxWorkers:2,include:[
  'tests/core/sanger-marginal-domain.spec.ts',
  'tests/core/sanger-raw-signal-identifiability.spec.ts',
  'tests/ui/sanger-point-first-display.spec.ts',
+ 'tests/ui/sanger-global-substitution-display.spec.ts',
  'tests/ui/sanger-ambiguous-base-table.spec.ts',
  'tests/ui/sanger-local-alternatives.spec.ts',
  'tests/ui/sanger-truth-result.spec.ts',

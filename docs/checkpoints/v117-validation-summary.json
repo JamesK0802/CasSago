@@ -29,7 +29,7 @@
     "src/app/workers/core/sanger-representative-selection.ts": "60234e23054722e570f96ab29051839061038e25349cb28d174d3b937f471e90",
     "src/app/workers/core/sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a",
     "src/app/workers/core/sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
-    "src/app/workers/core/sanger-marginal-point-report.ts": "0550051387e17fb1b5ba9fe8aa6ea47d64b35702b5e9ce4b8315b24e400664f6",
+    "src/app/workers/core/sanger-marginal-point-report.ts": "fc01dc2568622801080e63ec87ae4e34d972b36bf8975c2daf0297c89ea653a8",
     "src/app/workers/core/sanger-marginal-group-bounds.ts": "89f5069c3534abeea90908de27b26b71d7fbfeb0a5993273de3a43664ae9a110",
     "src/app/workers/core/sanger-marginal-engine.ts": "f0b93a4fde27bc7b2d7f900fe867e594a82c7d10c9aa22e1ec033940b2972f79"
   },
@@ -37,5 +37,26 @@
     "Resolve distinguishable single group-DNA and substitution-carrier errors.",
     "Compare matched measured results; retain signal QC separately.",
     "Multiplex deferred until single results are informative."
-  ]
+  ],
+  "reportingFollowup": {
+    "scope": "No physical fit/candidate/noise/GT change. Correct global-versus-class0 Sub metric and multiple-SNP fitted WT lower amount.",
+    "globalSubEnvelope": [
+      0.04839642457456462,
+      0.06773986928024439
+    ],
+    "globalSubZeroFeasible": false,
+    "nativeGlobalSubDetailSeconds": 12.044169792,
+    "explicitSubCarrierAlias": "Global5% Sub moved from length0 to+6 with identical original raw DATA/PBAS/PLOC. Length-class masses unchanged.",
+    "focusedTestsPassed": 78,
+    "focusedTestFiles": 18,
+    "productionBuildPassed": true
+  },
+  "sourceSha256BeforeReportingFollowup": {
+    "src/app/workers/core/sanger-representative-selection.ts": "60234e23054722e570f96ab29051839061038e25349cb28d174d3b937f471e90",
+    "src/app/workers/core/sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a",
+    "src/app/workers/core/sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
+    "src/app/workers/core/sanger-marginal-point-report.ts": "0550051387e17fb1b5ba9fe8aa6ea47d64b35702b5e9ce4b8315b24e400664f6",
+    "src/app/workers/core/sanger-marginal-group-bounds.ts": "89f5069c3534abeea90908de27b26b71d7fbfeb0a5993273de3a43664ae9a110",
+    "src/app/workers/core/sanger-marginal-engine.ts": "f0b93a4fde27bc7b2d7f900fe867e594a82c7d10c9aa22e1ec033940b2972f79"
+  }
 }

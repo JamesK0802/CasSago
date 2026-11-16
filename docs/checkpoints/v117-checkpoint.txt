@@ -11,3 +11,9 @@ Portable identical-chromatogram fixtures prove three selected ambiguities.5indel
 Run npm run test:point-first and npm run build for this checkpoint. The retained historical release suite has known failures; this branch is an experimental checkpoint, not a release or a claim of full accuracy. Main-branch Pages deployment was not triggered.
 
 Checkpoint packaging validation:75 tests in17 focused files passed in the isolated Git tree; actual production build passed. Runtime licenses retained; package-lock dependency parity checked.
+
+Follow-up: global5% Sub versus carrier ambiguity is independently verified using explicit finite DNA. A length0 C->G Sub can move entirely to+6 molecules at the same read cycle while all original raw ABI channels/PBAS/PLOC remain identical. Global Sub mass remains5%; this is NOT evidence that global Sub0% fits. Current optional all-length model envelope4.8396-6.7740%, zero excluded, extra native detail12.04s after basic fit2.04s.
+
+Reporting fixes: multiple major SNP sites no longer omit the conservative fitted WT lower amount. The all-length Sub metric no longer falls back to a class0-only SNP number/range; until a global measurement exists it shows unavailable. No new inference restriction, fit objective, model noise or scientific cutoff. Group annotation layout unchanged.
+
+Follow-up packaged validation:78 tests in18 focused files passed; actual production build passed.
