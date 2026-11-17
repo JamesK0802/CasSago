@@ -160,3 +160,9 @@ fresh post-fix domains, and certify those actual domains anew at the unchanged
 
 ## Explicit checkpoint authorization (2026-11-17)
 User requested Git push before continuing. This authorizes the WIP checkpoint branch, without asserting scientific PASS. Single-first validation remains active.
+
+## User clarification: Sub representative blocks (2026-11-17)
+- WT being the largest group does NOT mean maximizing WT by overlapping otherwise separate Sub patterns. Do not revive the rejected maximal-WT display convention.
+- User example:adjacent -3..0 at10% and1..3 at20% must be separate representative10%/20% blocks, not a long10% block plus another10% remainder. Same-fraction contiguous sites can share a block; spatially separated or differing-fraction blocks stay separate in the representative where a disjoint partition is feasible. If their total exceeds the family, retain the unresolved mixture rather than discard signal.
+- This is a representative-display rule, not measured phasing or an inference constraint. Preserve every parent fitted proportion, all original hypotheses/constraints and unresolved overlap ranges/alternatives. Selected alternatives remain10/page.
+- Selected WT is the all-WT subset; a WT marker at one position is not equivalent to no Sub elsewhere. Keep global all-length Sub separate from selected class0 Sub.

@@ -2,6 +2,7 @@ import type {SangerAnalysisResult,SangerMarginalGroup} from '../../models/sanger
 import {marginalSessions} from './sanger-marginal-state';
 import {MarginalLinearSolver,type LinearTerm} from './sanger-marginal-lp';
 import {zeroLengthCompositionBounds} from './sanger-zero-length-composition';
+import {boundMarginalSubstitutionMass} from './sanger-marginal-substitution';
 import {nonnegativeBudgetEnvelope} from './sanger-nonnegative-budget-envelope';
 import {tightenBaseBudgetBounds} from './sanger-base-budget-bounds';
 import {jointBoundCertificates} from './sanger-joint-bound-certificate';
@@ -19,9 +20,18 @@ export function marginalGroupBounds(result:SangerAnalysisResult,groupId:string,p
  const started=performance.now(),session=marginalSessions.get(result);
  if(!session)throw Error('Analyze the original traces before requesting group ranges.');
  const parent=result.marginalGroups?.find(g=>g.id===groupId||g.displayComponents?.some(c=>c.id===groupId)),child=parent?.displayComponents?.find(c=>c.id===groupId),marker=child?.selection.marker;
- if(!parent||child&&!marker)throw Error('Select a length family or a base-marker group for feasible range calculation.');
+ if(!parent||child&&!marker&&!child.selection.unmodified)throw Error('Select a length family or a base-marker group for feasible range calculation.');
  if(child?child.rangeStatus==='bounded':parent.status==='bounded')return{group:parent,complete:true,seconds:0,completedCoordinates:parent.bases.length,totalCoordinates:parent.bases.length};
  const target=session.targets.find(t=>t.groups.some(g=>g.id===parent.id))!,g=target.groups.find(g=>g.id===parent.id)!,ref=session.refs[g.reference],share=session.shares[g.reference],childEstimates=new Map(child?.bases.map(p=>[p.position,p.estimate]));
+ // A WT representative is the zero-departure molecular subset, not merely
+ // the baseline nucleotide at one marker. Use the SAME selected union model.
+ if(child?.selection.unmodified){
+  if(timeSliceSeconds<=0)return{complete:false,seconds:0,completedCoordinates:0,totalCoordinates:parent.bases.length};
+  const solver=new MarginalLinearSolver({...target.program,localBlocks:undefined},session.optimizer);
+  try{const mass=solver.bounds(g.mass),budgetRow=target.program.dualHint?.budgetRow,budget=budgetRow===undefined?share:target.program.rows[budgetRow].upper,sub=boundMarginalSubstitutionMass(target,session.refs,session.shares,session.optimizer,progress,new Set([g.id])),composition=zeroLengthCompositionBounds(mass,budget,share,[sub.lower[g.reference],sub.upper[g.reference]]);
+   child.fractionRange=composition.unmodifiedRange;child.bases=child.bases.map(p=>({...p,lower:p.estimate.slice(),upper:p.estimate.slice()}));child.rangeStatus='bounded';return{group:parent,complete:true,seconds:(performance.now()-started)/1000,completedCoordinates:child.bases.length,totalCoordinates:child.bases.length};
+  }finally{solver.dispose();}
+ }
  let map=queries.get(result);if(!map){map=new Map();queries.set(result,map);}let query=map.get(groupId);
  // One warm joint linear proposal retains all coordinates. Only an incomplete
  // proposal falls back to a certified full original-model solve.
@@ -56,7 +66,7 @@ export function marginalGroupBounds(result:SangerAnalysisResult,groupId:string,p
   const complete=query.index===positions.length;query.seconds+=(performance.now()-started)/1000;
   if(complete){
    query.group.status='bounded';query.group.boundMethod='certified-outer-envelope';
-   if(!g.size&&!child){const budgetRow=target.program.dualHint?.budgetRow,budget=budgetRow===undefined?0:target.program.rows[budgetRow].upper;Object.assign(query.group,zeroLengthCompositionBounds(query.mass,budget,share));}
+   if(!g.size&&!child){const budgetRow=target.program.dualHint?.budgetRow,budget=budgetRow===undefined?share:target.program.rows[budgetRow].upper;const sub=boundMarginalSubstitutionMass(target,session.refs,session.shares,session.optimizer,progress,new Set([g.id]));Object.assign(query.group,zeroLengthCompositionBounds(query.mass,budget,share,[sub.lower[g.reference],sub.upper[g.reference]]));}
    if(child){child.rangeStatus='bounded';child.bases=query.group.bases;child.fractionRange=query.group.fractionRange;}
    else{
    // Enrich only this family's report; do not refit or replace its point.

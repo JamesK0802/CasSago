@@ -45,6 +45,7 @@ function candidate(s:Search,node:Node,x:number[]):SangerMarginalCandidate|null{
  for(const[p,base]of word){if(p>=e.start+e.incoming&&p<e.start+e.incoming+Math.max(0,e.size))continue;const at=p<e.start+e.incoming?p-e.incoming:p-e.outgoing;if(base!==ref.sequence[at])events.push({start:at,end:at+1,inserted:base});}
  events.sort((a,b)=>a.start-b.start||a.end-b.end);if(!materialize(ref.sequence,events))throw Error('Inconsistent selected-group sequence');
  if(s.onlySub&&!events.length)return null;
+ if(s.selection?.unmodified&&events.length)return null;
  if(s.selection?.marker){const m=s.selection.marker,b=word.has(m.position)?DNA.indexOf(word.get(m.position)!):fixedBase(s,e,m.position);if(!m.bases.includes(b))return null;}
  if(s.selection?.origins&&!s.selection.origins.some(o=>o.edge===node.edge&&(!o.marker||DNA.indexOf(word.get(o.marker.position)||DNA[fixedBase(s,e,o.marker.position)])===o.marker.base)))return null;
  const inputEvents=events.map(event=>marginalInputEvent(ref,event.start,event.end,event.inserted,e.target)),key=sangerSequenceKey(ref.input.sequence,inputEvents);if(s.seen.has(key))return null;
@@ -64,7 +65,7 @@ function seedBound(s:Search,node:Node){const e=s.group.edges[node.edge],free=s.f
  * A time slice retains the frontier and returns incomplete, not "exhausted". */
 export function marginalAlternativePage(result:SangerAnalysisResult,groupId:string,cursor=0,progress:(s:string)=>void=()=>{},timeSliceSeconds=20):SangerMarginalPage{
  const started=performance.now();if(!Number.isInteger(cursor)||cursor<0)throw Error('Invalid alternative cursor.');const session=marginalSessions.get(result);if(!session)throw Error('The measured analysis session is unavailable. Analyze the original traces before requesting alternatives.');const owner=result.marginalGroups?.find(g=>g.displayComponents?.some(c=>c.id===groupId)),child=owner?.displayComponents?.find(c=>c.id===groupId),parentId=owner?owner.id:groupId.endsWith('::sub')?groupId.slice(0,-5):groupId,target=session.targets.find(t=>t.groups.some(g=>g.id===parentId)),group=target?.groups.find(g=>g.id===parentId);if(!target||!group)throw Error('Select an existing reference/target length group.');
- let s=session.pages.get(groupId)as Search|undefined;if(!s){s=createSearch(session,target,group);s.onlySub=groupId.endsWith('::sub');s.selection=child?.selection;session.pages.set(groupId,s);}if(cursor>s.candidates.length)throw Error('Alternative cursor is beyond the computed frontier.');const wanted=cursor+PAGE_SIZE;let incomplete=false,message:string|undefined;
+ let s=session.pages.get(groupId)as Search|undefined;if(!s){s=createSearch(session,target,group);s.onlySub=groupId.endsWith('::sub');s.selection=child?.selection;if(s.selection?.unmodified){s.free=group.edges.map(()=>[]);s.proposalIndex=s.coordinates.length*4;}session.pages.set(groupId,s);}if(cursor>s.candidates.length)throw Error('Alternative cursor is beyond the computed frontier.');const wanted=cursor+PAGE_SIZE;let incomplete=false,message:string|undefined;
  const expired=()=>performance.now()-started>=timeSliceSeconds*1000;
  try{
   while(s.candidates.length<wanted&&!s.exhausted){

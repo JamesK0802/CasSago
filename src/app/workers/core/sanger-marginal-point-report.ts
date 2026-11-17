@@ -3,6 +3,7 @@ import type {MarginalModel} from './sanger-marginal-model';
 import {fittedMarginalRepresentative} from './sanger-marginal-representative';
 import {marginalInputEvent} from './sanger-marginal-state';
 import type {LinearTerm} from './sanger-marginal-lp';
+import {substitutionBlockDisplay} from './sanger-substitution-block-display';
 const DNA='ACGT';
 /** No optimization or candidate enumeration. These are estimates from the
  * existing jointly fitted allocation, not bounds or phased DNA abundances.
@@ -41,6 +42,8 @@ export function summarizeMarginalPoint(model:MarginalModel,point:number[],displa
     // their full conditional estimates on BOTH mixture rows. This conserves
     // every position marginal without claiming pure WT/SNP haplotypes.
     const baseline=(position:number)=>DNA.indexOf(ref.input.sequence[position+group.baselineReadOffset!]);
+    const blocks=substitutionBlockDisplay(group,baseline,p=>ref.reverse?ref.input.sequence.length-ref.offset-p-1:p-ref.offset,ref.reverse,(model.noise||0)/share,displayThreshold/100);
+    if(blocks){group.displayComponents=blocks.components;group.unmodifiedEstimate=blocks.unmodifiedEstimate;return group;}
     const mixed=group.bases.filter(p=>{const b=baseline(p.position);return b>=0&&1-p.estimate[b]>1e-5;});
     // This fitted-marginal WT lower amount exists even when several major
     // SNP sites prevent a marker partition. Missing linkage must not turn

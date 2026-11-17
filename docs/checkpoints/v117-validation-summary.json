@@ -35,10 +35,10 @@
     "src/app/workers/core/sanger-conditional-ratio-envelope.ts": "a2b6370ee69bf6c65fc846eb91fea54196ea2be3ace712a05ca0552ce0ef2610"
   },
   "next": [
-    "Single synthetic scientific acceptance remains undecided: quantify remaining informative/identifiable profile discrepancies; GT coverage alone is not PASS.",
-    "Matched single measured profiles on public raw AB1; new carrot data prepared with genuine paper guides/PCR primers and NCBI reference.",
-    "Final browser result-equivalence and timing after Mac unlock/local browser enable.",
-    "Only then multi synthetic and measured, requiring matched standalone profiles."
+    "Continue SINGLE informative uncertainty and matched measured profile/model adequacy; real measured minor-indel splatter not excused by ICE disagreement or broad intervals.",
+    "Preserve fraction-segmented Sub representatives, all exact parent points, full alternatives and GT posthoc-only separation.",
+    "Final browser result-equivalence/timing after Mac unlock/browser enable; no native timing labelled web.",
+    "Only after single scientific validation, proceed multi synthetic and measured with matched standalone profile agreement."
   ],
   "reportingFollowup": {
     "scope": "No physical fit/candidate/noise/GT change. Correct global-versus-class0 Sub metric and multiple-SNP fitted WT lower amount.",
@@ -849,5 +849,157 @@
         ]
       }
     ]
+  },
+  "selectedZeroLengthCompositionFix": {
+    "state": "complete",
+    "scope": "Actual proposed production union helper on62 freshly reconstructed common original model instances, selected length0 only. Does not replace all-length globalSub. Inference, original program and fitted outputs unchanged. GT only after reporting freeze.",
+    "cases": 62,
+    "gtEnvelopeMisses": [],
+    "changes": [
+      {
+        "id": "boundary-compound-forward",
+        "before": {
+          "unmodifiedRange": [
+            0.48199636881473273,
+            0.7499323103966011
+          ],
+          "substitutionRange": [
+            0,
+            0.2676885045244468
+          ]
+        },
+        "after": {
+          "unmodifiedRange": [
+            0.7303415246921454,
+            0.7499323103966011
+          ],
+          "substitutionRange": [
+            0,
+            0.019343348647034138
+          ]
+        },
+        "truthAfterFreeze": {
+          "wt": 0.75,
+          "sub": 0
+        }
+      }
+    ],
+    "nativeSelectedCompositionMedianSeconds": 1.4341845415000025,
+    "nativeSelectedCompositionMaximumSeconds": 4.7650885,
+    "globalSummaryParityCases": [
+      "fresh-single-12-b-sub",
+      "isolated-5-0-0",
+      "sub-with-12-indels"
+    ],
+    "sourceHashes": {
+      "sanger-marginal-substitution.ts": "8c69a99750d7d0795bc70b6896c3a79531239c1843c2dda241e28375a20fb8cf",
+      "sanger-zero-length-composition.ts": "30b00c4a94ba4117b51cbd3db986b9feb9f087f1742a2f11189065606542679e"
+    }
+  },
+  "unprovenWideFullOriginalAudit": {
+    "state": "complete",
+    "scope": "All1187 previously unproved broad coordinates selected from frozen report widths without GT. Original full-conic feasible-domain endpoints certified; NOT identical raw ABI proof, statistical CI, all-endpoints joint genotype or scientificPASS. GT read only for aggregation after all endpoint reports completed.",
+    "cases": 61,
+    "coordinates": 1187,
+    "endpoints": 2374,
+    "modelBothZeroAndOneAttained": 1156,
+    "otherCoordinates": 31,
+    "maximumReportTighteningPp": 0.8094807246696041,
+    "maximumOriginalPrimalViolation": 1.9195742646217204e-12,
+    "maximumOriginalGlobalGap": 1.0382214376408738e-08,
+    "medianNativeObjectiveSeconds": 0.6081860834999897,
+    "gtEnvelopeMisses": [],
+    "sourceHashes": {
+      "sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
+      "sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a",
+      "sanger-marginal-group-bounds.ts": "8a5b87bfcf4f3fddafb23819f59a584d0b173242468e9444361159e643b23e35"
+    }
+  },
+  "fractionSegmentedSubstitutionRepresentatives": {
+    "state": "complete-checkpoint-not-overall-scientific-pass",
+    "scope": "Common inference model unchanged. Fraction-segmented representative display only, preserving original parent points, ALL hypotheses, full-model on-demand ranges and10/page alternatives. No GT or synthetic/count-specific selector. No UI layout edits.",
+    "rule": "Adjacent equal-resolution Sub sites may form one representative block. Different fraction levels or separated positions remain distinct representative blocks. Prefer disjoint block populations where their total fits the family; otherwise retain the unresolved parent mixture. Never maximize WT by creating nested compound profiles. Representative blocks do not prove molecular linkage.",
+    "userExample": {
+      "trueFractionsPercent": {
+        "wt": 70,
+        "minus3Through0": 10,
+        "plus1Through3": 20
+      },
+      "nativeFractionsPercent": {
+        "wt": 70.11109141039196,
+        "minus3Through0": 9.9447,
+        "plus1Through3": 19.9195
+      },
+      "defaultNestedLongProfile": false
+    },
+    "originalPanel": {
+      "state": "complete",
+      "cases": 62,
+      "allOriginalParentFractionsAndBasePointEstimatesExactlyUnchanged": true,
+      "maximumDisplayMarginalConservationError": 2.8727020762175925e-13,
+      "nativeFitMedianSeconds": 2.4363451245,
+      "nativeFitMaximumSeconds": 5.0899509169999995,
+      "scope": "Six concurrent native default-output regression, not cold browser timings or overall scientificPASS; no GT read.",
+      "sourceHashes": {
+        "sanger-marginal-point-report.ts": "ffa0f7fd37ac60cb5ffde470bcdbfe0410c44389234ae99eae2e211523329f0b",
+        "sanger-substitution-block-display.ts": "fc0a721a04e476e9b2c66f4f762847b9fc3b433ebcffe839e14290bb686ca479",
+        "sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
+        "sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a"
+      }
+    },
+    "freshValidation": {
+      "cases": 7,
+      "sourceFrozenBeforeInputGeneration": true,
+      "gtRangeMisses": 0,
+      "actualGtUiBlue": 7,
+      "actualWrongGtNegativeControlRejectedAndRed": true,
+      "rawIdenticalPairsInitiallyBlind": 3,
+      "posthocAdditionalRawIdenticalWitness": "Zero WT with seven separate single-base Sub populations has same raw input as user70%WT structured-block population; fourth portable raw pair. Not an inference assumption or new blind benchmark."
+    },
+    "existingHoldout": {
+      "cases": 6,
+      "counts": [
+        5,
+        6,
+        12
+      ],
+      "subTitration": [
+        0,
+        1,
+        5,
+        10
+      ],
+      "actualGtUiBlue": 6,
+      "wrongGtNegativeControlRejectedAndRed": true
+    },
+    "selectedDetail": {
+      "nativeFitSeconds": 1.965279834,
+      "nativeWtRangeSeconds": 2.368454292,
+      "nativeSubBlockRangeSeconds": 26.803495666,
+      "nativeWtAlternativesSeconds": 4.031106292,
+      "nativeSubBlockTenAlternativesSeconds": 1.281213084,
+      "subCandidatesInFirstPage": 10,
+      "cooccurrenceAlternativesRetainedInFirstPage": true,
+      "allReturnedOriginalModelWitnessesValidated": true,
+      "otherDisplayRowsAndParentPointsUnchanged": true,
+      "scope": "Actual production APIs with native backend. Not browser timing, not default whole-model enumeration."
+    },
+    "checks": {
+      "tests": 132,
+      "testFiles": 28,
+      "productionBuild": "passed"
+    },
+    "rejectedExperiment": "Maximal-WT global coupling rule was NOT adopted, is removed from active source and will not be pushed; private archive dev-accel/rejected-max-wt-display-20261117. Its129test/9case reports describe an archived convention, not active source.",
+    "remaining": "SINGLE overall scientific acceptance unfinished. Measured single model/indel-splatter discrepancy and remaining uncertainty calibration/identifiability require work. Multiplex deferred. Final browser result/timing blocked by Mac lock and disabled browser; previous user request pending.",
+    "sourceSha256": {
+      "sanger-substitution-block-display.ts": "fc0a721a04e476e9b2c66f4f762847b9fc3b433ebcffe839e14290bb686ca479",
+      "sanger-marginal-point-report.ts": "ffa0f7fd37ac60cb5ffde470bcdbfe0410c44389234ae99eae2e211523329f0b",
+      "sanger-marginal-alternatives.ts": "9c106d349c7f0de47d859f6fb656dd2dde16c960757ab58b0daed84c4ad35eb9",
+      "sanger-marginal-group-bounds.ts": "4ae1b7db8eb3e4472f696924cb09e54b4e90dcd818705c4fa3490d31162d3a78",
+      "sanger-marginal-substitution.ts": "8c69a99750d7d0795bc70b6896c3a79531239c1843c2dda241e28375a20fb8cf",
+      "sanger-zero-length-composition.ts": "30b00c4a94ba4117b51cbd3db986b9feb9f087f1742a2f11189065606542679e",
+      "sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
+      "sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a"
+    }
   }
 }

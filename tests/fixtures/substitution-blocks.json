@@ -1,0 +1,252 @@
+{
+  "scope": "Seven fresh synthetic representative-display recipes plus one POSTHOC raw-alias witness. Four coupling pairs have different molecular linkage/WT amounts but identical original raw fluorescence, PBAS and PLOC. GT is validation only, never an inference prior.",
+  "reference": "TGTCTCGCTGACATACACTGAAGCTCGTATGGACACTCTTTTCGCCAACACAGTTCGAGAGTGATGGCTAACCTACGCAAGGATTTCTGGTTAAAAGCCTGTCCCGGATAGGATGACTAACAAGAAACATTGAATCTGCATGCCGCAATCCCGCTTACCATCGGTGCGCATCACCCAATCCAGGTAGGCTATATTCTGTTAAGTGGGAGTCGCAAGGGTTATGAGGGCCCAGGAGCTGTATATGACACGTTTAATCGTGAAGGAACGGCCAGTACATGGGTGCCCCAGGATCGTACCAACTGACTTCCGTTTGTTGCTGAAGCCCTATGAAGCGCAGTATGGCAGCATTCTATGGGCACACATTGCTACGGACACGTCCTAGATATTAGATGTCAGTTTCATAAGCTGTGCGATCACGTAGATAATAGAATCGGGACGTTGCCGTGCCGCATGGAAACACGAGTGACTTACCGCTCACAATGGCAGTCTCTGGGGTCCCGGGCTTGCTTCACCTAGTTAACTGTTCAAGGTGGGCATAGTGTCTATACGCGTGGATCCGTCAGATCTTGGAGCACACCCAGCATTTAGACCTCTGTGCTGAGACTGAGAGTGCTCAATCTTGAGCCACGTATTTACAAAACTGGGTCTGA",
+  "cut": 220,
+  "primerLength": 20,
+  "cycles": 560,
+  "cases": [
+    {
+      "id": "requested-disjoint",
+      "parts": [
+        {
+          "percent": 70,
+          "offsets": []
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            -3,
+            -2,
+            -1,
+            0
+          ]
+        },
+        {
+          "percent": 20,
+          "offsets": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "requested-nested",
+      "parts": [
+        {
+          "percent": 80,
+          "offsets": []
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            -3,
+            -2,
+            -1,
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "equal-adjacent-one",
+      "parts": [
+        {
+          "percent": 90,
+          "offsets": []
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            -3,
+            -2,
+            -1,
+            0,
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "equal-adjacent-two",
+      "parts": [
+        {
+          "percent": 80,
+          "offsets": []
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            -3,
+            -2,
+            -1,
+            0
+          ]
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "equal-separated-two",
+      "parts": [
+        {
+          "percent": 80,
+          "offsets": []
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            -5,
+            -4,
+            -3
+          ]
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "equal-separated-one",
+      "parts": [
+        {
+          "percent": 90,
+          "offsets": []
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            -5,
+            -4,
+            -3,
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "required-overlap",
+      "parts": [
+        {
+          "percent": 20,
+          "offsets": []
+        },
+        {
+          "percent": 70,
+          "offsets": [
+            -3,
+            -2,
+            -1,
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            -3,
+            -2,
+            -1,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "requested-scattered-posthoc-alias",
+      "parts": [
+        {
+          "percent": 10,
+          "offsets": [
+            -3
+          ]
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            -2
+          ]
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            -1
+          ]
+        },
+        {
+          "percent": 10,
+          "offsets": [
+            0
+          ]
+        },
+        {
+          "percent": 20,
+          "offsets": [
+            1
+          ]
+        },
+        {
+          "percent": 20,
+          "offsets": [
+            2
+          ]
+        },
+        {
+          "percent": 20,
+          "offsets": [
+            3
+          ]
+        }
+      ],
+      "scope": "POSTHOC explicit raw-alias proof, not a new blind benchmark or inference prior. Zero WT with seven separate one-base substituted molecular populations."
+    }
+  ],
+  "rawIdenticalPairs": [
+    [
+      "requested-disjoint",
+      "requested-nested"
+    ],
+    [
+      "equal-adjacent-one",
+      "equal-adjacent-two"
+    ],
+    [
+      "equal-separated-one",
+      "equal-separated-two"
+    ],
+    [
+      "requested-disjoint",
+      "requested-scattered-posthoc-alias"
+    ]
+  ]
+}
