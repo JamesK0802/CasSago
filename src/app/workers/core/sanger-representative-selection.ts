@@ -62,9 +62,37 @@ export function selectMarginalRepresentative(program:MarginalProgram,point:numbe
  context.diagnostics?.({program:p,anchor,photonForms,originalColumns:program.upper.length,proximityQuadraticCount:proximityForms.length});
  const finish=(x:number[],minimum:number,lower:number,certificate:string,solver?:MarginalLinearSolver['diagnostics'])=>({point:x.slice(0,program.upper.length),summary:{method:'noise-regularized-sequence-flow' as const,before,minimum,lower,beforeBurden,afterBurden:burden(x),noise:context.noise,photonRows:photonForms.length,beforePhotonLoss:photonForms.reduce((s,f)=>s+dot(f,point)**2,0),afterPhotonLoss:photonForms.reduce((s,f)=>s+dot(f,x)**2,0),baseFlowStabilization:proximityForms.length,afterProximityLoss:proximityForms.reduce((s,f)=>s+dot(f,x)**2,0),substitutionOpportunities:context.substitutionOpportunities,phaseSquaredDistance:context.phaseSeed.reduce((s,v)=>s+(x[v.column]-v.value)**2,0),incrementSquaredDeviation:prior.forms.reduce((s,f)=>s+dot(f,x)**2,0),seconds:(performance.now()-started)/1000,certificate,solver}});
  if(before<=1e-7)return finish(anchor,before,0,'nonnegative-box-bound');
- const solver=new MarginalLinearSolver(p,optimizer);solver.setTimeSlice(600);try{const answer=solver.solveToCompletion();
+ const solver=new MarginalLinearSolver(p,optimizer);solver.setTimeSlice(600);try{let certifiedLower: number | undefined;
+ let answer: { x: number[]; value: number };
+ try { answer = solver.solveToCompletion(); }
+ catch (error) {
+  const candidate = solver.rejectedConicPoint();
+  if (!candidate) throw error;
+  const gradient = p.cost.slice();
+  let intercept = 0;
+  for (const form of p.quadraticCost || []) {
+   const residual = dot(form, candidate.x);
+   intercept -= residual * residual;
+   for (const [i, weight] of form) gradient[i] += 2 * residual * weight;
+  }
+  const bound = new MarginalLinearSolver(
+   { ...p, rows: p.rows.slice(), quadraticCost: undefined, cost: gradient,
+     localBlocks: undefined, originPricing: undefined },
+   { ...optimizer, conic: undefined },
+  );
+  try {
+   bound.setTimeSlice(15);
+   bound.solve();
+   const linearLower = bound.objectiveLowerBound();
+   if (linearLower === undefined) throw error;
+   certifiedLower = linearLower + intercept - 128 * Number.EPSILON * (1 + Math.abs(intercept));
+   if (Math.abs(candidate.value - certifiedLower) > 1e-7)
+    throw Error('Independent tangent lower bound gap: ' + (candidate.value - certifiedLower));
+   answer = { x: candidate.x.slice(), value: candidate.value };
+  } finally { bound.dispose(); }
+ }
  // Rebuild private residual identities from physical columns before checking
  // the ORIGINAL objective and global lower bound. Never certify a rounded
  // auxiliary objective as the molecular objective. No physical column changes.
- for(const row of prior.rows)answer.x[row.terms[0][0]]=-row.terms.slice(1).reduce((sum,[i,w])=>sum+w*answer.x[i],0);for(const a of photonAux){const residual=dot(a.form,answer.x);answer.x[a.positive]=Math.max(0,residual);answer.x[a.negative]=Math.max(0,-residual);}const minimum=objective(answer.x),lower=solver.objectiveLowerBound(),x=answer.x.slice(0,program.upper.length);if(!validMarginalSolution(program,x)||!validMarginalSolution(p,answer.x)||lower===undefined||Math.abs(minimum-lower)>1e-7)throw Error('Representative selection did not certify its original model and global objective.');return finish(answer.x,minimum,lower,'original-primal-and-global-dual',solver.diagnostics);}finally{solver.dispose();}
+ for(const row of prior.rows)answer.x[row.terms[0][0]]=-row.terms.slice(1).reduce((sum,[i,w])=>sum+w*answer.x[i],0);for(const a of photonAux){const residual=dot(a.form,answer.x);answer.x[a.positive]=Math.max(0,residual);answer.x[a.negative]=Math.max(0,-residual);}const minimum=objective(answer.x),lower=certifiedLower??solver.objectiveLowerBound(),x=answer.x.slice(0,program.upper.length);if(!validMarginalSolution(program,x)||!validMarginalSolution(p,answer.x)||lower===undefined||Math.abs(minimum-lower)>1e-7)throw Error('Representative selection did not certify its original model and global objective.');return finish(answer.x,minimum,lower,certifiedLower === undefined ? 'original-primal-and-global-dual' : 'original-primal-and-tangent-lower-bound',solver.diagnostics);}finally{solver.dispose();}
 }

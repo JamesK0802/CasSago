@@ -1,3 +1,5 @@
+CURRENT WIP 2026-11-18: representative phase informed by peak-centered invariant flanks; physical detector area domain retained. See docs/point-first-flank-evidence-20261118.json. Native 62/62 joint GT, 6 independent GT, 7 measured unchanged physical hashes, 10 constructed-noise cases complete. Residual false-group mass reaches 12.58pp; needed independent tangent bound on hardest 5-indel case. Final browser and matched multiplex validation pending.
+
 CURRENT WIP 2026-11-18: v118 background/profile correction, NOT overall scientificPASS.
 Active source: CasSago_Resume_20261112/native-first-experiment; branch codex/single-point-first-v117. CasMango/main/deployment unchanged.
 See docs/point-first-background-progress-20261118.json for exact evidence, native stage times and remaining errors.

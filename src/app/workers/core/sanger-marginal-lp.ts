@@ -34,6 +34,7 @@ export function quadraticTangentLowerBound(p:MarginalProgram,x:number[],shadow:n
  * Reduced costs certify the original optimum; an unsuccessful restricted
  * solve restores every column before making any infeasibility decision. */
 export class MarginalLinearSolver {
+ rejectedConicPoint(){ return this.conic?.rejectedPoint; }
  private linearLower?:number;
  private lowerObjectiveIsCurrent=false;
  private native:any;

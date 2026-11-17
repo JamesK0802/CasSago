@@ -6,6 +6,7 @@ export interface SangerConicRuntime {solve:(pointers:Uint32Array,indices:Uint32A
  * never sufficient. */
 export class VerifiedConicSolver {
  private timeLimit=300;
+ rejectedPoint?:{ x:number[]; value:number; gap:number };
  private iterationLimit=300;
  private tolerance=1e-8;
  private certifiedLower?:number;
@@ -38,7 +39,7 @@ export class VerifiedConicSolver {
   return{pStarts,pIndices,pValues,n,columns,index,upper,rowCount,originalRows,shadowSigns,lowerBoxes,upperBoxes,starts,indices,values,b,zero,nonneg,sizes,cones:JSON.stringify({zero,nonneg,soc:sizes,exp:0,power:[]})};
  }
  solve(terms?:LinearTerm[],maximize=false):{x:number[];value:number}{
-  this.certifiedLower=undefined;if(maximize&&this.p.quadraticCost?.length)throw Error('Convex quadratic objectives require minimization.');
+  this.certifiedLower=undefined;this.rejectedPoint=undefined;if(maximize&&this.p.quadraticCost?.length)throw Error('Convex quadratic objectives require minimization.');
   if(this.runtime.fallback){
    const primary=this.runtime,fallback=primary.fallback!;
    // Keep inference fits on the established kernel. Explicit linear queries
@@ -61,6 +62,10 @@ export class VerifiedConicSolver {
     // recovery path, or the first representation on resuming a timed-out solve.
     plans[0].retryPrimal=true;const units={scale,tol:tight,nativeTol:tight*Math.min(1,scale),retryPrimal:true,unitPlan:true};
     const bridgeScale=Math.sqrt(scale),bridge={...units,scale:bridgeScale,nativeTol:tight*Math.min(1,bridgeScale)};if(this.preferObjectiveUnits)plans.unshift(units,bridge);else plans.splice(1,0,units,bridge);
+    for (const exponent of [0.25, 0.75, 1.25, -0.25, 0.875, 1.125, 1.375, 0.0625]) {
+     const equivalent = Math.pow(scale, exponent);
+     plans.push({ ...units, scale: equivalent, nativeTol: tight * Math.min(1, equivalent) });
+    }
    }
   }
   for(let i=0;;i++){
@@ -115,6 +120,8 @@ export class VerifiedConicSolver {
   const value=quadraticValue+cost.reduce((s,v,i)=>s+v*(x[m.columns[i]]||0),0),gap=value-lower;this.stats.queries++;this.stats.seconds+=(performance.now()-start)/1000;this.stats.iterations+=result.iterations||0;
   if(!Number.isFinite(violation)||violation>1e-7||!Number.isFinite(gap)||gap< -1e-7||gap>1e-7){
    if(result.status==='max_iterations'&&(result.iterations>=this.iterationLimit||lastTimeLimit>0&&Number.isFinite(lastTimeLimit)&&result.solve_time>=lastTimeLimit*.8)){if(result.iterations>=this.iterationLimit)this.iterationLimit*=2;throw new OptimizationPending();}
+   if (violation <= 1e-7 && Number.isFinite(value) && gap >= 0 &&
+       (!this.rejectedPoint || gap < this.rejectedPoint.gap)) this.rejectedPoint = { x, value, gap };
    this.retryableCertificate=Number.isFinite(violation)&&(violation<=1e-7||retryPrimal)&&Number.isFinite(gap);this.stats.maximumRejectedGap=Math.max(this.stats.maximumRejectedGap,Math.abs(gap));throw Error('Conic optimization did not certify the original model: '+result.status+'; violation='+violation+'; primal-dual gap='+gap);
   }
   // The original feasible primal and independently repaired global dual are

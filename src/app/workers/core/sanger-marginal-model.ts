@@ -24,7 +24,13 @@ export function buildMarginalModel(input:SignalPathInput,tick:(stage:string)=>vo
  const {refs,report,maxDeletion,maxInsertion}=prepare(input.amplicons,input.primer,input.settings),observation=prepareMeasuredObservation(refs,input.control,input.sample,input.settings,s=>tick(s)),{raw,means,calibration,quality}=observation,shares=observation.shares.slice(),noise=Math.sqrt(observation.noise),analysisEnd=Math.min(observation.end,observation.c.length-maxDeletion*refs[0].cuts.length-1,quality.end-maxDeletion*refs[0].cuts.length-1),lengths:{size:number;fraction:number}[][][]=[],count=refs[0].cuts.length;let heldOutError=0,heldOutVariance=0,heldOutRows=0;
  let regionalResponse=(h:number,p:number)=>1;
  const emissions=observation.intensity.responses,emissionMeans=observation.intensity.novelByReference,cycleEnvelope=observation.intensity.cycleEnvelope,dyeAt=(h:number,p:number,dye:number[])=>observation.transferByReference.apply(h,p,dye).map(v=>v*regionalResponse(h,p)*cycleEnvelope(h,p)),emit=(h:number,shift:number,p:number)=>dyeAt(h,p,emissions[h][p-shift]?.map(v=>v/cycleEnvelope(h,p-shift))||emissionMeans[h][DNA.indexOf(refs[h].sequence[p-shift])]||[0,0,0,0]);
- tick('Fitting invariant-flank length proportions');
+ function regionalFit(
+  observation: ReturnType<typeof prepareMeasuredObservation>,
+  shares: number[],
+  analysisEnd: number,
+  emit: (reference: number, shift: number, position: number) => number[],
+ ) {
+  const { raw, calibration } = observation;
  const flankPositions:number[][]=[],flowWindows:RegionalLengthWindow[]=[];
  for(let t=0;t<count;t++){
   const left=Math.max(...refs.map(r=>r.cuts[t]))+Math.max(SUB_RADIUS-1+(t+1)*maxInsertion,(t+1)*maxInsertion+ORIGIN_RADIUS)+5,right=Math.min(analysisEnd,...refs.map(r=>t+1<count?r.cuts[t+1]-Math.max(SUB_RADIUS+(t+1)*maxDeletion,(t+2)*maxDeletion+ORIGIN_RADIUS)-5:analysisEnd)),ps=Array.from({length:Math.max(0,right-left)},(_,i)=>left+i);
@@ -36,7 +42,14 @@ export function buildMarginalModel(input:SignalPathInput,tick:(stage:string)=>vo
   // blocks; total flank length is not an independent accuracy criterion.
   flankPositions.push(ps);flowWindows.push({classes:refs.flatMap((_,h)=>Array.from({length:(t+1)*(maxDeletion+maxInsertion)+1},(_,i)=>({reference:h,size:i-(t+1)*maxDeletion}))).map(c=>({...c,column:ps.flatMap(p=>mixPhase(emit(c.reference,c.size,p),emit(c.reference,c.size,phaseNeighbor(p,calibration.lag)),calibration.lag))})),observed:ps.flatMap(p=>raw[p]),background:ps.flatMap(p=>observation.backgroundAt(p)),weights:ps.map(p=>observation.noise/observation.noiseAt(p)**2)});
  }
- const preliminary=regionalLengthInitialization(flowWindows,flankPositions,shares,observation.fitDelta,observation.transferByReference),initialization=calibrateRegionalResponse(flowWindows,flankPositions,shares,preliminary.delta,{positions:observation.trainingPositions,columns:refs.map((_,h)=>observation.trainingPositions.flatMap(p=>mixPhase(emit(h,0,p),emit(h,0,phaseNeighbor(p,calibration.lag)),calibration.lag))),observed:observation.trainingPositions.flatMap(p=>raw[p]),background:observation.trainingPositions.flatMap(p=>observation.backgroundAt(p)),weights:observation.trainingPositions.map(p=>observation.noise/observation.noiseAt(p)**2)}),robustDelta=initialization.delta;
+ const preliminary=regionalLengthInitialization(flowWindows,flankPositions,shares,observation.fitDelta,observation.transferByReference),initialization=calibrateRegionalResponse(flowWindows,flankPositions,shares,preliminary.delta,{positions:observation.trainingPositions,columns:refs.map((_,h)=>observation.trainingPositions.flatMap(p=>mixPhase(emit(h,0,p),emit(h,0,phaseNeighbor(p,calibration.lag)),calibration.lag))),observed:observation.trainingPositions.flatMap(p=>raw[p]),background:observation.trainingPositions.flatMap(p=>observation.backgroundAt(p)),weights:observation.trainingPositions.map(p=>observation.noise/observation.noiseAt(p)**2)});
+  return { flankPositions, flowWindows, initialization };
+ }
+ tick('Fitting invariant-flank length proportions');
+ const { flankPositions, flowWindows, initialization } = regionalFit(
+  observation, shares, analysisEnd, emit,
+ );
+ const robustDelta = initialization.delta;
  // Reference brightness is a nuisance distinct from control molecule share.
  // Its flank estimate uses a paired-prefix predictive prior, whose variance
  // includes the actual ADC floor. The same correction applies to every input.
@@ -132,7 +145,31 @@ export function buildMarginalModel(input:SignalPathInput,tick:(stage:string)=>vo
  const spectralColumns=new Set(program.quadratics.flatMap(q=>q.terms.flatMap(row=>row.map(([i])=>i))));
  program.localBlocks=[...blockColumns].sort((a,b)=>a[0]-b[0]).map(([,columns])=>[...columns].filter(i=>!spectralColumns.has(i)));
  program.originPricing={columns:allEdges.map(e=>e.mass),seed:allEdges.filter(e=>(e.target===0||lengths[e.target-1][e.reference].some(c=>c.size===e.incoming&&c.fraction>0))&&lengths[e.target][e.reference].some(c=>c.size===e.outgoing&&c.fraction>0)).map(e=>e.mass)};
- const phaseSeed=states.flatMap(hs=>hs.flatMap(g=>g.map(s=>({column:s.column,value:seed[s.column]}))));
+ // Center-weighted measurements inform only the representative length prior.
+ // Keep the integrated-area calibration and constraints as the physical domain.
+ tick('Fitting peak-centered flank proportions for the representative');
+ const centered = prepareMeasuredObservation(refs, input.control, input.sample, input.settings, () => {}, 0.5);
+ const centeredEnd = Math.min(centered.end, centered.c.length - maxDeletion * count - 1,
+  centered.quality.end - maxDeletion * count - 1);
+ const centeredEmission = (reference: number, shift: number, position: number) => {
+  const { responses, novelByReference, cycleEnvelope } = centered.intensity;
+  const donor = position - shift;
+  const level = responses[reference][donor]?.map(value => value / cycleEnvelope(reference, donor))
+   || novelByReference[reference][DNA.indexOf(refs[reference].sequence[donor])] || [0, 0, 0, 0];
+  return centered.transferByReference.apply(reference, position, level)
+   .map(value => value * cycleEnvelope(reference, position));
+ };
+ const centeredLengths = regionalFit(centered, centered.shares, centeredEnd, centeredEmission).initialization.lengths;
+ const phaseSeed = states.flatMap((byRef, target) => byRef.flatMap((group, reference) =>
+  group.map(state => {
+   const share = centered.shares[reference];
+   const estimate = centeredLengths[target][reference].find(length => length.size === state.size);
+   const value = share > 0 && estimate
+    ? estimate.fraction * (shares[reference] / share)
+    : seed[state.column];
+   return {column: state.column, value};
+  })));
+
  marginalModelDiagnostics.observe?.({program,refs,shares,targets:drafts,states,noise,phaseSeed,measurements:allMeasurements,spectralPositions:[...spectralMeasurements.values()].flatMap(list=>list.map(m=>m.position)),departures:allDepartures});
  return {refs,report,maxDeletion,maxInsertion,observation,raw,calibration,quality,shares,noise,analysisEnd,count,lengths,regionalResponse,initialization,robustDelta,program,drafts,states,phaseSeed,allMeasurements,allDepartures,allEdges,uncertainEmission,firstMeasured,heldOutError,heldOutVariance,heldOutRows};
 }
