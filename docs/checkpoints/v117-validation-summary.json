@@ -23,14 +23,14 @@
     "Numeric inference source frozen before generation. The later dominant-SNP marker/display repair changes reporting only; literal DNA counts in the panel/holdout files predate that repair and are not final UI scores. No retuning of inference after GT scoring.",
     "Group sequence recovery remains partial. GT retrieval blue is not accuracy PASS. Full legacy test suite is not green.",
     "Native timings are not browser timings; final actual-browser comparison still required.",
-    "Only three selected ambiguity positions have explicit raw waveform counterexamples; do not generalize to all differences."
+    "Explicit raw waveform aliases prove selected ambiguity positions only, including16 additional nested5..12 endpoints; do not generalize to all differences."
   ],
   "sourceSha256": {
     "src/app/workers/core/sanger-representative-selection.ts": "60234e23054722e570f96ab29051839061038e25349cb28d174d3b937f471e90",
     "src/app/workers/core/sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a",
     "src/app/workers/core/sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
     "src/app/workers/core/sanger-marginal-point-report.ts": "fc01dc2568622801080e63ec87ae4e34d972b36bf8975c2daf0297c89ea653a8",
-    "src/app/workers/core/sanger-marginal-group-bounds.ts": "89f5069c3534abeea90908de27b26b71d7fbfeb0a5993273de3a43664ae9a110",
+    "src/app/workers/core/sanger-marginal-group-bounds.ts": "728aae70f51864ad6d622c53e9e5ce03bf1bc41dc46da41fafd7979dad25f9d9",
     "src/app/workers/core/sanger-marginal-engine.ts": "f0b93a4fde27bc7b2d7f900fe867e594a82c7d10c9aa22e1ec033940b2972f79"
   },
   "next": [
@@ -72,11 +72,13 @@
     },
     "coupledReportedPointAudit": {
       "existingLengthTolerancePp": 2,
-      "existingConditionalBaseTolerancePp": 0.2,
       "exactOriginalRawDataWitnessCases": 51,
       "additionalClosedObservationGateInfeasibilityCertificates": 14,
       "certificateIndependentlyRechecked": 14,
-      "scope": "Constructive ideal-synthetic-observation/profile audit, NOT original noisy-engine-domain infeasibility. Point Sub-event budget retained; no threshold/noise widening. Not overall scientific acceptance."
+      "scope": "Constructive ideal-synthetic-observation/profile audit, NOT original noisy-engine-domain infeasibility. Point Sub-event budget retained; no threshold/noise widening. Not overall scientific acceptance.",
+      "exploratoryPointProximityPp": 0.2,
+      "originalGtEnvelopeComparisonSlackPp": 0.2,
+      "interpretationCorrection": "The original0.2pp compares GT with an envelope. Reusing that number as point-proximity tolerance was an additional exploratory diagnostic, NOT the agreed acceptance gate.51/65 is not the benchmark pass rate;14 certificates concern only this extra ideal-observation diagnostic, not original engine infeasibility."
     },
     "numericalGuard": {
       "originalCasesRerun": 62,
@@ -92,5 +94,194 @@
   "numericalSolverSourceSha256": {
     "src/app/workers/core/sanger-marginal-lp.ts": "75ec88bbedc4203dabe51a2c53f48cc58a936c7a35a8e17783c465e0a0d18a2b",
     "src/app/workers/core/sanger-initial-marginal-fit.ts": "3ac531ed7599bc0f3ed2a3e1ff84ffa63c62da9acddabe240e7c1c3d8acd3e75"
+  },
+  "originalEnvelopeInformationAudit": {
+    "cases": 62,
+    "all": {
+      "positions": 51408,
+      "medianMaxChannelWidthPp": 8.495678922337579,
+      "p90MaxChannelWidthPp": 44.41225829683636,
+      "p99MaxChannelWidthPp": 100.0,
+      "maximumWidthPp": 100,
+      "over98Pp": 1684,
+      "coverageMissPositions": 0
+    },
+    "cutPlusMinus13": {
+      "positions": 13608,
+      "medianMaxChannelWidthPp": 14.562818890246366,
+      "p90MaxChannelWidthPp": 100.0,
+      "p99MaxChannelWidthPp": 100.0,
+      "maximumWidthPp": 100,
+      "over98Pp": 1682,
+      "coverageMissPositions": 0
+    },
+    "outsideCutPlusMinus13": {
+      "positions": 37800,
+      "medianMaxChannelWidthPp": 7.12650576101384,
+      "p90MaxChannelWidthPp": 35.54141864641556,
+      "p99MaxChannelWidthPp": 60.00981717586254,
+      "maximumWidthPp": 100,
+      "over98Pp": 2,
+      "coverageMissPositions": 0
+    },
+    "notOverallScientificPass": true
+  },
+  "explicitAdditionalAmbiguityProofs": {
+    "scope": "Eight selected near-cut ranges, one per nested5..12. Both0% and100% attained by explicit finite DNA;16/16 original DATA/PBAS/PLOC identity checks. Posthoc only; not all positions or simultaneous endpoints.",
+    "verifiedRawAbiEndpoints": 16
+  },
+  "jointComplementReportingFix": {
+    "scope": "Selected eight nested5..12 families chosen blind by largest outside-cut range. Reporting only; GT comparisons posthoc. Not all families or scientific acceptance.",
+    "rows": [
+      {
+        "id": "nested-5",
+        "before": [
+          0.6102792163975159,
+          1
+        ],
+        "after": [
+          0.7846467961648617,
+          1
+        ],
+        "widthReductionPp": 17.436757976734572,
+        "detailBeforeSeconds": 1.915806792,
+        "detailAfterSeconds": 2.055368166,
+        "coverageMisses": 0,
+        "otherGroupsUnchanged": true
+      },
+      {
+        "id": "nested-6",
+        "before": [
+          0.3775039956160132,
+          1
+        ],
+        "after": [
+          0.6598891304202525,
+          1
+        ],
+        "widthReductionPp": 28.238513480423933,
+        "detailBeforeSeconds": 1.9217315420000005,
+        "detailAfterSeconds": 2.0843136249999996,
+        "coverageMisses": 0,
+        "otherGroupsUnchanged": true
+      },
+      {
+        "id": "nested-7",
+        "before": [
+          0.3753884649198336,
+          1
+        ],
+        "after": [
+          0.6559806274961133,
+          1
+        ],
+        "widthReductionPp": 28.059216257627973,
+        "detailBeforeSeconds": 1.8710706659999996,
+        "detailAfterSeconds": 2.074370792,
+        "coverageMisses": 0,
+        "otherGroupsUnchanged": true
+      },
+      {
+        "id": "nested-8",
+        "before": [
+          0.3999018573698433,
+          1
+        ],
+        "after": [
+          0.6628812160390043,
+          1
+        ],
+        "widthReductionPp": 26.2979358669161,
+        "detailBeforeSeconds": 1.9794972500000003,
+        "detailAfterSeconds": 2.188725375,
+        "coverageMisses": 0,
+        "otherGroupsUnchanged": true
+      },
+      {
+        "id": "nested-9",
+        "before": [
+          0.39918389987970493,
+          1
+        ],
+        "after": [
+          0.6712437054145,
+          1
+        ],
+        "widthReductionPp": 27.205980553479503,
+        "detailBeforeSeconds": 1.956448292000001,
+        "detailAfterSeconds": 2.148274624999998,
+        "coverageMisses": 0,
+        "otherGroupsUnchanged": true
+      },
+      {
+        "id": "nested-10",
+        "before": [
+          0.3996504037619476,
+          1
+        ],
+        "after": [
+          0.6716831464957371,
+          1
+        ],
+        "widthReductionPp": 27.203274273378952,
+        "detailBeforeSeconds": 1.9958955839999981,
+        "detailAfterSeconds": 2.1586711670000005,
+        "coverageMisses": 0,
+        "otherGroupsUnchanged": true
+      },
+      {
+        "id": "nested-11",
+        "before": [
+          0.3997392137461869,
+          1
+        ],
+        "after": [
+          0.663684300250718,
+          1
+        ],
+        "widthReductionPp": 26.39450865045311,
+        "detailBeforeSeconds": 1.9762834580000017,
+        "detailAfterSeconds": 2.226124416999999,
+        "coverageMisses": 0,
+        "otherGroupsUnchanged": true
+      },
+      {
+        "id": "nested-12",
+        "before": [
+          0.39849262559214227,
+          1
+        ],
+        "after": [
+          0.6625607417692176,
+          1
+        ],
+        "widthReductionPp": 26.406811617707536,
+        "detailBeforeSeconds": 1.9484428329999974,
+        "detailAfterSeconds": 2.190670374999998,
+        "coverageMisses": 0,
+        "otherGroupsUnchanged": true
+      }
+    ],
+    "medianDetailBeforeSeconds": 1.9524455624999992,
+    "medianDetailAfterSeconds": 2.1534728959999994,
+    "focusedTests": 81,
+    "focusedTestFiles": 20,
+    "productionBuildPassed": true,
+    "modelAndPointUnchanged": true,
+    "remainingCaveat": "Certified outer envelopes may remain conservative. Selected improvements and GT coverage do not imply overall accuracy acceptance.",
+    "additionalSelectedFamilyPanel": {
+      "state": "complete",
+      "scope": "One blind-selected outside-cut-uncertainty family per62 original synthetic cases; every coordinate of that family compared with GT after report freeze. Not all-group or overall scientific acceptance.",
+      "cases": 62,
+      "selectedFamilyPositions": 6324,
+      "gtEnvelopeMisses": 0,
+      "fittedFractionsAndEverySelectedBasePointExactlyUnchanged": true,
+      "otherGroupReportsUnchanged": true,
+      "medianNativeFitSeconds": 1.8185726044999972,
+      "medianSelectedDetailSeconds": 2.0895680420000025,
+      "maximumSelectedDetailSeconds": 2.6189063750000003,
+      "originalComparisonSlackPp": 0.2,
+      "scientificAcceptance": false
+    }
   }
 }

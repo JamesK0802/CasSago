@@ -45,6 +45,17 @@ export function marginalGroupBounds(result:SangerAnalysisResult,groupId:string,p
    }
    lower[dependent]=Math.min(estimate[dependent],Math.max(0,1-upper.reduce((n,v,b)=>n+(b===dependent?0:v),0)));
    upper[dependent]=Math.max(estimate[dependent],Math.min(1,1-lower.reduce((n,v,b)=>n+(b===dependent?0:v),0)));
+   // Separate channel maxima need not be attainable together. Bound their
+   // JOINT complement before deriving the dominant base, retaining the same
+   // original feasible set and shared mutation/measurement constraints.
+   const complement=forms.flatMap((f,b)=>b===dependent||marker&&q===marker.position&&!marker.bases.includes(b)?[]:Array.from(f));
+   if(complement.length){
+    const lo=local.outerBound(q,complement,false)??solver.solve(complement).value,hi=local.outerBound(q,complement,true)??solver.solve(complement,true).value;
+    const numeratorLo=marker&&q!==marker.position?Math.max(0,lo+query.mass[0]-query.familyMass[1]-1e-7):Math.max(0,lo-1e-7),numeratorHi=marker?Math.min(hi+1e-7,query.mass[1]):hi+1e-7;
+    const complementLower=query.mass[0]>1e-8?Math.max(0,1-numeratorHi/query.mass[0]):0,complementUpper=Math.min(1,1-numeratorLo/Math.max(1e-30,query.mass[1]));
+    lower[dependent]=Math.max(lower[dependent],Math.min(estimate[dependent],complementLower));
+    upper[dependent]=Math.min(upper[dependent],Math.max(estimate[dependent],complementUpper));
+   }
    if(query.mass[0]>1e-8)for(let b=0;b<4;b++){
     const hi=budgetUpper(forms[b]),other=budgetUpper(forms.flatMap((f,a)=>a===b?[]:Array.from(f)));
     if(hi!==undefined)upper[b]=Math.min(upper[b],Math.max(estimate[b],Math.min(1,(hi+1e-7)/query.mass[0])));
