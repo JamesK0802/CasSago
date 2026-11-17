@@ -7,6 +7,7 @@ export default defineConfig({test:{maxWorkers:2,include:[
  'tests/core/sanger-point-marker-partition.spec.ts',
  'tests/core/sanger-marker-group-bounds.spec.ts',
  'tests/core/sanger-dependent-complement-envelope.spec.ts',
+ 'tests/core/sanger-conditional-ratio-envelope.spec.ts',
  'tests/core/sanger-marginal-representative-coordinate.spec.ts',
  'tests/core/sanger-marginal-pagination.spec.ts',
  'tests/core/sanger-marginal-truth-retrieval.spec.ts',

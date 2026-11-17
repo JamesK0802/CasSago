@@ -4,6 +4,7 @@ import {MarginalLinearSolver,type LinearTerm} from './sanger-marginal-lp';
 import {zeroLengthCompositionBounds} from './sanger-zero-length-composition';
 import {localBoundCertificates} from './sanger-local-bound-certificate';
 import {nonnegativeBudgetEnvelope} from './sanger-nonnegative-budget-envelope';
+import {conditionalRatioEnvelope} from './sanger-conditional-ratio-envelope';
 import {withinLengthDisplay} from './sanger-marginal-display';
 
 interface Query {index:number;group:SangerMarginalGroup;mass:[number,number];familyMass:[number,number];seconds:number}
@@ -56,10 +57,19 @@ export function marginalGroupBounds(result:SangerAnalysisResult,groupId:string,p
     lower[dependent]=Math.max(lower[dependent],Math.min(estimate[dependent],complementLower));
     upper[dependent]=Math.min(upper[dependent],Math.max(estimate[dependent],complementUpper));
    }
+   const denominator=marker?g.bases.get(marker.position)!.flatMap((f,b)=>marker.bases.includes(b)?Array.from(f):[]):g.mass;
+   const numerator=forms[dependent],numeratorLower=marker&&q!==marker.position?[...numerator,...denominator,...g.mass.map(([i,w])=>[i,-w]as LinearTerm)]:numerator;
+   [lower[dependent],upper[dependent]]=conditionalRatioEnvelope(numeratorLower,numerator,denominator,query.mass,estimate[dependent],[lower[dependent],upper[dependent]],(terms,maximum)=>local.outerBound(q,terms,maximum));
    if(query.mass[0]>1e-8)for(let b=0;b<4;b++){
     const hi=budgetUpper(forms[b]),other=budgetUpper(forms.flatMap((f,a)=>a===b?[]:Array.from(f)));
     if(hi!==undefined)upper[b]=Math.min(upper[b],Math.max(estimate[b],Math.min(1,(hi+1e-7)/query.mass[0])));
     if(other!==undefined)lower[b]=Math.max(lower[b],Math.min(estimate[b],Math.max(0,1-(other+1e-7)/query.mass[0])));
+   }
+   // All four fractions sum to one, including a marker-defined group.
+   // Propagate the certified dominant-channel improvement to its complement.
+   for(let b=0;b<4;b++){
+    lower[b]=Math.max(lower[b],Math.min(estimate[b],Math.max(0,1-upper.reduce((n,v,a)=>n+(a===b?0:v),0))));
+    upper[b]=Math.min(upper[b],Math.max(estimate[b],Math.min(1,1-lower.reduce((n,v,a)=>n+(a===b?0:v),0))));
    }
    query.group.bases.push({position,estimate:ref.reverse?estimate.reverse():estimate,lower:ref.reverse?lower.reverse():lower,upper:ref.reverse?upper.reverse():upper});
   }

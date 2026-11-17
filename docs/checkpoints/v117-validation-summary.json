@@ -30,8 +30,9 @@
     "src/app/workers/core/sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a",
     "src/app/workers/core/sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
     "src/app/workers/core/sanger-marginal-point-report.ts": "fc01dc2568622801080e63ec87ae4e34d972b36bf8975c2daf0297c89ea653a8",
-    "src/app/workers/core/sanger-marginal-group-bounds.ts": "728aae70f51864ad6d622c53e9e5ce03bf1bc41dc46da41fafd7979dad25f9d9",
-    "src/app/workers/core/sanger-marginal-engine.ts": "f0b93a4fde27bc7b2d7f900fe867e594a82c7d10c9aa22e1ec033940b2972f79"
+    "src/app/workers/core/sanger-marginal-group-bounds.ts": "4b20142bf25fbb9c7264a84b2da49718d45534fed401b73a4c7188ff92697a92",
+    "src/app/workers/core/sanger-marginal-engine.ts": "f0b93a4fde27bc7b2d7f900fe867e594a82c7d10c9aa22e1ec033940b2972f79",
+    "src/app/workers/core/sanger-conditional-ratio-envelope.ts": "a2b6370ee69bf6c65fc846eb91fea54196ea2be3ace712a05ca0552ce0ef2610"
   },
   "next": [
     "Resolve distinguishable single group-DNA and substitution-carrier errors.",
@@ -282,6 +283,245 @@
       "maximumSelectedDetailSeconds": 2.6189063750000003,
       "originalComparisonSlackPp": 0.2,
       "scientificAcceptance": false
+    }
+  },
+  "conditionalRatioReportingFix": {
+    "state": "complete",
+    "scope": "Same62 previously blind-selected families. Original candidate/physical/noise model and fitted point retained. GT compared only after complete range report; original.2pp envelope slack. No point-accuracy or scientific PASS claim.",
+    "cases": 62,
+    "selectedFamilyPositions": 6324,
+    "gtEnvelopeMisses": 0,
+    "otherGroupReportsUnchanged": true,
+    "selectedFittedFractionsAndBasePointsExactlyUnchanged": true,
+    "maximumChannelWidthReductionPp": 68.36717688126812,
+    "channelsNarrowedOver1e_8": 2073,
+    "medianWidthReductionPpAmongChanged": 0.0008083618797921632,
+    "medianDetailSecondsBefore": 2.0895680420000025,
+    "medianDetailSecondsAfter": 2.3854063754999952,
+    "maximumDetailSecondsAfter": 2.9547646250000033,
+    "independentFullOriginalCheck": {
+      "state": "complete",
+      "scope": "Six additional blind full ORIGINAL-model optimizations, independently checking both ends of three largest reporting improvements. No GT used for selection or optimization.",
+      "rows": [
+        {
+          "id": "isolated-6-2-0",
+          "groupId": "marginal:0:0:-6",
+          "size": -6,
+          "position": 273,
+          "base": "C",
+          "range": [
+            0,
+            1
+          ],
+          "newRange": [
+            0.6836717688126812,
+            1
+          ],
+          "selection": "Largest width reduction in three distinct selected cases, chosen without GT before independent full-model optimization.",
+          "independentFullOriginalMinimumNumericalEnvelope": [
+            0.7048878228973708,
+            0.7048941724748035
+          ],
+          "independentFullOriginalMaximumNumericalEnvelope": [
+            0.9999971653500747,
+            1
+          ],
+          "objectivePrimalGlobalCertificatesAtMost1e_7": true,
+          "scalarGuard": 2.8346517914077535e-06,
+          "scope": "Numerical scalar envelopes include original solver tolerance; no model/noise constraint widened. Raw scalar outputs retained separately."
+        },
+        {
+          "id": "isolated-5-0-0",
+          "groupId": "marginal:0:0:-10",
+          "size": -10,
+          "position": 167,
+          "base": "C",
+          "range": [
+            0,
+            1
+          ],
+          "newRange": [
+            0.5481140293558535,
+            1
+          ],
+          "selection": "Largest width reduction in three distinct selected cases, chosen without GT before independent full-model optimization.",
+          "independentFullOriginalMinimumNumericalEnvelope": [
+            0.5807072526761468,
+            0.580715367486677
+          ],
+          "independentFullOriginalMaximumNumericalEnvelope": [
+            0.9999959705142117,
+            1
+          ],
+          "objectivePrimalGlobalCertificatesAtMost1e_7": true,
+          "scalarGuard": 4.029507253972457e-06,
+          "scope": "Numerical scalar envelopes include original solver tolerance; no model/noise constraint widened. Raw scalar outputs retained separately."
+        },
+        {
+          "id": "isolated-5-1-1",
+          "groupId": "marginal:0:0:-9",
+          "size": -9,
+          "position": 468,
+          "base": "G",
+          "range": [
+            0,
+            1
+          ],
+          "newRange": [
+            0.5196097685692553,
+            1
+          ],
+          "selection": "Largest width reduction in three distinct selected cases, chosen without GT before independent full-model optimization.",
+          "independentFullOriginalMinimumNumericalEnvelope": [
+            0.5517895541022745,
+            0.5517993524072743
+          ],
+          "independentFullOriginalMaximumNumericalEnvelope": [
+            0.9999956962752051,
+            1
+          ],
+          "objectivePrimalGlobalCertificatesAtMost1e_7": true,
+          "scalarGuard": 4.3037277694376215e-06,
+          "scope": "Numerical scalar envelopes include original solver tolerance; no model/noise constraint widened. Raw scalar outputs retained separately."
+        }
+      ]
+    },
+    "focusedTests": 84,
+    "focusedTestFiles": 21,
+    "angularProductionBuildPassed": true
+  },
+  "evaluatedCommonPointCandidate": {
+    "adopted": false,
+    "reason": "Mixed conditional-profile results despite aggregate/speed improvement. Preserve stable inference; no scientific PASS or criterion change.",
+    "model": "Single measured-photon least squares plus control-noise-scale expected Sub-base L1 cost, no phase/increment/proximity priors. Original physical domains unchanged.",
+    "original62": {
+      "scope": "POSTHOC after62 common-flow blind outputs/physical-domain parity checks. GT-TV includes unidentifiable allocation and literal identity is diagnostic only. No new acceptance cutoff; no scientific PASS. Native development not browser.",
+      "cases": 62,
+      "medianCandidateNativeSeconds": 1.2188364585000016,
+      "maxCandidateNativeSeconds": 1.7967835839999997,
+      "allOriginalPhysicalDomainsUnchanged": true,
+      "aggregateTvImprovedCases": 62,
+      "conditionalGtTvImprovedCases": 33,
+      "meanAggregateTvPp": {
+        "v117": 0.020615852803554074,
+        "candidate": 0.014841985382313658
+      },
+      "meanConditionalGtTvPp": {
+        "v117": 3.078266668200446,
+        "candidate": 3.053298945990259
+      },
+      "maximumLengthErrorPp": {
+        "v117": 0.047554233985536154,
+        "candidate": 0.03506515986080594
+      },
+      "literalDefaultGtGroups": {
+        "v117": 253,
+        "candidate": 224
+      }
+    },
+    "additionalIdealObservableDistance": {
+      "scope": "POSTHOC ideal raw-observable equivalence distance at known length-class masses, common baseline Sub-event budget, full forward/dual certificates. No pass cutoff or claim all broader original model errors distinguishable. This is validation only, not GT-conditioned inference.",
+      "cases": 62,
+      "improved": 47,
+      "mean": {
+        "v117Pp": 0.18426390907325232,
+        "candidatePp": 0.13514770056296105
+      },
+      "maximum": {
+        "v117Pp": 0.716582861408479,
+        "candidatePp": 0.5012297467972572
+      }
+    },
+    "independentNewHoldout": {
+      "cases": 6,
+      "sourceFrozenBeforeInputGeneration": true,
+      "allOutputsFrozenBeforeGTScoring": true,
+      "aggregateErrorsImproved": 6,
+      "conditionalGtTvImproved": 5,
+      "idealObservableDistanceImproved": 2,
+      "idealObservableDistanceRegressed": 4,
+      "scope": "GT-TV includes real alias ambiguity. Distance is quantitative posthoc diagnostic at known length masses, not an agreed pass cutoff."
+    },
+    "matchedMeasured": {
+      "scope": "Matched +/-20 settings, same original AB1 hashes, control/sample registration adapter disclosed; same original physical domains and noise across estimators. ICE coefficients retain reported mass separately. External corroboration, no GT or scientific PASS. Conditional-base comparisons use only shared defined bases; ICE N is excluded, not wildcard.",
+      "rows": [
+        {
+          "case": "donor-hdr",
+          "physicalDomainByteParity": true,
+          "sameInputHashes": true,
+          "v117": {
+            "nativeSeconds": 6.607177541,
+            "maxLengthDifferenceVsIceExplainedNormalizedPp": 1.636718916273952,
+            "conditionalComparedPositions": 738,
+            "meanConditionalBaseTvVsIcePp": 2.255791151157477,
+            "maximumConditionalBaseTvVsIcePp": 51.55770458596541
+          },
+          "candidate": {
+            "nativeSeconds": 2.333436042,
+            "maxLengthDifferenceVsIceExplainedNormalizedPp": 1.3099788235728993,
+            "conditionalComparedPositions": 738,
+            "meanConditionalBaseTvVsIcePp": 2.215878870307891,
+            "maximumConditionalBaseTvVsIcePp": 99.99999884866469
+          }
+        },
+        {
+          "case": "donor-sub",
+          "physicalDomainByteParity": true,
+          "sameInputHashes": true,
+          "v117": {
+            "nativeSeconds": 3.450917083,
+            "maxLengthDifferenceVsIceExplainedNormalizedPp": 6.1234113391929075,
+            "conditionalComparedPositions": 478,
+            "meanConditionalBaseTvVsIcePp": 2.7903893181296144,
+            "maximumConditionalBaseTvVsIcePp": 97.34595956838874
+          },
+          "candidate": {
+            "nativeSeconds": 2.6503720000000004,
+            "maxLengthDifferenceVsIceExplainedNormalizedPp": 4.976284318066437,
+            "conditionalComparedPositions": 478,
+            "meanConditionalBaseTvVsIcePp": 3.857436308919344,
+            "maximumConditionalBaseTvVsIcePp": 85.07388047072212
+          }
+        },
+        {
+          "case": "public-good",
+          "physicalDomainByteParity": true,
+          "sameInputHashes": true,
+          "v117": {
+            "nativeSeconds": 4.0260694589999995,
+            "maxLengthDifferenceVsIceExplainedNormalizedPp": 4.43034682264819,
+            "conditionalComparedPositions": 370,
+            "meanConditionalBaseTvVsIcePp": 7.09518834169329,
+            "maximumConditionalBaseTvVsIcePp": 98.67893785317025
+          },
+          "candidate": {
+            "nativeSeconds": 2.5526682920000003,
+            "maxLengthDifferenceVsIceExplainedNormalizedPp": 3.5128277187919914,
+            "conditionalComparedPositions": 370,
+            "meanConditionalBaseTvVsIcePp": 5.885688192771422,
+            "maximumConditionalBaseTvVsIcePp": 85.41122098993954
+          }
+        },
+        {
+          "case": "public-wt",
+          "physicalDomainByteParity": true,
+          "sameInputHashes": true,
+          "v117": {
+            "nativeSeconds": 0.4657394160000001,
+            "maxLengthDifferenceVsIceExplainedNormalizedPp": 3.1646707476795655e-08,
+            "conditionalComparedPositions": 57,
+            "meanConditionalBaseTvVsIcePp": 0.0,
+            "maximumConditionalBaseTvVsIcePp": 0.0
+          },
+          "candidate": {
+            "nativeSeconds": 1.571954458,
+            "maxLengthDifferenceVsIceExplainedNormalizedPp": 3.6972835237847335e-06,
+            "conditionalComparedPositions": 57,
+            "meanConditionalBaseTvVsIcePp": 4.514203844151868e-10,
+            "maximumConditionalBaseTvVsIcePp": 2.553901534696479e-09
+          }
+        }
+      ]
     }
   }
 }
