@@ -7,18 +7,22 @@ import type{SangerLinearOptimizer}from'./sanger-discrete-phase';
  * made. This is only for the optional linear geometry relaxation used to
  * strengthen an outer bound; inference/optimizer acceptance remains unchanged.
  */
-export function linearDualOuterLower(p:MarginalProgram,cost:ArrayLike<number>,dual:ArrayLike<number>):number|undefined{
+export function linearDualOuterLower(p:MarginalProgram,cost:ArrayLike<number>,dual:ArrayLike<number>):number|undefined{return linearDualOuterLowerPrepared(p,cost,dual,false);}
+
+// Skip structural revalidation ONLY inside a cache whose immutable row/box
+// snapshot was already checked. Arithmetic and outward guards are identical.
+function linearDualOuterLowerPrepared(p:MarginalProgram,cost:ArrayLike<number>,dual:ArrayLike<number>,validated:boolean):number|undefined{
  if(p.quadratics?.length||p.quadraticCost?.length||cost.length!==p.upper.length||dual.length!==p.rows.length)return;
  const reduced=Float64Array.from(cost),compensation=new Float64Array(cost.length);
  let lower=0,correction=0,magnitude=0,magnitudeCorrection=0;
  const addMagnitude=(v:number)=>{const a=v-magnitudeCorrection,s=magnitude+a;magnitudeCorrection=(s-magnitude)-a;magnitude=s;};
  const accumulate=(value:number)=>{const adjusted=value-correction,sum=lower+adjusted;correction=(sum-lower)-adjusted;lower=sum;};
- for(let i=0;i<cost.length;i++){const u=p.upper[i],c=cost[i];if(!Number.isFinite(c)||!Number.isFinite(u)||u<0||u>=LP_INFINITY)return;addMagnitude(Math.abs(c)*u);}
+ for(let i=0;i<cost.length;i++){const u=p.upper[i],c=cost[i];if(!Number.isFinite(c)||!validated&&(!Number.isFinite(u)||u<0||u>=LP_INFINITY))return;addMagnitude(Math.abs(c)*u);}
  for(let k=0;k<p.rows.length;k++){
-  const r=p.rows[k];if(!Number.isFinite(r.lower)||!Number.isFinite(r.upper)||r.lower>r.upper)return;for(const[i,w]of r.terms)if(!Number.isSafeInteger(i)||i<0||i>=cost.length||!Number.isFinite(w))return;let y=dual[k];if(!Number.isFinite(y))return;
+  const r=p.rows[k];if(!validated){if(!Number.isFinite(r.lower)||!Number.isFinite(r.upper)||r.lower>r.upper)return;for(const[i,w]of r.terms)if(!Number.isSafeInteger(i)||i<0||i>=cost.length||!Number.isFinite(w))return;}let y=dual[k];if(!Number.isFinite(y))return;
   if(y>0&&r.lower<=-LP_INFINITY||y<0&&r.upper>=LP_INFINITY)y=0;
   if(!y)continue;const constant=y*(y>0?r.lower:r.upper);accumulate(constant);addMagnitude(Math.abs(constant));
-  for(const[i,w]of r.terms){if(!Number.isSafeInteger(i)||i<0||i>=cost.length||!Number.isFinite(w))return;const product=-y*w,adjusted=product-compensation[i],sum=reduced[i]+adjusted;compensation[i]=(sum-reduced[i])-adjusted;reduced[i]=sum;addMagnitude(Math.abs(product)*p.upper[i]);}
+  for(const[i,w]of r.terms){if(!validated&&(!Number.isSafeInteger(i)||i<0||i>=cost.length||!Number.isFinite(w)))return;const product=-y*w,adjusted=product-compensation[i],sum=reduced[i]+adjusted;compensation[i]=(sum-reduced[i])-adjusted;reduced[i]=sum;addMagnitude(Math.abs(product)*p.upper[i]);}
  }
  for(let i=0;i<cost.length;i++){const value=Math.min(0,reduced[i])*p.upper[i];accumulate(value);addMagnitude(Math.abs(value));}
  // Include input products and all boxed coefficient magnitudes in the guard.
@@ -30,13 +34,13 @@ export function linearDualOuterLower(p:MarginalProgram,cost:ArrayLike<number>,du
 /** Short, warm LP proposals; only the independently derived original-row/box
  * lower envelope escapes. Failed/incomplete proposals never become fits.
  */
-export function cachedLinearDualOuter(p:MarginalProgram,optimizer:SangerLinearOptimizer,seconds=1){
- let native:any,previous:Float64Array|undefined,domain=p.rows.map(r=>({...r})),upper=p.upper.slice();
- const cache=new Map<string,number>(),stats={hits:0,solves:0,partial:0,failures:0,seconds:0,lastFailure:undefined as string|undefined};
+export function cachedLinearDualOuter(p:MarginalProgram,optimizer:SangerLinearOptimizer,seconds=1,retryIncomplete=false){
+ let native:any,previous:Float64Array|undefined,validated=false,domain=p.rows.map(r=>({...r})),upper=p.upper.slice();
+ const cache=new Map<string,number>(),stats={hits:0,solves:0,retries:0,partial:0,invalidDuals:0,failures:0,seconds:0,lastFailure:undefined as string|undefined};
  const unchanged=()=>upper.length===p.upper.length&&upper.every((u,i)=>u===p.upper[i])&&domain.length===p.rows.length&&domain.every((r,k)=>r.terms===p.rows[k].terms&&r.lower===p.rows[k].lower&&r.upper===p.rows[k].upper);
  const release=()=>{const old=native;native=undefined;previous=undefined;try{old?.dispose();}catch(error){stats.lastFailure=String(error);}};
  return{stats,lower(terms:LinearTerm[],maximum=false){
-  if(!p.immutableRows||!unchanged()){release();cache.clear();domain=p.rows.map(r=>({...r}));upper=p.upper.slice();}
+  if(!p.immutableRows||!unchanged()){release();cache.clear();domain=p.rows.map(r=>({...r}));upper=p.upper.slice();validated=false;}
   const cost=new Float64Array(p.upper.length);let objectiveError=0,errorCompensation=0;
   for(const[i,w]of terms){
    if(!Number.isSafeInteger(i)||i<0||i>=cost.length||!Number.isFinite(w))throw Error('Invalid outer objective.');
@@ -56,13 +60,20 @@ export function cachedLinearDualOuter(p:MarginalProgram,optimizer:SangerLinearOp
   // Solving a large feasibility LP cannot strengthen this certificate.
   if(cost.every(c=>c===0))return outward(0);
   // The zero-multiplier certificate is always available for finite boxes.
-  let lower=linearDualOuterLower(p,cost,new Float64Array(p.rows.length));if(lower===undefined)throw Error('Invalid finite-box outer program.');
+  if(!validated){if(linearDualOuterLower(p,new Float64Array(p.upper.length),new Float64Array(p.rows.length))===undefined)throw Error('Invalid finite-box outer program.');validated=true;}
+  let lower=linearDualOuterLowerPrepared(p,cost,new Float64Array(p.rows.length),true);if(lower===undefined)throw Error('Invalid finite-box outer program.');
   const start=performance.now();stats.solves++;
   try{
-   if(!native){native=optimizer.createModel!();native.options.set({output_flag:false,solver:'simplex',time_limit:seconds,primal_feasibility_tolerance:1e-9,dual_feasibility_tolerance:1e-9});native.passModel(nativeMarginalProgram({...p,cost:Array.from(cost)}));}
+   if(!native){native=optimizer.createModel!();native.options.set({output_flag:false,solver:'simplex',simplex_strategy:4,time_limit:retryIncomplete?Math.min(1,seconds):seconds,primal_feasibility_tolerance:1e-9,dual_feasibility_tolerance:1e-9});native.passModel(nativeMarginalProgram({...p,cost:Array.from(cost)}));}
    else{const changed=Array.from(cost).flatMap((c,i)=>c!==previous![i]?[i]:[]);if(changed.length)native.changeColsCost({kind:'set',indices:changed},changed.map(i=>cost[i]));}
-   previous=cost;native.zeroAllClocks();const status=native.run().modelStatus;if(status!==7)stats.partial++;
-   const bound=linearDualOuterLower(p,cost,native.getSolution().rowDual as ArrayLike<number>);if(bound!==undefined)lower=Math.max(lower,bound);
+   previous=cost;native.zeroAllClocks();let status=native.run().modelStatus;
+   if(status!==7&&retryIncomplete){
+    stats.retries++;native.clearSolver?.();
+    try{native.options.set({simplex_strategy:1,time_limit:seconds});native.zeroAllClocks();status=native.run().modelStatus;}
+    finally{native.options.set({simplex_strategy:4,time_limit:Math.min(1,seconds)});}
+   }
+   if(status!==7)stats.partial++;
+   const bound=linearDualOuterLowerPrepared(p,cost,native.getSolution().rowDual as ArrayLike<number>,true);if(bound!==undefined)lower=Math.max(lower,bound);else stats.invalidDuals++;
   }catch(error){stats.failures++;stats.lastFailure=String(error);release();}
   finally{stats.seconds+=(performance.now()-start)/1000;}
   cache.set(key,lower);if(cache.size>16)cache.delete(cache.keys().next().value!);return outward(lower);

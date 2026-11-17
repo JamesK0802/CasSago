@@ -42,3 +42,14 @@ it('never certifies a falsely zero objective after catastrophic cancellation of 
  const p:MarginalProgram={immutableRows:true,upper:[1],cost:[0],rows:[]},cache=cachedLinearDualOuter(p,{createModel:()=>{throw Error('rounded zero uses its error-corrected box proof');}}as any);
  try{const terms:[number,number][]=[[0,-1e16],[0,-1],[0,1e16]];expect(cache.lower(terms)).toBeLessThanOrEqual(-1);expect(cache.lower([])).toBe(0);expect(cache.stats.solves).toBe(0);}finally{cache.dispose();}
 });
+
+it('prepared immutable certificates are bit-identical to complete validation for changing signed objectives',()=>{
+ const p:MarginalProgram={immutableRows:true,upper:[1,2,.8],cost:[0,0,0],rows:[{terms:[[0,1],[1,.5],[2,-1]],lower:-.3,upper:.4},{terms:[[0,-.7],[1,.2],[2,1]],lower:0,upper:LP_INFINITY}]};let dual=[0,0];
+ const fake:any={createModel:()=>({options:{set:()=>{}},passModel:()=>{},changeColsCost:()=>{},zeroAllClocks:()=>{},run:()=>({modelStatus:7}),getSolution:()=>({rowDual:dual}),dispose:()=>{}})},cache=cachedLinearDualOuter(p,fake);
+ try{for(let k=1;k<=40;k++){dual=[3*Math.sin(k),2*Math.cos(2*k)];const terms:[number,number][]=[[0,Math.sin(3*k)],[1,Math.cos(k)],[2,Math.sin(5*k)]];for(const maximum of[false,true]){const cost=terms.map(([,w])=>(maximum?-1:1)*w),expected=Math.max(linearDualOuterLower(p,cost,[0,0])!,linearDualOuterLower(p,cost,dual)!);expect(cache.lower(terms,maximum)).toBe(expected);}}}finally{cache.dispose();}
+});
+
+it('invalidates prepared structural validation when numeric boxes or row bounds change',()=>{
+ const p:MarginalProgram={immutableRows:true,upper:[1],cost:[0],rows:[{terms:[[0,1]],lower:0,upper:1}]},fake:any={createModel:()=>({options:{set:()=>{}},passModel:()=>{},changeColsCost:()=>{},zeroAllClocks:()=>{},run:()=>({modelStatus:7}),getSolution:()=>({rowDual:[0]}),dispose:()=>{}})},cache=cachedLinearDualOuter(p,fake);
+ try{expect(Number.isFinite(cache.lower([[0,-1]]))).toBe(true);p.upper[0]=NaN;expect(()=>cache.lower([[0,-1]])).toThrow();p.upper[0]=1;p.rows[0].lower=2;expect(()=>cache.lower([[0,-1]])).toThrow();}finally{cache.dispose();}
+});

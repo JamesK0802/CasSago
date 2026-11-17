@@ -35,9 +35,10 @@
     "src/app/workers/core/sanger-conditional-ratio-envelope.ts": "a2b6370ee69bf6c65fc846eb91fea54196ea2be3ace712a05ca0552ce0ef2610"
   },
   "next": [
-    "Resolve distinguishable single group-DNA and substitution-carrier errors.",
-    "Compare matched measured results; retain signal QC separately.",
-    "Multiplex deferred until single results are informative."
+    "Single synthetic scientific acceptance remains undecided: quantify remaining informative/identifiable profile discrepancies; GT coverage alone is not PASS.",
+    "Matched single measured profiles on public raw AB1; new carrot data prepared with genuine paper guides/PCR primers and NCBI reference.",
+    "Final browser result-equivalence and timing after Mac unlock/local browser enable.",
+    "Only then multi synthetic and measured, requiring matched standalone profiles."
   ],
   "reportingFollowup": {
     "scope": "No physical fit/candidate/noise/GT change. Correct global-versus-class0 Sub metric and multiple-SNP fitted WT lower amount.",
@@ -523,5 +524,207 @@
         }
       ]
     }
+  },
+  "jointLinearReportingFix": {
+    "scientificFitUnchanged": true,
+    "cause": "Local boxed-coordinate dual proposals discarded cross-coordinate restrictions, producing unnecessarily vacuous selected-group outer envelopes despite zero GT misses.",
+    "implementation": "One warm LP retains ALL original columns and linear rows plus implied cone support planes; original model/noise unchanged. Incomplete or invalid dual proposals fall back to certified original full-model solves. Query both numerator and centered conditional ratios, propagate four-base sum and original nonnegative departure budget. Report-only, same workflow for all inputs.",
+    "evidenceStatus": "complete",
+    "outerEnvelopeCaveat": "Conservative relaxation; not exact attained endpoints, joint genotype or statistical confidence intervals.",
+    "validation": {
+      "focusedTests": 117,
+      "testFiles": 25,
+      "productionBuild": "passed"
+    },
+    "timingCaveat": "Native concurrent validation and deterministic report replay are not cold browser timings. Selected-detail cost increases substantially versus old loose local report. Default scientific fit and point output unchanged.",
+    "actualOnlineSelectedChecks": {
+      "families": 4,
+      "gtEnvelopeMisses": 0,
+      "otherGroupReportsUnchanged": true,
+      "nativeSecondsPerSelectedGroup": [
+        41.601659874999996,
+        35.91594704100001,
+        43.716365542,
+        41.85001029199999
+      ]
+    },
+    "newHoldoutGtRetrieval": {
+      "cases": 6,
+      "actualUiBlue": 6,
+      "wrongWtNegativeControlUiRed": true,
+      "scope": "Posthoc retrieval/colouring regression, not scientific accuracy or uniqueness PASS."
+    },
+    "expandedRawAliasEvidence": {
+      "cases": 55,
+      "endpointChecks": 2124,
+      "allOriginalRawDataAndPlocEqual": 2124,
+      "alsoPbasEqual": 2109,
+      "remaining15PbasDifferences": "All at tied ADC peak maxima; raw channels identical.",
+      "scope": "Separate full finite populations per endpoint, not simultaneous independent extrema or 2124 distinct alternatives. No GT used for inference."
+    },
+    "fullAudit": {
+      "state": "complete",
+      "scope": "All62 frozen full joint-LP native reports plus actual production necessary-budget-cap replay; every compiled physical domain verified. No GT until full report freeze. Coverage/information regression, NOT overall scientific accuracy PASS or cold browser benchmark.",
+      "cases": 62,
+      "families": 504,
+      "gtEnvelopeMisses": 0,
+      "hiddenGtClasses": [],
+      "positions": 51408,
+      "oldMedianWidthPp": 3.2399340838716153,
+      "newMedianWidthPp": 3.217611107810592,
+      "oldOver98Positions": 2933,
+      "newOver98Positions": 1684,
+      "rawAliasEndpointsChecked": 2124,
+      "rawAliasEndpointsExcluded": [],
+      "widthIncreasesOver0_001Pp": 16,
+      "largestWidthIncreases": [
+        {
+          "id": "isolated-8-1-0",
+          "group": "marginal:0:0:-2",
+          "position": 205,
+          "beforeWidthPp": 2.6296609466484044,
+          "afterWidthPp": 2.6383622288215225
+        },
+        {
+          "id": "isolated-8-1-0",
+          "group": "marginal:0:0:4",
+          "position": 218,
+          "beforeWidthPp": 50.87813105652701,
+          "afterWidthPp": 50.88358541517232
+        },
+        {
+          "id": "isolated-12-1-1",
+          "group": "marginal:0:0:10",
+          "position": 439,
+          "beforeWidthPp": 2.3185449077346654,
+          "afterWidthPp": 2.321632732483281
+        },
+        {
+          "id": "isolated-10-2-1",
+          "group": "marginal:0:0:-3",
+          "position": 522,
+          "beforeWidthPp": 83.37933350711786,
+          "afterWidthPp": 83.38217833233952
+        },
+        {
+          "id": "fresh-single-12-b-sub",
+          "group": "marginal:0:0:4",
+          "position": 193,
+          "beforeWidthPp": 2.174795249126482,
+          "afterWidthPp": 2.1774753538162273
+        },
+        {
+          "id": "isolated-9-1-0",
+          "group": "marginal:0:0:5",
+          "position": 179,
+          "beforeWidthPp": 1.9634385205384186,
+          "afterWidthPp": 1.965820146008701
+        },
+        {
+          "id": "isolated-10-0-1",
+          "group": "marginal:0:0:-5",
+          "position": 376,
+          "beforeWidthPp": 3.503594415503619,
+          "afterWidthPp": 3.505743254831184
+        },
+        {
+          "id": "isolated-7-0-1",
+          "group": "marginal:0:0:-4",
+          "position": 383,
+          "beforeWidthPp": 1.5452540636613277,
+          "afterWidthPp": 1.5469911332598896
+        },
+        {
+          "id": "isolated-7-0-1",
+          "group": "marginal:0:0:-4",
+          "position": 382,
+          "beforeWidthPp": 1.5452540636613277,
+          "afterWidthPp": 1.5468965541321489
+        },
+        {
+          "id": "isolated-12-0-0",
+          "group": "marginal:0:0:2",
+          "position": 186,
+          "beforeWidthPp": 25.116001411834567,
+          "afterWidthPp": 25.117219020225345
+        },
+        {
+          "id": "isolated-8-1-0",
+          "group": "marginal:0:0:4",
+          "position": 177,
+          "beforeWidthPp": 1.1160881807036782,
+          "afterWidthPp": 1.1173049231075316
+        },
+        {
+          "id": "sub-with-12-indels",
+          "group": "marginal:0:0:3",
+          "position": 167,
+          "beforeWidthPp": 51.71249142087514,
+          "afterWidthPp": 51.713689983469166
+        },
+        {
+          "id": "isolated-12-0-0",
+          "group": "marginal:0:0:3",
+          "position": 167,
+          "beforeWidthPp": 51.712491393602164,
+          "afterWidthPp": 51.71368958796426
+        },
+        {
+          "id": "sub-with-12-indels",
+          "group": "marginal:0:0:4",
+          "position": 167,
+          "beforeWidthPp": 52.79476754746232,
+          "afterWidthPp": 52.795913092958344
+        },
+        {
+          "id": "isolated-12-0-0",
+          "group": "marginal:0:0:4",
+          "position": 167,
+          "beforeWidthPp": 52.794767538935425,
+          "afterWidthPp": 52.79591230463387
+        }
+      ],
+      "nativeFullAuditSourceHashes": {
+        "sanger-marginal-group-bounds.ts": "8ddd0fbf5bcd0022c4be5bd1dc3e67e06d2069cc5defdb59c178550f246d6f08",
+        "sanger-conditional-ratio-envelope.ts": "a2b6370ee69bf6c65fc846eb91fea54196ea2be3ace712a05ca0552ce0ef2610",
+        "sanger-joint-bound-certificate.ts": "da35fdd9c85a698d4b93c6cb0fea1e2b72337b8aedb5d9fe446bb919af844c0c",
+        "sanger-linear-dual-outer.ts": "8f88c4180df61837d35ff85c1e2e08371aafed5732296e7b3fbf886ef3f9f81f",
+        "sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
+        "sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a"
+      },
+      "maximumPointDifferenceVsPriorReport": 0,
+      "allOriginalPhysicalDomainsByteIdentical": true,
+      "rawAliasOutsideByMoreThan1e_7Fraction": [],
+      "nativeFitMedianSeconds": 2.5287652915000214,
+      "nativeFitMaximumSeconds": 5.197616750000044,
+      "allFamilyDetailMedianSeconds": 310.59649772849974,
+      "selectedGroupDetailMedianSeconds": 38.717626292000176,
+      "nativeTimingCaveat": "Six concurrent native development jobs, not cold production browser timing. Report-only replay times excluded.",
+      "productionOnlineSelectedRangeVsReplay": [
+        {
+          "id": "boundary-compound-forward",
+          "selectedRangeMaximumDifference": 1.0661974775283412e-12
+        },
+        {
+          "id": "isolated-7-1-0",
+          "selectedRangeMaximumDifference": 5.96253602047625e-12
+        },
+        {
+          "id": "fresh-single-12-b-sub",
+          "selectedRangeMaximumDifference": 1.5822605781146137e-08
+        },
+        {
+          "id": "fresh-single-12-a",
+          "selectedRangeMaximumDifference": 0.0
+        }
+      ],
+      "largestWidthIncreasePp": 0.008701282173118052
+    }
+  },
+  "jointReportingSourceSha256": {
+    "sanger-linear-dual-outer.ts": "2a512190efa59a74f86552f7f6eb1d0205847d66267bcdf9b1130a2b5144db13",
+    "sanger-marginal-group-bounds.ts": "8a5b87bfcf4f3fddafb23819f59a584d0b173242468e9444361159e643b23e35",
+    "sanger-joint-bound-certificate.ts": "d0927cbbdf273a0f8f381fbac774d9a9492e16730bcf88e11e1e9426c1d1b772",
+    "sanger-base-budget-bounds.ts": "5ebe0059d7477dae084b8172ee869d0181be4b2a300d5da1bf36cd54297a41aa"
   }
 }

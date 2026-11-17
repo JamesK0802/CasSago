@@ -2,8 +2,9 @@ import type {SangerAnalysisResult,SangerMarginalGroup} from '../../models/sanger
 import {marginalSessions} from './sanger-marginal-state';
 import {MarginalLinearSolver,type LinearTerm} from './sanger-marginal-lp';
 import {zeroLengthCompositionBounds} from './sanger-zero-length-composition';
-import {localBoundCertificates} from './sanger-local-bound-certificate';
 import {nonnegativeBudgetEnvelope} from './sanger-nonnegative-budget-envelope';
+import {tightenBaseBudgetBounds} from './sanger-base-budget-bounds';
+import {jointBoundCertificates} from './sanger-joint-bound-certificate';
 import {conditionalRatioEnvelope} from './sanger-conditional-ratio-envelope';
 import {withinLengthDisplay} from './sanger-marginal-display';
 
@@ -22,55 +23,34 @@ export function marginalGroupBounds(result:SangerAnalysisResult,groupId:string,p
  if(child?child.rangeStatus==='bounded':parent.status==='bounded')return{group:parent,complete:true,seconds:0,completedCoordinates:parent.bases.length,totalCoordinates:parent.bases.length};
  const target=session.targets.find(t=>t.groups.some(g=>g.id===parent.id))!,g=target.groups.find(g=>g.id===parent.id)!,ref=session.refs[g.reference],share=session.shares[g.reference],childEstimates=new Map(child?.bases.map(p=>[p.position,p.estimate]));
  let map=queries.get(result);if(!map){map=new Map();queries.set(result,map);}let query=map.get(groupId);
- // The flat solver is only the fallback for objectives without a local dual
- // certificate. Do not run thousands of decomposition rounds per nucleotide.
- const solver=new MarginalLinearSolver({...target.program,localBlocks:undefined},session.optimizer),local=localBoundCertificates(target.program,target.point,target.groups,session.optimizer),budgetUpper=nonnegativeBudgetEnvelope(target.program);
+ // One warm joint linear proposal retains all coordinates. Only an incomplete
+ // proposal falls back to a certified full original-model solve.
+ const solver=new MarginalLinearSolver({...target.program,localBlocks:undefined},session.optimizer),joint=jointBoundCertificates(target.program,session.optimizer),budgetUpper=nonnegativeBudgetEnvelope(target.program);
  try{
   if(!query){const familyMass=solver.bounds(g.mass),mass=marker?solver.bounds(marker.bases.flatMap(b=>g.bases.get(marker.position)![b])):familyMass;query={index:0,mass,familyMass,seconds:0,group:{...parent,bases:[],fractionRange:[Math.min(1,mass[0]/share),Math.min(1,mass[1]/share)],displayComponents:parent.displayComponents}};map.set(groupId,query);}
   const positions=[...g.bases],evaluate=(terms:LinearTerm[])=>terms.reduce((n,[i,w])=>n+w*target.point[i],0);
   for(;query.index<positions.length;query.index++){
    if(performance.now()-started>=1000*timeSliceSeconds)break;
    const[q,forms]=positions[query.index];progress('Bounding selected group · '+(query.index+1)+' / '+positions.length);
-   const position=ref.reverse?ref.input.sequence.length-ref.offset-q-1:ref.offset+q,reported=childEstimates.get(position),estimate=reported?(ref.reverse?reported.slice().reverse():reported.slice()):forms.map(f=>g.fraction?Math.max(0,evaluate(f))/g.fraction:0),lower=[0,0,0,0],upper=[1,1,1,1],dependent=estimate.indexOf(Math.max(...estimate));
-   for(let b=0;b<4;b++){
-    if(b===dependent)continue;
-    if(marker&&q===marker.position&&!marker.bases.includes(b)){lower[b]=upper[b]=0;continue;}
-    if(!forms[b].length){lower[b]=upper[b]=0;continue;}
-    const lo=local.outerBound(q,forms[b],false)??solver.solve(forms[b]).value,hi=local.outerBound(q,forms[b],true)??solver.solve(forms[b],true).value;
-    // For a marker-defined mixture, another coordinate's linkage is not
-    // observed. Fréchet bounds retain every compatible coupling rather than
-    // treating copied fitted percentages as phased molecular evidence.
-    const numeratorLo=marker&&q!==marker.position?Math.max(0,lo+query.mass[0]-query.familyMass[1]-1e-7):Math.max(0,lo-1e-7),numeratorHi=marker?Math.min(hi+1e-7,query.mass[1]):hi+1e-7;
-    lower[b]=Math.max(0,Math.min(1,numeratorLo/Math.max(1e-30,query.mass[1])));upper[b]=query.mass[0]>1e-8?Math.min(1,numeratorHi/query.mass[0]):1;
-    lower[b]=Math.min(lower[b],estimate[b]);upper[b]=Math.max(upper[b],estimate[b]);
-   }
-   lower[dependent]=Math.min(estimate[dependent],Math.max(0,1-upper.reduce((n,v,b)=>n+(b===dependent?0:v),0)));
-   upper[dependent]=Math.max(estimate[dependent],Math.min(1,1-lower.reduce((n,v,b)=>n+(b===dependent?0:v),0)));
-   // Separate channel maxima need not be attainable together. Bound their
-   // JOINT complement before deriving the dominant base, retaining the same
-   // original feasible set and shared mutation/measurement constraints.
-   const complement=forms.flatMap((f,b)=>b===dependent||marker&&q===marker.position&&!marker.bases.includes(b)?[]:Array.from(f));
-   if(complement.length){
-    const lo=local.outerBound(q,complement,false)??solver.solve(complement).value,hi=local.outerBound(q,complement,true)??solver.solve(complement,true).value;
-    const numeratorLo=marker&&q!==marker.position?Math.max(0,lo+query.mass[0]-query.familyMass[1]-1e-7):Math.max(0,lo-1e-7),numeratorHi=marker?Math.min(hi+1e-7,query.mass[1]):hi+1e-7;
-    const complementLower=query.mass[0]>1e-8?Math.max(0,1-numeratorHi/query.mass[0]):0,complementUpper=Math.min(1,1-numeratorLo/Math.max(1e-30,query.mass[1]));
-    lower[dependent]=Math.max(lower[dependent],Math.min(estimate[dependent],complementLower));
-    upper[dependent]=Math.min(upper[dependent],Math.max(estimate[dependent],complementUpper));
-   }
+   const position=ref.reverse?ref.input.sequence.length-ref.offset-q-1:ref.offset+q,reported=childEstimates.get(position),estimate=reported?(ref.reverse?reported.slice().reverse():reported.slice()):forms.map(f=>g.fraction?Math.max(0,evaluate(f))/g.fraction:0),lower=[0,0,0,0],upper=[1,1,1,1];
    const denominator=marker?g.bases.get(marker.position)!.flatMap((f,b)=>marker.bases.includes(b)?Array.from(f):[]):g.mass;
-   const numerator=forms[dependent],numeratorLower=marker&&q!==marker.position?[...numerator,...denominator,...g.mass.map(([i,w])=>[i,-w]as LinearTerm)]:numerator;
-   [lower[dependent],upper[dependent]]=conditionalRatioEnvelope(numeratorLower,numerator,denominator,query.mass,estimate[dependent],[lower[dependent],upper[dependent]],(terms,maximum)=>local.outerBound(q,terms,maximum));
-   if(query.mass[0]>1e-8)for(let b=0;b<4;b++){
-    const hi=budgetUpper(forms[b]),other=budgetUpper(forms.flatMap((f,a)=>a===b?[]:Array.from(f)));
-    if(hi!==undefined)upper[b]=Math.min(upper[b],Math.max(estimate[b],Math.min(1,(hi+1e-7)/query.mass[0])));
-    if(other!==undefined)lower[b]=Math.max(lower[b],Math.min(estimate[b],Math.max(0,1-(other+1e-7)/query.mass[0])));
+   for(let b=0;b<4;b++){
+    if(marker&&q===marker.position&&!marker.bases.includes(b)||!forms[b].length){lower[b]=upper[b]=0;continue;}
+    // Marker membership at another cycle is unobserved. Frechet inequalities
+    // retain every compatible linkage rather than assigning a phased allele.
+    const numeratorLower=marker&&q!==marker.position?[...forms[b],...denominator,...g.mass.map(([i,w])=>[i,-w]as LinearTerm)]:forms[b];
+    const lo=joint.bound(numeratorLower,false)??solver.solveToCompletion(numeratorLower).value,hi=joint.bound(forms[b],true)??solver.solveToCompletion(forms[b],true).value;
+    lower[b]=Math.min(estimate[b],Math.max(0,(lo-1e-7)/Math.max(1e-30,query.mass[1])));
+    upper[b]=Math.max(estimate[b],query.mass[0]>1e-8?Math.min(1,(hi+1e-7)/query.mass[0]):1);
+    [lower[b],upper[b]]=conditionalRatioEnvelope(numeratorLower,forms[b],denominator,query.mass,estimate[b],[lower[b],upper[b]],(terms,maximum)=>joint.bound(terms,maximum)??solver.solveToCompletion(terms,maximum).value);
    }
-   // All four fractions sum to one, including a marker-defined group.
-   // Propagate the certified dominant-channel improvement to its complement.
+   // Every conditional four-base profile sums to one. Endpoints remain
+   // marginal outer bounds; independent extrema are not a joint genotype.
    for(let b=0;b<4;b++){
     lower[b]=Math.max(lower[b],Math.min(estimate[b],Math.max(0,1-upper.reduce((n,v,a)=>n+(a===b?0:v),0))));
     upper[b]=Math.min(upper[b],Math.max(estimate[b],Math.min(1,1-lower.reduce((n,v,a)=>n+(a===b?0:v),0))));
    }
+   tightenBaseBudgetBounds(forms,query.mass[0],estimate,lower,upper,budgetUpper);
    query.group.bases.push({position,estimate:ref.reverse?estimate.reverse():estimate,lower:ref.reverse?lower.reverse():lower,upper:ref.reverse?upper.reverse():upper});
   }
   const complete=query.index===positions.length;query.seconds+=(performance.now()-started)/1000;
@@ -91,5 +71,5 @@ export function marginalGroupBounds(result:SangerAnalysisResult,groupId:string,p
    map.delete(groupId);
   }
   return{group:complete?parent:undefined,complete,seconds:query.seconds,completedCoordinates:query.index,totalCoordinates:positions.length};
- }finally{local.dispose();solver.dispose();}
+ }finally{joint.dispose();solver.dispose();}
 }
