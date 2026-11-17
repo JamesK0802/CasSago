@@ -726,5 +726,128 @@
     "sanger-marginal-group-bounds.ts": "8a5b87bfcf4f3fddafb23819f59a584d0b173242468e9444361159e643b23e35",
     "sanger-joint-bound-certificate.ts": "d0927cbbdf273a0f8f381fbac774d9a9492e16730bcf88e11e1e9426c1d1b772",
     "sanger-base-budget-bounds.ts": "5ebe0059d7477dae084b8172ee869d0181be4b2a300d5da1bf36cd54297a41aa"
+  },
+  "newPublicMeasuredSingles": {
+    "state": "complete-diagnostic-not-accepted",
+    "scope": "New measured single native current common workflow versus frozen official ICE revision310495fe536b7d2eafcee80f145c55f7c65d947c. Original raw AB1 hashes identical; same requested +/-20 range. CasSago uses disclosed consensus-registration adapter and retained interval, ICE original full read and its own inference window. ICE is corroboration, NOT GT. Paper homozygous labels/PBAS alignments are not independent exact molecular fraction measurements. No allPASS claim.",
+    "sourcePaper": "https://link.springer.com/article/10.1007/s00299-025-03499-6",
+    "findings": [
+      "All three numeric outputs produced; only samples02/14 pass signalQC. Results compared regardless QC.",
+      "Initial regional seed already differs; all three original physical-domain +1 maxima are below ICE reported +1, so representative-only tuning cannot reconcile outputs.",
+      "Exact official ICE matrix/output experiment reproduces normalized-positive-Lasso alpha.8 plus intercept, coefficient normalization, correlation-R2 correction/rounding. Controlled scaling/intercept variants materially change abundance. Do not call this exact genotype truth or quietly copy its suppression.",
+      "Peak vs area, short vs long windows, uniform observation component and intensity-weighted diagnostic did not by themselves resolve the discrepancy. These isolated diagnostics were NOT adopted.",
+      "Investigate shared observation/length inference adequacy and identifiable minor signal. No noise widening, candidate removal, GT prior, synthetic-specific model, count fork or production fitting change applied."
+    ],
+    "next": "Remain SINGLE. Develop a physically supported common observation/length-fit correction; validate noisy minor-indel/Sub holdouts and original5..12panel before adoption. Multiplex still deferred.",
+    "rows": [
+      {
+        "case": "carrot-2025-02",
+        "sameOriginalRawAb1Hashes": true,
+        "casSagoNativeSeconds": 4.163381708,
+        "casSagoSignalQc": true,
+        "casSagoPlus1Fraction": 0.7675218747421282,
+        "casSagoOriginalPlus1MassRange": [
+          0.6242541107151169,
+          0.8959432550829403
+        ],
+        "casSagoStages": [
+          {
+            "stage": "regional-seed",
+            "plus1Fraction": 0.7657208587884335
+          },
+          {
+            "stage": "primary-minimum-departure",
+            "plus1Fraction": 0.7657208587561425
+          },
+          {
+            "stage": "pre-photon-representative",
+            "plus1Fraction": 0.760472915024027
+          },
+          {
+            "stage": "final",
+            "plus1Fraction": 0.7675218747421282
+          }
+        ],
+        "iceNativeSeconds": 0.5730630420148373,
+        "iceRawReportedPlus1": 0.94,
+        "iceRepresentedCoefficientMass": 0.94,
+        "iceInferenceWindow": [
+          442,
+          572
+        ]
+      },
+      {
+        "case": "carrot-2025-03",
+        "sameOriginalRawAb1Hashes": true,
+        "casSagoNativeSeconds": 6.755364917,
+        "casSagoSignalQc": false,
+        "casSagoPlus1Fraction": 0.760300244451466,
+        "casSagoOriginalPlus1MassRange": [
+          0.5461769990258266,
+          0.8142221946132197
+        ],
+        "casSagoStages": [
+          {
+            "stage": "regional-seed",
+            "plus1Fraction": 0.6629700291074027
+          },
+          {
+            "stage": "primary-minimum-departure",
+            "plus1Fraction": 0.7870534173942231
+          },
+          {
+            "stage": "pre-photon-representative",
+            "plus1Fraction": 0.674453076627142
+          },
+          {
+            "stage": "final",
+            "plus1Fraction": 0.760300244451466
+          }
+        ],
+        "iceNativeSeconds": 0.6811128749977797,
+        "iceRawReportedPlus1": 0.95,
+        "iceRepresentedCoefficientMass": 0.95,
+        "iceInferenceWindow": [
+          442,
+          572
+        ]
+      },
+      {
+        "case": "carrot-2025-14",
+        "sameOriginalRawAb1Hashes": true,
+        "casSagoNativeSeconds": 7.686044291999999,
+        "casSagoSignalQc": true,
+        "casSagoPlus1Fraction": 0.9117933408230087,
+        "casSagoOriginalPlus1MassRange": [
+          0.8999998043319452,
+          0.9437363329284444
+        ],
+        "casSagoStages": [
+          {
+            "stage": "regional-seed",
+            "plus1Fraction": 0.9232524713413514
+          },
+          {
+            "stage": "primary-minimum-departure",
+            "plus1Fraction": 0.9196714939723424
+          },
+          {
+            "stage": "pre-photon-representative",
+            "plus1Fraction": 0.920638323501734
+          },
+          {
+            "stage": "final",
+            "plus1Fraction": 0.9117933408230087
+          }
+        ],
+        "iceNativeSeconds": 0.7255890420638025,
+        "iceRawReportedPlus1": 0.97,
+        "iceRepresentedCoefficientMass": 0.99,
+        "iceInferenceWindow": [
+          95,
+          225
+        ]
+      }
+    ]
   }
 }
