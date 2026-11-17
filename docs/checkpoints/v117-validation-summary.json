@@ -1001,5 +1001,453 @@
       "sanger-marginal-fit.ts": "4fa7421930060e7457d07964c76d3e9c78ec3aef9970bfdf7daa70f4d7623761",
       "sanger-marginal-model.ts": "7cd7681089338546208e276322e0bbbd511c7667f0de6590a4b5979cf640498a"
     }
+  },
+  "latestPairedPhaseCalibrationCorrection": {
+    "state": "calibration-operator-fix-validated; measured-indel-splatter-UNRESOLVED",
+    "baselineCheckpoint": "2b08f16",
+    "change": "Reference transfer TRAINING and prefix held-out noise now use exactly the same phased absolute-photon operator as main measurements. Common for all reference/target/allele counts. Original solver certificate tolerance1e-7 unchanged. No signal QC cutoff changed.",
+    "synthetic": {
+      "cases": 62,
+      "counts5to12": {
+        "5": {
+          "cases": 7,
+          "jointGtRetrieved": 7,
+          "maxLengthErrorPp": 0.02731196596383878,
+          "medianNativeFitSeconds": 2.0372682499999937,
+          "maxNativeFitSeconds": 2.442207542000004
+        },
+        "6": {
+          "cases": 7,
+          "jointGtRetrieved": 7,
+          "maxLengthErrorPp": 0.026775385622379577,
+          "medianNativeFitSeconds": 2.023215792000003,
+          "maxNativeFitSeconds": 2.4186085840000016
+        },
+        "7": {
+          "cases": 7,
+          "jointGtRetrieved": 7,
+          "maxLengthErrorPp": 0.0349989422253269,
+          "medianNativeFitSeconds": 2.0065187080000033,
+          "maxNativeFitSeconds": 2.2184432089999975
+        },
+        "8": {
+          "cases": 7,
+          "jointGtRetrieved": 7,
+          "maxLengthErrorPp": 0.029189599625865925,
+          "medianNativeFitSeconds": 2.0138475840000027,
+          "maxNativeFitSeconds": 2.2190200829999958
+        },
+        "9": {
+          "cases": 7,
+          "jointGtRetrieved": 7,
+          "maxLengthErrorPp": 0.02185721619253067,
+          "medianNativeFitSeconds": 2.0048385419999977,
+          "maxNativeFitSeconds": 2.226323666999997
+        },
+        "10": {
+          "cases": 7,
+          "jointGtRetrieved": 7,
+          "maxLengthErrorPp": 0.020550730737073364,
+          "medianNativeFitSeconds": 1.9921097079999999,
+          "maxNativeFitSeconds": 2.3740944589999997
+        },
+        "11": {
+          "cases": 7,
+          "jointGtRetrieved": 7,
+          "maxLengthErrorPp": 0.019895021262737733,
+          "medianNativeFitSeconds": 2.0377917909999996,
+          "maxNativeFitSeconds": 2.2784192089999995
+        },
+        "12": {
+          "cases": 7,
+          "jointGtRetrieved": 7,
+          "maxLengthErrorPp": 0.020472362686066448,
+          "medianNativeFitSeconds": 2.242653667,
+          "maxNativeFitSeconds": 4.1588477080000015
+        }
+      },
+      "jointGtProfilesRetrieved": 62,
+      "exactParentPointsUnchanged": 62,
+      "maximumParentPointChange": 0,
+      "preFitPhysicalProgramByteIdentical": 62,
+      "maxLengthPointErrorPp": 0.047554233985536154,
+      "scope": "Blind outputs frozen before GT read; new native solves/joint GT checks. Joint retrieval is necessary, not sufficient; not a scientific allPASS or exact-sequence recovery claim. Original interval placeholders receive no credit.",
+      "main5to12Cases": 56,
+      "supplementalBoundaryAndSubCases": 6
+    },
+    "measured": [
+      {
+        "id": "carrot-2025-02",
+        "nativeFitSeconds": 5.138028208,
+        "lag": -0.07500000000000001,
+        "signalQc": true,
+        "maximumLengthPointChangePp": 0.5385215348514771,
+        "beforeDominant": 1,
+        "afterDominant": 1,
+        "beforePlus1Pp": 76.75218747421282,
+        "afterPlus1Pp": 77.2907090090643,
+        "stages": [
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.0015724169999999731
+          },
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.046742500000000006
+          },
+          {
+            "stage": "Calibrating the shared observation model",
+            "seconds": 0.08352758299999999
+          },
+          {
+            "stage": "Fitting invariant-flank length proportions",
+            "seconds": 0.391656875
+          },
+          {
+            "stage": "Constructing joint marginal constraints \u00b7 target 1",
+            "seconds": 0.2955101249999999
+          },
+          {
+            "stage": "Fitting the shared global sequence-flow model",
+            "seconds": 0.3740969580000001
+          },
+          {
+            "stage": "Selecting parsimonious sequence-flow representative",
+            "seconds": 0.9408570419999999
+          },
+          {
+            "stage": "Refining base proportions",
+            "seconds": 2.971918417
+          },
+          {
+            "stage": "Preparing fitted representatives and base proportions",
+            "seconds": 0.02534504100000049
+          }
+        ],
+        "scope": "Measured, no molecular GT. QC separate from result accuracy. ICE comparison is prior independent corroboration, not truth."
+      },
+      {
+        "id": "carrot-2025-03",
+        "nativeFitSeconds": 7.612488042,
+        "lag": -0.025,
+        "signalQc": false,
+        "maximumLengthPointChangePp": 0.23453521173715242,
+        "beforeDominant": 1,
+        "afterDominant": 1,
+        "beforePlus1Pp": 76.03002444514661,
+        "afterPlus1Pp": 76.26455965688376,
+        "stages": [
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.001552791999999954
+          },
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.04834166600000003
+          },
+          {
+            "stage": "Calibrating the shared observation model",
+            "seconds": 0.08704437500000001
+          },
+          {
+            "stage": "Fitting invariant-flank length proportions",
+            "seconds": 0.471226
+          },
+          {
+            "stage": "Constructing joint marginal constraints \u00b7 target 1",
+            "seconds": 0.29642537500000005
+          },
+          {
+            "stage": "Fitting the shared global sequence-flow model",
+            "seconds": 1.6118578749999999
+          },
+          {
+            "stage": "Selecting parsimonious sequence-flow representative",
+            "seconds": 1.8358560419999999
+          },
+          {
+            "stage": "Refining base proportions",
+            "seconds": 3.224001708
+          },
+          {
+            "stage": "Preparing fitted representatives and base proportions",
+            "seconds": 0.029132792000000338
+          }
+        ],
+        "scope": "Measured, no molecular GT. QC separate from result accuracy. ICE comparison is prior independent corroboration, not truth."
+      },
+      {
+        "id": "carrot-2025-14",
+        "nativeFitSeconds": 8.328092333,
+        "lag": -0.025,
+        "signalQc": true,
+        "maximumLengthPointChangePp": 0.07223650473619304,
+        "beforeDominant": 1,
+        "afterDominant": 1,
+        "beforePlus1Pp": 91.17933408230087,
+        "afterPlus1Pp": 91.20531870419242,
+        "stages": [
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.0016125409999999648
+          },
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.025306375000000002
+          },
+          {
+            "stage": "Calibrating the shared observation model",
+            "seconds": 0.039315792000000044
+          },
+          {
+            "stage": "Fitting invariant-flank length proportions",
+            "seconds": 1.59003125
+          },
+          {
+            "stage": "Constructing joint marginal constraints \u00b7 target 1",
+            "seconds": 0.45789987500000007
+          },
+          {
+            "stage": "Fitting the shared global sequence-flow model",
+            "seconds": 1.677758292
+          },
+          {
+            "stage": "Selecting parsimonious sequence-flow representative",
+            "seconds": 1.5211828750000005
+          },
+          {
+            "stage": "Refining base proportions",
+            "seconds": 2.9788465830000006
+          },
+          {
+            "stage": "Preparing fitted representatives and base proportions",
+            "seconds": 0.029281082999999854
+          }
+        ],
+        "scope": "Measured, no molecular GT. QC separate from result accuracy. ICE comparison is prior independent corroboration, not truth."
+      },
+      {
+        "id": "public-good",
+        "nativeFitSeconds": 3.5745001249999997,
+        "lag": -0.07500000000000001,
+        "signalQc": true,
+        "maximumLengthPointChangePp": 1.1609056921859764,
+        "beforeDominant": -1,
+        "afterDominant": -1,
+        "beforePlus1Pp": 18.472813999985704,
+        "afterPlus1Pp": 18.862799042087133,
+        "stages": [
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.0016287909999999784
+          },
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.03464570900000001
+          },
+          {
+            "stage": "Calibrating the shared observation model",
+            "seconds": 0.085184125
+          },
+          {
+            "stage": "Fitting invariant-flank length proportions",
+            "seconds": 0.05008633299999997
+          },
+          {
+            "stage": "Constructing joint marginal constraints \u00b7 target 1",
+            "seconds": 0.26267454200000007
+          },
+          {
+            "stage": "Fitting the shared global sequence-flow model",
+            "seconds": 0.26344904099999983
+          },
+          {
+            "stage": "Selecting parsimonious sequence-flow representative",
+            "seconds": 0.660363417
+          },
+          {
+            "stage": "Refining base proportions",
+            "seconds": 2.1823977500000002
+          },
+          {
+            "stage": "Preparing fitted representatives and base proportions",
+            "seconds": 0.02962220799999977
+          }
+        ],
+        "scope": "Measured, no molecular GT. QC separate from result accuracy. ICE comparison is prior independent corroboration, not truth."
+      },
+      {
+        "id": "public-wt",
+        "nativeFitSeconds": 0.543603041,
+        "lag": 0,
+        "signalQc": true,
+        "maximumLengthPointChangePp": 2.993159053943373e-08,
+        "beforeDominant": 0,
+        "afterDominant": 0,
+        "beforePlus1Pp": 5.59125200671094e-10,
+        "afterPlus1Pp": 5.934976348963932e-11,
+        "stages": [
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.001574375000000032
+          },
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.03386966700000005
+          },
+          {
+            "stage": "Calibrating the shared observation model",
+            "seconds": 0.05664054199999998
+          },
+          {
+            "stage": "Fitting invariant-flank length proportions",
+            "seconds": 0.005669250000000034
+          },
+          {
+            "stage": "Constructing joint marginal constraints \u00b7 target 1",
+            "seconds": 0.22303437499999995
+          },
+          {
+            "stage": "Fitting the shared global sequence-flow model",
+            "seconds": 0.163582583
+          },
+          {
+            "stage": "Selecting parsimonious sequence-flow representative",
+            "seconds": 0.006351707999999917
+          },
+          {
+            "stage": "Refining base proportions",
+            "seconds": 0.04283608400000003
+          },
+          {
+            "stage": "Preparing fitted representatives and base proportions",
+            "seconds": 0.005555166000000099
+          }
+        ],
+        "scope": "Measured, no molecular GT. QC separate from result accuracy. ICE comparison is prior independent corroboration, not truth."
+      },
+      {
+        "id": "donor-hdr",
+        "nativeFitSeconds": 7.779274790999999,
+        "lag": 0,
+        "signalQc": true,
+        "maximumLengthPointChangePp": 0.0,
+        "beforeDominant": 14,
+        "afterDominant": 14,
+        "beforePlus1Pp": 7.485264182737414,
+        "afterPlus1Pp": 7.485264182737414,
+        "stages": [
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.0016348330000000714
+          },
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.03713362499999994
+          },
+          {
+            "stage": "Calibrating the shared observation model",
+            "seconds": 0.06694337500000005
+          },
+          {
+            "stage": "Fitting invariant-flank length proportions",
+            "seconds": 0.5908130829999999
+          },
+          {
+            "stage": "Constructing joint marginal constraints \u00b7 target 1",
+            "seconds": 0.41794337500000006
+          },
+          {
+            "stage": "Fitting the shared global sequence-flow model",
+            "seconds": 0.297816417
+          },
+          {
+            "stage": "Selecting parsimonious sequence-flow representative",
+            "seconds": 0.8509686669999998
+          },
+          {
+            "stage": "Refining base proportions",
+            "seconds": 5.486202958
+          },
+          {
+            "stage": "Preparing fitted representatives and base proportions",
+            "seconds": 0.023321083000000728
+          }
+        ],
+        "scope": "Measured, no molecular GT. QC separate from result accuracy. ICE comparison is prior independent corroboration, not truth."
+      },
+      {
+        "id": "donor-sub",
+        "nativeFitSeconds": 4.322422791,
+        "lag": 0,
+        "signalQc": true,
+        "maximumLengthPointChangePp": 0.0,
+        "beforeDominant": 0,
+        "afterDominant": 0,
+        "beforePlus1Pp": 3.09913557795891,
+        "afterPlus1Pp": 3.09913557795891,
+        "stages": [
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.001641958000000045
+          },
+          {
+            "stage": "Registering measured fluorescence",
+            "seconds": 0.06583245799999997
+          },
+          {
+            "stage": "Calibrating the shared observation model",
+            "seconds": 0.08092870900000003
+          },
+          {
+            "stage": "Fitting invariant-flank length proportions",
+            "seconds": 0.24917933299999992
+          },
+          {
+            "stage": "Constructing joint marginal constraints \u00b7 target 1",
+            "seconds": 0.44386304199999993
+          },
+          {
+            "stage": "Fitting the shared global sequence-flow model",
+            "seconds": 1.0869903330000001
+          },
+          {
+            "stage": "Selecting parsimonious sequence-flow representative",
+            "seconds": 0.8272104999999997
+          },
+          {
+            "stage": "Refining base proportions",
+            "seconds": 1.539256625
+          },
+          {
+            "stage": "Preparing fitted representatives and base proportions",
+            "seconds": 0.02070745799999986
+          }
+        ],
+        "scope": "Measured, no molecular GT. QC separate from result accuracy. ICE comparison is prior independent corroboration, not truth."
+      }
+    ],
+    "rejectedDiagnostics": {
+      "root": "/Users/james/Desktop/CasSago_Resume_20261112/validation-runs/single-reestablishment-20261116/sensor-background-v1",
+      "hypotheses": [
+        "constant differential ADC background",
+        "nonnegative dye mixing and affine offsets",
+        "joint background/gain/decay calibration",
+        "context smoothing of control/sample spectra",
+        "observed-total background correction"
+      ],
+      "reason": "Some variants boost dominant proportions but worsen independent prefix/flank predictions or over-extrapolate from short prefix. No consistent correction for all measured cases. None adopted. No forcing agreement with ICE.",
+      "additionalPeakShapeDiagnostics": [
+        "/Users/james/Desktop/CasSago_Resume_20261112/validation-runs/single-reestablishment-20261116/carrot-contrast-diagnostic",
+        "/Users/james/Desktop/CasSago_Resume_20261112/validation-runs/single-reestablishment-20261116/carrot-matched-shape-diagnostic"
+      ]
+    },
+    "tests": {
+      "newOperatorAndExistingTransferSubset": "10 passed/4 files",
+      "focused": "80 passed/25 files. Additional legacy cycle-envelope12failures reproduced unchanged on baseline, separately preserved.",
+      "knownFailureBaseline": "All12 cycle-envelope tests fail identically on unchanged baseline (obsolete progress-stage stop expectation). Preserve failures; no clean whole-suite claim. Full legacy core run interrupted after observed existing failures.",
+      "productionBuild": "passed; existing CommonJS/size warnings retained"
+    },
+    "remaining": "Measured weak/background signal still being assigned to minor indel templates. Need sensor/noise model correction with withheld prediction and controlled real-noise GT evidence. Do not turn improved proportions alone into PASS, do not choose ICE as truth, do not resume multiplex. Final browser verification remains pending."
   }
 }

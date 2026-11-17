@@ -1,3 +1,4 @@
+import {prefixPhotonVariance} from './sanger-prefix-residual';
 import {referenceTransfer} from './sanger-reference-transfer';
 import {cycleFluorescence} from './sanger-cycle-fluorescence';
 import {amplitudeTransfer} from './sanger-amplitude-transfer';
@@ -29,8 +30,8 @@ export function prepareMeasuredObservation(refs:Prepared[],control:SangerTrace,s
  // integrated photons, so their predictive noise must be measured on the same
  // observable, using unedited prefix rows withheld from gain/transfer fitting.
  const noiseCalibration=calibrateSignal(sContrast,upstream,[cContrast]),noiseRaw=sContrast.map(v=>correctGain(v,noiseCalibration.gains)),calibrationNoise=upstream.reduce((sum,p)=>sum+noiseRaw[p].reduce((e,v,b)=>e+(v-mixPhase(cContrast[p],cContrast[phaseNeighbor(p,noiseCalibration.lag)]||[0,0,0,0],noiseCalibration.lag)[b])**2,0),0)/(4*upstream.length),counts=[...inputControlPeaks(control,quality,cr.trim),...inputControlPeaks(sample,quality,sr.trim)].filter(v=>v>0).sort((a,b)=>a-b),quantizationNoise=1/(6*Math.max(1,counts[Math.floor(counts.length/2)]||1)**2),contrastNoise=Math.max(calibrationNoise,quantizationNoise);
- const controlCalibration=calibrateControlMixture(sequences,controlPositions,c),{shares,means}=controlCalibration,intensity=measuredIntensityResponses(refs,shares,means,c,amplitudes,controlPositions,1/scale),transferByReference=referenceTransfer(intensity.responses,shares,sampleSignal.areas,training,sr.trim,scale,transfer);
- const referencePrefixError=validation.reduce((sum,p)=>{const predicted=[0,1,2,3].map(b=>refs.reduce((n,_,h)=>n+shares[h]*transferByReference.apply(h,p,intensity.responses[h][p])[b],0)),total=predicted.reduce((a,b)=>a+b,0);return sum+predicted.reduce((e,v,b)=>e+(v/Math.max(1e-30,total)-raw[p][b])**2,0);},0)/(4*validation.length),noise=Math.max(quantizationNoise,referencePrefixError),fitDelta=1.5*Math.sqrt(noise);
+ const controlCalibration=calibrateControlMixture(sequences,controlPositions,c),{shares,means}=controlCalibration,intensity=measuredIntensityResponses(refs,shares,means,c,amplitudes,controlPositions,1/scale),transferByReference=referenceTransfer(intensity.responses,shares,sampleSignal.areas,training,sr.trim,scale,transfer,lag);
+ const referencePrefixError=prefixPhotonVariance(validation,raw,intensity.responses,shares,transferByReference,lag),noise=Math.max(quantizationNoise,referencePrefixError),fitDelta=1.5*Math.sqrt(noise);
  return{cr,sr,quality,positions,c,s,raw,noise,means,calibration,shares,start,end,intensity,fitDelta,transferByReference,controlSignal,sampleSignal,noiseCalibration,contrastNoise,referencePrefixError,controlCalibration,trainingPositions:training,validationPositions:validation};
 }
 

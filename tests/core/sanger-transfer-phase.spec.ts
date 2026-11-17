@@ -1,0 +1,14 @@
+import {it,expect} from 'vitest';
+import {referenceTransfer} from '../../src/app/workers/core/sanger-reference-transfer';
+import {prefixPhotonVariance} from '../../src/app/workers/core/sanger-prefix-residual';
+import {mixPhase,phaseNeighbor} from '../../src/app/workers/core/sanger-signal';
+it.each([0,.15,-.15])('fits the actual phased WT photon operator for lag %s',lag=>{
+ const n=180,responses=[Array.from({length:n},(_,p)=>[0,1,2,3].map(b=>p%4===b?1+.2*Math.sin(p*.61):.02+.01*Math.cos(p*.23+b)))],shares=[1],initial={gains:[1,1,1,1],logScale:0,slope:0,first:10,span:150},params=[.2,-.15,.1,-.1,.08],fg=(p:number)=>responses[0][p].map((v,b)=>v*Math.exp(params[b]+params[4]*(2*(p-10)/150-1))),areas=responses[0].map((_,p)=>mixPhase(fg(p),fg(Math.max(0,Math.min(n-1,phaseNeighbor(p,lag)))),lag)),raw=areas.map(a=>{const t=a.reduce((s,v)=>s+v,0);return a.map(v=>v/t);}),training=Array.from({length:150},(_,i)=>i+10).filter(p=>p%3!==0),validation=Array.from({length:150},(_,i)=>i+10).filter(p=>p%3===0),fit=referenceTransfer(responses,shares,areas,training,0,1,initial,lag);
+ expect(prefixPhotonVariance(validation,raw,responses,shares,fit,lag)).toBeLessThan(1e-13);
+ if(lag){const wrong=referenceTransfer(responses,shares,areas,training,0,1,initial,0);const error=validation.reduce((n,p)=>{const pred=mixPhase(wrong.apply(0,p,responses[0][p]),wrong.apply(0,phaseNeighbor(p,lag),responses[0][phaseNeighbor(p,lag)]),lag);return n+pred.reduce((s,v,b)=>s+(v-areas[p][b])**2,0);},0)/validation.length;expect(error).toBeGreaterThan(.001);}
+});
+it('keeps both reference transfers inside the same phased training operator and leaves held-out rows out of fitting',()=>{
+ let seed=99117;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;},lag=-.125,n=180,shares=[.35,.65],responses=shares.map(()=>Array.from({length:n},()=>[0,1,2,3].map(()=>.05+random()))),initial={gains:[1,1,1,1],logScale:0,slope:0,first:10,span:130},parameters=[[.1,-.1,.04,.02,.06],[-.04,.12,-.08,.07,-.03]],foreground=(p:number)=>[0,1,2,3].map(b=>responses.reduce((s,r,h)=>s+shares[h]*r[p][b]*Math.exp(parameters[h][b]+parameters[h][4]*(2*(p-10)/130-1)),0)),areas=responses[0].map((_,p)=>mixPhase(foreground(p),foreground(Math.min(n-1,phaseNeighbor(p,lag))),lag)),training=Array.from({length:130},(_,i)=>i+10).filter(p=>p%3!==0),validation=Array.from({length:150},(_,i)=>i+10).filter(p=>p%3===0),fit=referenceTransfer(responses,shares,areas,training,0,1,initial,lag),raw=areas.map(a=>a.map(v=>v/a.reduce((s,x)=>s+x,0)));
+ expect(prefixPhotonVariance(validation,raw,responses,shares,fit,lag)).toBeLessThan(1e-12);
+ const altered=areas.map((v,p)=>training.includes(p)?v:v.map(x=>x*3)),again=referenceTransfer(responses,shares,altered,training,0,1,initial,lag);expect(again.parameters).toEqual(fit.parameters);
+});
