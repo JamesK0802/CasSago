@@ -1,3 +1,4 @@
+import {representativeEvents} from './sanger-representative-events';
 import {marginalOriginReadBaseFree} from './sanger-marginal-domain';
 import {originBaseMass} from './sanger-origin-base-support';
 import type {MarginalInternalGroup} from './sanger-marginal-engine';
@@ -24,7 +25,7 @@ export function fittedMarginalRepresentative(g:MarginalInternalGroup,point:numbe
   if(e.size)changes.push(event(e.start,e.start+Math.max(0,-e.size),inserted));
   for(const[q,base]of word){if(q>=e.start+e.incoming&&q<e.start+e.incoming+Math.max(0,e.size))continue;const at=q<e.start+e.incoming?q-e.incoming:q-e.outgoing;if(base!==ref.sequence[at])changes.push(event(at,at+1,base));}
   changes.sort((a,b)=>a.start-b.start||a.end-b.end);
-  best={events:changes,witnessFraction:support/share,source:'fitted-marginal-proposal'};
+  best={events:representativeEvents(ref.input.sequence,changes),witnessFraction:support/share,source:'fitted-marginal-proposal'};
  }
  return best;
 }

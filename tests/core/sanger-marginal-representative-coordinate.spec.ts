@@ -8,7 +8,7 @@ function fixture(){
  for(let q=150;q<160;q++){const ids=Array.from({length:4},(_,b)=>{const i=point.length;point.push(b===0?.25:0);return i;});edge.free.set(q,ids);bases.set(q,ids.map(i=>[[i,1]]));}
  const unchanged=point.length;point.push(0);const changed=Array.from({length:4},(_,b)=>{const i=point.length;point.push(b===1?.25:0);return i;});bases.set(200,changed.map(i=>[[i,1]]));
  const group:MarginalInternalGroup={id:'test',reference:0,target:0,size:10,mass:[[0,1]],bases,edges:[edge],fraction:.25,fractionRange:[.25,.25],flow:new Map([[200,{unchanged:[{base:0,column:unchanged,cap:[[0,1]]}],changed}]])};
- const ref={sequence:'A'.repeat(400),cuts:[150]}as Prepared;
+ const ref={sequence:'A'.repeat(400),cuts:[150],input:{sequence:'A'.repeat(400)}}as Prepared;
  return{point,group,ref};
 }
 it('retains a supported genomic cut+40 substitution shifted past read cut+45 by an insertion',()=>{

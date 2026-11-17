@@ -1,0 +1,3 @@
+import {it,expect} from 'vitest';
+import {fractionNoiseVariance} from '../../src/app/workers/core/sanger-fraction-noise';
+it('matches all16 independent signed ADC perturbations and their induced cross-dye normalization covariance',()=>{const f=[.7,.2,.08,.02],v=[4,9,16,25],total=1000;let expected=0;for(let mask=0;mask<16;mask++){const e=v.map((x,b)=>Math.sqrt(x)*(mask>>b&1?1:-1)),sum=e.reduce((a,b)=>a+b,0);expected+=e.reduce((n,x,b)=>n+((x-f[b]*sum)/total)**2,0)/64;}expect(fractionNoiseVariance(f,v,total)).toBeCloseTo(expected,15);expect(fractionNoiseVariance(f,v,total/2)).toBeCloseTo(4*expected,15);expect(fractionNoiseVariance(f,v.map(x=>9*x),3*total)).toBeCloseTo(expected,15);});

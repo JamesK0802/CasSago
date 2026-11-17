@@ -43,3 +43,10 @@ it('still recovers a resolved signal in the noise-scale proximal refinement',asy
  const a=selectMarginalRepresentative(p,[.5,.5,1],[[2,1]],await loadCommon(),context);
  expect(a.point[0]).toBeCloseTo(.78846153846,6);expect(a.point[1]).toBeCloseTo(.21153846154,6);expect(a.summary.afterPhotonLoss).toBeLessThan(a.summary.beforePhotonLoss);expect(validMarginalSolution(p,a.point)).toBe(true);
 });
+
+it.each([1,5,91])('keeps public-base/data balance invariant across %s repeated genomic opportunities',async n=>{
+ const p:MarginalProgram={upper:[1,1,1],cost:[0,0,0],rows:[{terms:[[0,1],[1,1],[2,-1]],lower:0,upper:0},{terms:[[2,1]],lower:1,upper:1}]},noise=.04,forms=[[[0,1]],[[1,1]],[],[]]as[number,number][][],mass=[[2,1]]as[number,number][],before=JSON.stringify(p);
+ const ctx={substitutionOpportunities:n,noise,phaseSeed:[{column:2,value:1}],states:[[[{size:1,column:2}]]],shares:[1],edges:[],measurements:Array.from({length:n},()=>({forms,total:mass,observed:[.8,.2,0,0]})),baseFlowAnchor:Array.from({length:n},()=>({forms,mass,share:1}))};
+ const result=selectMarginalRepresentative(p,[.5,.5,1],[[2,1]],await loadCommon(),ctx),expected=(.8+4*noise*.5)/(1+4*noise);
+ expect(result.point[0]).toBeCloseTo(expected,6);expect(result.point[1]).toBeCloseTo(1-expected,6);expect(result.summary.minimum-result.summary.lower).toBeLessThanOrEqual(1e-7);expect(JSON.stringify(p)).toBe(before);
+});

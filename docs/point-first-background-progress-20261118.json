@@ -1,0 +1,555 @@
+{
+  "updated": "2026-11-17T19:55:59.890427+00:00",
+  "implementation": "sanger-marginals-v118-background-profile",
+  "overallScientificPass": false,
+  "singleFirst": true,
+  "multiplexDeferred": true,
+  "deploymentChanged": false,
+  "source": "native-first-experiment; Git WIP branch codex/single-point-first-v117",
+  "method": "One common scientific workflow. Mean additive ADC background learned on WT-quiet training prefix; same photon observable and per-cycle noise normalization across length/ref/target counts. Public-base stabilization averaged over genomic opportunities like photon score. Private residual auxiliaries reconstructed before original objective/global proof. Exact-DNA event normalization only after fitting. Every candidate retained;2% reporting only. No UI layout change.",
+  "originalNumericCertificateTolerance": 1e-07,
+  "synthetic": {
+    "overallScientificPass": false,
+    "cases": 62,
+    "jointGtRetrieved": 62,
+    "medianNativeSeconds": 2.0476088964999986,
+    "maximumNativeSeconds": 2.671773334,
+    "metrics": {
+      "meanAggregateBaseTVPp": {
+        "beforeMean": 0.020615852803554074,
+        "afterMean": 0.020294210861611404,
+        "beforeMax": 0.028384568223844345,
+        "afterMax": 0.028495304874117985,
+        "beforeSum": 1.2781828738203524,
+        "afterSum": 1.258241073419907,
+        "improvedCases": 43,
+        "worsenedCases": 19
+      },
+      "meanConditionalBaseTVPp": {
+        "beforeMean": 3.078266668200446,
+        "afterMean": 3.0704068747126114,
+        "beforeMax": 6.358606118687964,
+        "afterMax": 6.420997736118191,
+        "beforeSum": 190.85253342842765,
+        "afterSum": 190.36522623218193,
+        "improvedCases": 59,
+        "worsenedCases": 3
+      },
+      "exactReportableDefaultGtGroups": {
+        "beforeMean": 4.080645161290323,
+        "afterMean": 3.9838709677419355,
+        "beforeMax": 7,
+        "afterMax": 7,
+        "beforeSum": 253,
+        "afterSum": 247,
+        "improvedCases": 0,
+        "worsenedCases": 5
+      },
+      "maximumLengthErrorPp": {
+        "beforeMean": 0.017897693848733492,
+        "afterMean": 0.017846856349769548,
+        "beforeMax": 0.047554233985536154,
+        "afterMax": 0.03484291507793308,
+        "beforeSum": 1.1096570186214767,
+        "afterSum": 1.106505093685712,
+        "improvedCases": 25,
+        "worsenedCases": 37
+      }
+    }
+  },
+  "measured": [
+    {
+      "id": "carrot-2025-02",
+      "nativeSeconds": 2.214774792,
+      "dominantLength": 1,
+      "dominantFraction": 0.9810827315406422,
+      "representative": {
+        "events": [
+          {
+            "target": 1,
+            "start": 402,
+            "end": 402,
+            "inserted": 1,
+            "insertedSequence": "T"
+          }
+        ],
+        "witnessFraction": 0.657858503850639,
+        "source": "fitted-marginal-proposal"
+      },
+      "signalQc": true,
+      "stages": [
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.0017952920000000175
+        },
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.04393529100000001
+        },
+        {
+          "stage": "Calibrating the shared observation model",
+          "seconds": 0.06214641699999999
+        },
+        {
+          "stage": "Fitting invariant-flank length proportions",
+          "seconds": 0.014002625000000024
+        },
+        {
+          "stage": "Constructing joint marginal constraints \u00b7 target 1",
+          "seconds": 0.22488245800000004
+        },
+        {
+          "stage": "Fitting the shared global sequence-flow model",
+          "seconds": 0.23552670899999997
+        },
+        {
+          "stage": "Selecting parsimonious sequence-flow representative",
+          "seconds": 0.620743166
+        },
+        {
+          "stage": "Refining base proportions",
+          "seconds": 0.9964838750000001
+        },
+        {
+          "stage": "Preparing fitted representatives and base proportions",
+          "seconds": 0.008538416999999753
+        }
+      ]
+    },
+    {
+      "id": "carrot-2025-03",
+      "nativeSeconds": 2.355302958,
+      "dominantLength": 1,
+      "dominantFraction": 0.9837662128065688,
+      "representative": {
+        "events": [
+          {
+            "target": 1,
+            "start": 402,
+            "end": 402,
+            "inserted": 1,
+            "insertedSequence": "T"
+          }
+        ],
+        "witnessFraction": 0.5042862450324858,
+        "source": "fitted-marginal-proposal"
+      },
+      "signalQc": false,
+      "stages": [
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.0020040420000000266
+        },
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.05035329200000001
+        },
+        {
+          "stage": "Calibrating the shared observation model",
+          "seconds": 0.06638554099999999
+        },
+        {
+          "stage": "Fitting invariant-flank length proportions",
+          "seconds": 0.04253949999999997
+        },
+        {
+          "stage": "Constructing joint marginal constraints \u00b7 target 1",
+          "seconds": 0.250731625
+        },
+        {
+          "stage": "Fitting the shared global sequence-flow model",
+          "seconds": 0.28394691699999997
+        },
+        {
+          "stage": "Selecting parsimonious sequence-flow representative",
+          "seconds": 0.6406395420000002
+        },
+        {
+          "stage": "Refining base proportions",
+          "seconds": 1.0015343749999996
+        },
+        {
+          "stage": "Preparing fitted representatives and base proportions",
+          "seconds": 0.009675083000000086
+        }
+      ]
+    },
+    {
+      "id": "carrot-2025-14",
+      "nativeSeconds": 4.315594625,
+      "dominantLength": 1,
+      "dominantFraction": 0.9736139116060442,
+      "representative": {
+        "events": [
+          {
+            "target": 1,
+            "start": 119,
+            "end": 119,
+            "inserted": 1,
+            "insertedSequence": "A"
+          }
+        ],
+        "witnessFraction": 0.4509622768317286,
+        "source": "fitted-marginal-proposal"
+      },
+      "signalQc": true,
+      "stages": [
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.0017073339999999462
+        },
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.025130083000000015
+        },
+        {
+          "stage": "Calibrating the shared observation model",
+          "seconds": 0.04029337499999997
+        },
+        {
+          "stage": "Fitting invariant-flank length proportions",
+          "seconds": 0.05922270800000001
+        },
+        {
+          "stage": "Constructing joint marginal constraints \u00b7 target 1",
+          "seconds": 0.43850679200000003
+        },
+        {
+          "stage": "Fitting the shared global sequence-flow model",
+          "seconds": 1.307662542
+        },
+        {
+          "stage": "Selecting parsimonious sequence-flow representative",
+          "seconds": 0.932016541
+        },
+        {
+          "stage": "Refining base proportions",
+          "seconds": 1.4916289999999999
+        },
+        {
+          "stage": "Preparing fitted representatives and base proportions",
+          "seconds": 0.012105083999999806
+        }
+      ]
+    },
+    {
+      "id": "donor-hdr",
+      "nativeSeconds": 5.1175457909999995,
+      "dominantLength": 14,
+      "dominantFraction": 0.37676705795160725,
+      "representative": {
+        "events": [
+          {
+            "target": 1,
+            "start": 174,
+            "end": 174,
+            "inserted": 14,
+            "insertedSequence": "TGATTGATCAATGA"
+          }
+        ],
+        "witnessFraction": 0.2144848636479014,
+        "source": "fitted-marginal-proposal"
+      },
+      "signalQc": true,
+      "stages": [
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.0016397079999999845
+        },
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.024485416999999985
+        },
+        {
+          "stage": "Calibrating the shared observation model",
+          "seconds": 0.051293708000000035
+        },
+        {
+          "stage": "Fitting invariant-flank length proportions",
+          "seconds": 0.323916208
+        },
+        {
+          "stage": "Constructing joint marginal constraints \u00b7 target 1",
+          "seconds": 0.37688520899999994
+        },
+        {
+          "stage": "Fitting the shared global sequence-flow model",
+          "seconds": 1.4928946250000001
+        },
+        {
+          "stage": "Selecting parsimonious sequence-flow representative",
+          "seconds": 1.174685
+        },
+        {
+          "stage": "Refining base proportions",
+          "seconds": 1.6504384999999997
+        },
+        {
+          "stage": "Preparing fitted representatives and base proportions",
+          "seconds": 0.01371349999999984
+        }
+      ]
+    },
+    {
+      "id": "donor-sub",
+      "nativeSeconds": 4.167807583000001,
+      "dominantLength": 0,
+      "dominantFraction": 0.7555279732114447,
+      "representative": {
+        "events": [],
+        "witnessFraction": 0.4988797224258869,
+        "source": "fitted-marginal-proposal"
+      },
+      "signalQc": true,
+      "stages": [
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.0016284590000000207
+        },
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.044323790999999974
+        },
+        {
+          "stage": "Calibrating the shared observation model",
+          "seconds": 0.06870708400000002
+        },
+        {
+          "stage": "Fitting invariant-flank length proportions",
+          "seconds": 0.22840525000000003
+        },
+        {
+          "stage": "Constructing joint marginal constraints \u00b7 target 1",
+          "seconds": 0.34400262499999995
+        },
+        {
+          "stage": "Fitting the shared global sequence-flow model",
+          "seconds": 1.0670557910000003
+        },
+        {
+          "stage": "Selecting parsimonious sequence-flow representative",
+          "seconds": 0.8979256249999998
+        },
+        {
+          "stage": "Refining base proportions",
+          "seconds": 1.4967339590000002
+        },
+        {
+          "stage": "Preparing fitted representatives and base proportions",
+          "seconds": 0.012101915999999619
+        }
+      ]
+    },
+    {
+      "id": "public-good",
+      "nativeSeconds": 3.4298782919999997,
+      "dominantLength": -1,
+      "dominantFraction": 0.3581568320776783,
+      "representative": {
+        "events": [
+          {
+            "target": 1,
+            "start": 243,
+            "end": 244,
+            "inserted": 0,
+            "insertedSequence": ""
+          }
+        ],
+        "witnessFraction": 0.2393073455152425,
+        "source": "fitted-marginal-proposal"
+      },
+      "signalQc": true,
+      "stages": [
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.0016006249999999226
+        },
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.02616775000000007
+        },
+        {
+          "stage": "Calibrating the shared observation model",
+          "seconds": 0.05320150000000001
+        },
+        {
+          "stage": "Fitting invariant-flank length proportions",
+          "seconds": 0.04799383299999999
+        },
+        {
+          "stage": "Constructing joint marginal constraints \u00b7 target 1",
+          "seconds": 0.19532595900000002
+        },
+        {
+          "stage": "Fitting the shared global sequence-flow model",
+          "seconds": 0.27784520799999995
+        },
+        {
+          "stage": "Selecting parsimonious sequence-flow representative",
+          "seconds": 0.815990333
+        },
+        {
+          "stage": "Refining base proportions",
+          "seconds": 1.9913006249999998
+        },
+        {
+          "stage": "Preparing fitted representatives and base proportions",
+          "seconds": 0.015983791999999993
+        }
+      ]
+    },
+    {
+      "id": "public-wt",
+      "nativeSeconds": 1.057263375,
+      "dominantLength": 0,
+      "dominantFraction": 0.9999999997800656,
+      "representative": {
+        "events": [],
+        "witnessFraction": 0.9999999995563782,
+        "source": "fitted-marginal-proposal"
+      },
+      "signalQc": true,
+      "stages": [
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.0016222910000000183
+        },
+        {
+          "stage": "Registering measured fluorescence",
+          "seconds": 0.02397270900000001
+        },
+        {
+          "stage": "Calibrating the shared observation model",
+          "seconds": 0.049522458000000026
+        },
+        {
+          "stage": "Fitting invariant-flank length proportions",
+          "seconds": 0.005481957999999963
+        },
+        {
+          "stage": "Constructing joint marginal constraints \u00b7 target 1",
+          "seconds": 0.15189970900000002
+        },
+        {
+          "stage": "Fitting the shared global sequence-flow model",
+          "seconds": 0.15357908299999998
+        },
+        {
+          "stage": "Selecting parsimonious sequence-flow representative",
+          "seconds": 0.005754999999999995
+        },
+        {
+          "stage": "Refining base proportions",
+          "seconds": 0.656100042
+        },
+        {
+          "stage": "Preparing fitted representatives and base proportions",
+          "seconds": 0.005075041000000055
+        }
+      ]
+    }
+  ],
+  "sub": {
+    "scope": "Current common engine blind inference and optional global all-length Sub union bounds. No truth accessed; original noise/domain/tolerance unchanged. Separate from which molecular length family carries Sub. Not statistical confidence intervals.",
+    "fitSeconds": 2.6011213749999995,
+    "boundSeconds": 12.911797208,
+    "pointAndDefaultReportUnchanged": true,
+    "summaries": [
+      {
+        "reference": "Demo-A_6001-6760",
+        "target": 1,
+        "scope": "all-length-groups",
+        "method": "joint-observable-departure-envelope",
+        "fractionRange": [
+          0.04836725118472539,
+          0.0677106988872045
+        ],
+        "zeroFeasible": false
+      }
+    ]
+  },
+  "independentExistingHoldout": {
+    "state": "complete",
+    "rows": [
+      {
+        "id": "unseen-5-sub0",
+        "fitSeconds": 2.405250916,
+        "retrievalSeconds": 0.7631805839999998,
+        "gtRows": 6,
+        "allGtRowsBlue": true,
+        "outputUnchangedAfterGT": true,
+        "distinguishableWrongProfileNotAccepted": true,
+        "scope": "Joint profile feasibility and actual GT colour mapping only. NOT an accuracy PASS, not a uniqueness/equivalence proof; no independent interval inclusion credit."
+      },
+      {
+        "id": "unseen-6-sub0",
+        "fitSeconds": 2.0149376250000004,
+        "retrievalSeconds": 0.5850724160000009,
+        "gtRows": 7,
+        "allGtRowsBlue": true,
+        "outputUnchangedAfterGT": true,
+        "scope": "Joint profile feasibility and actual GT colour mapping only. NOT an accuracy PASS, not a uniqueness/equivalence proof; no independent interval inclusion credit."
+      },
+      {
+        "id": "unseen-12-sub0",
+        "fitSeconds": 2.0469547079999995,
+        "retrievalSeconds": 5.5492814159999995,
+        "gtRows": 13,
+        "allGtRowsBlue": true,
+        "outputUnchangedAfterGT": true,
+        "scope": "Joint profile feasibility and actual GT colour mapping only. NOT an accuracy PASS, not a uniqueness/equivalence proof; no independent interval inclusion credit."
+      },
+      {
+        "id": "unseen-12-sub1",
+        "fitSeconds": 2.4359735419999997,
+        "retrievalSeconds": 1.4828108329999996,
+        "gtRows": 14,
+        "allGtRowsBlue": true,
+        "outputUnchangedAfterGT": true,
+        "scope": "Joint profile feasibility and actual GT colour mapping only. NOT an accuracy PASS, not a uniqueness/equivalence proof; no independent interval inclusion credit."
+      },
+      {
+        "id": "unseen-12-sub5",
+        "fitSeconds": 2.3889555419999997,
+        "retrievalSeconds": 5.610745457999998,
+        "gtRows": 14,
+        "allGtRowsBlue": true,
+        "outputUnchangedAfterGT": true,
+        "scope": "Joint profile feasibility and actual GT colour mapping only. NOT an accuracy PASS, not a uniqueness/equivalence proof; no independent interval inclusion credit."
+      },
+      {
+        "id": "unseen-12-sub10",
+        "fitSeconds": 2.4570045000000027,
+        "retrievalSeconds": 1.3128377500000061,
+        "gtRows": 14,
+        "allGtRowsBlue": true,
+        "outputUnchangedAfterGT": true,
+        "scope": "Joint profile feasibility and actual GT colour mapping only. NOT an accuracy PASS, not a uniqueness/equivalence proof; no independent interval inclusion credit."
+      }
+    ]
+  },
+  "changedRepresentatives": {
+    "scope": "POSTHOC sequence-plausibility audit, not a full point/base accuracy PASS. No scientific thresholds changed. No genotype populations or truth supplied to inference. Negative results in the stricter diagnostic are NOT certified full-model infeasibility. Individual witnesses do not prove that all default sequences coexist simultaneously at their class masses.",
+    "cases": 5,
+    "defaultProfiles": 7,
+    "knownGtSequences": 1,
+    "explicitIdenticalOriginalRawWitnesses": 6,
+    "rawWaveformFailures": 0,
+    "unresolvedOrOutsideDiagnostic": 0
+  },
+  "checks": {
+    "focusedPointUi": "131 passed /27files",
+    "physicalNoiseNumerics": "31 passed /11files",
+    "original62FrozenUiProjection": "all GT blue via joint retrieval, not accuracyPASS",
+    "build": "production build passed; standard bundle/CommonJS warnings",
+    "fullLegacySuite": "not claimed; historical12 cycle-envelope expectations already failed on unchanged baseline",
+    "productionBrowser": "blocked: Mac locked and Work local-browser disabled. Async user request pending."
+  },
+  "remaining": [
+    "Strong empirical-noise source14: WT0% false mass but pure+1 has13.83pp error and five/twelve false-length mass up to24.96pp; not passed or blamed only on quality. ICE raw mass/R2 correction compared separately; no silent normalization.",
+    "Point exact default local GT rows253\u2192247; six newly selected local DNA proposals have actual identical original raw DATA/PBAS/PLOC finite-population witnesses. Individual sequence plausibility does not prove all conditional proportions or equal representative score. Mean conditional base TV3.0783\u21923.0704pp; no all-profile accuracyPASS.",
+    "Strong-noise pure+1 posthoc original spectral RSS22.46416 exceeds22.36848; native truth-domain witness not returned. No independent infeasibility proof claimed. Quiet ADC means notably differ from independently constructed noise, indicating finite-calibration/background uncertainty to investigate as shared sensor nuisance; no noise/tolerance relaxation authorized.",
+    "Final production-browser equivalence/timing pending access; multi remains deferred."
+  ],
+  "evidenceRoot": "/Users/james/Desktop/CasSago_Resume_20261112/validation-runs/single-reestablishment-20261116/background-normalized-verified"
+}

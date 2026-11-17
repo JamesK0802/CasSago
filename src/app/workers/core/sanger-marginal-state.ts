@@ -6,8 +6,8 @@ import type { selectMarginalRepresentative } from './sanger-representative-selec
 
 export interface MarginalEdge {prefixColumns?:number[];reference:number;target:number;incoming:number;outgoing:number;size:number;start:number;mass:number;free:Map<number,number[]>}
 export interface MarginalInternalGroup {sharedInsertions?:boolean;flow?:Map<number,{unchanged:{base:number;column:number;cap:LinearTerm[]}[];changed:number[]}>;dye?:Map<number,LinearTerm[][]>;departures?:Map<number,LinearTerm[]>;id:string;reference:number;target:number;size:number;mass:LinearTerm[];bases:Map<number,LinearTerm[][]>;edges:MarginalEdge[];fraction:number;fractionRange:[number,number]}
-export interface MarginalMeasurement {position:number;forms:LinearTerm[][];total:LinearTerm[];observed:number[]}
-export interface MarginalTargetState {mutationPriorOpportunities?:number;primaryPoint?:number[];measurements?:MarginalMeasurement[];program:MarginalProgram;groups:MarginalInternalGroup[];edges:MarginalEdge[];point:number[];positions:number[];tolerance:number}
+export interface MarginalMeasurement {noise?:number;position:number;forms:LinearTerm[][];total:LinearTerm[];observed:number[]}
+export interface MarginalTargetState {mutationNoiseVarianceSum?:number;mutationPriorOpportunities?:number;primaryPoint?:number[];measurements?:MarginalMeasurement[];program:MarginalProgram;groups:MarginalInternalGroup[];edges:MarginalEdge[];point:number[];positions:number[];tolerance:number}
 export interface MarginalSession {refs:Prepared[];shares:number[];targets:MarginalTargetState[];optimizer:SangerLinearOptimizer;pages:Map<string,unknown>}
 export const marginalSessions=new WeakMap<SangerAnalysisResult,MarginalSession>();
 /** Optional scientific diagnostics; no truth or inference policy is supplied. */

@@ -60,7 +60,7 @@ export class VerifiedConicSolver {
     // Preserve successful established solves. Equivalent units are a numerical
     // recovery path, or the first representation on resuming a timed-out solve.
     plans[0].retryPrimal=true;const units={scale,tol:tight,nativeTol:tight*Math.min(1,scale),retryPrimal:true,unitPlan:true};
-    if(this.preferObjectiveUnits)plans.unshift(units);else plans.splice(1,0,units);
+    const bridgeScale=Math.sqrt(scale),bridge={...units,scale:bridgeScale,nativeTol:tight*Math.min(1,bridgeScale)};if(this.preferObjectiveUnits)plans.unshift(units,bridge);else plans.splice(1,0,units,bridge);
    }
   }
   for(let i=0;;i++){

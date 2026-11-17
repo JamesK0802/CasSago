@@ -1,3 +1,13 @@
+CURRENT WIP 2026-11-18: v118 background/profile correction, NOT overall scientificPASS.
+Active source: CasSago_Resume_20261112/native-first-experiment; branch codex/single-point-first-v117. CasMango/main/deployment unchanged.
+See docs/point-first-background-progress-20261118.json for exact evidence, native stage times and remaining errors.
+Original62 jointGT and6 independent colour/negative-control cases retained. Real3 dominant+1 now98.11/98.38/97.36%, T/T/A.
+Default exact local GT count253→247;6 changed DNA proposals have independently VERIFIED IDENTICAL original DATA/PBAS/PLOC witnesses. Not all percentage accuracy or equal-score proof.
+Strong noise14 remains failed; pure+1 known spectral RSS slightly exceeds existing guard; investigate shared finite background/calibration uncertainty, not allele counts or relaxed tests.
+Rejected conditional-fixed-phase/QP/joint-prefix/unbiased/absolute trials NOT adopted. No extra scientific branch or species cutoff.
+Final web blocked by Mac locked and local browser disabled; asynchronous request pending. Continue native single work; no premature multiplex.
+Previous dated handoff below is history, NOT current scientific status.
+
 CasSago current handoff 2026-11-05 v42
 
 Canonical project: /Users/james/Desktop/CasSago

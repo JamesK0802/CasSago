@@ -18,7 +18,7 @@ export function fitMarginalPoint(model:MarginalModel,optimizer:SangerLinearOptim
   // Registering an existing genomic locus at a shifted read cycle must not
   // change the nominal noise allowance or representative penalty. Additional
   // phase coverage reclassifies measured rows; it is not a new prior budget.
-  point=fitted.x;for(const draft of drafts)draft.primaryPoint=point;budget=fitted.value+3*noise*Math.sqrt(4*drafts.reduce((n,d)=>n+(d.mutationPriorOpportunities??d.positions.length),0));const budgetRow=program.rows.length;solver.addRow(allDepartures,0,budget);program.dualHint={shadow,budgetRow,planes};
+  point=fitted.x;for(const draft of drafts)draft.primaryPoint=point;budget=fitted.value+3*Math.sqrt(4*drafts.reduce((n,d)=>n+(d.mutationNoiseVarianceSum??noise*noise*(d.mutationPriorOpportunities??d.positions.length)),0));const budgetRow=program.rows.length;solver.addRow(allDepartures,0,budget);program.dualHint={shadow,budgetRow,planes};
   const context={substitutionOpportunities:drafts.reduce((n,d)=>n+(d.mutationPriorOpportunities??d.positions.length),0)/drafts.length,noise,phaseSeed,states,shares,edges:allEdges},edited=drafts.flatMap(d=>d.groups.filter(g=>g.size!==0).flatMap(g=>g.mass));
   tick('Selecting parsimonious sequence-flow representative');
   const baseline=selectMarginalRepresentative(program,point,edited,optimizer,context);point=baseline.point;
