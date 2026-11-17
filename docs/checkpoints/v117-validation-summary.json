@@ -58,5 +58,39 @@
     "src/app/workers/core/sanger-marginal-point-report.ts": "0550051387e17fb1b5ba9fe8aa6ea47d64b35702b5e9ce4b8315b24e400664f6",
     "src/app/workers/core/sanger-marginal-group-bounds.ts": "89f5069c3534abeea90908de27b26b71d7fbfeb0a5993273de3a43664ae9a110",
     "src/app/workers/core/sanger-marginal-engine.ts": "f0b93a4fde27bc7b2d7f900fe867e594a82c7d10c9aa22e1ec033940b2972f79"
+  },
+  "accuracyValidationFollowup": {
+    "frozenSingleCases": 65,
+    "gtAnnotationCoordinateSelfChecks": 65,
+    "individualRepresentativeAudit": {
+      "eligibleSimpleCases": 60,
+      "profiles": 494,
+      "literalKnownGtSequences": 250,
+      "additionalIdenticalRawDataWitnesses": 244,
+      "additionalIdenticalRawDataAndBasecallWitnesses": 243,
+      "tiedBasecallDifferenceOnly": 1
+    },
+    "coupledReportedPointAudit": {
+      "existingLengthTolerancePp": 2,
+      "existingConditionalBaseTolerancePp": 0.2,
+      "exactOriginalRawDataWitnessCases": 51,
+      "additionalClosedObservationGateInfeasibilityCertificates": 14,
+      "certificateIndependentlyRechecked": 14,
+      "scope": "Constructive ideal-synthetic-observation/profile audit, NOT original noisy-engine-domain infeasibility. Point Sub-event budget retained; no threshold/noise widening. Not overall scientific acceptance."
+    },
+    "numericalGuard": {
+      "originalCasesRerun": 62,
+      "allLengthAndBasePointValuesExactlyUnchanged": true,
+      "originalPhysicalDomainsByteParity": true,
+      "optionalProjectionConstructorFailureFallsBackToOriginalProgram": true,
+      "failedNativeInitializationDisposed": true,
+      "focusedTests": 80,
+      "focusedTestFiles": 19,
+      "productionBuildPassed": true
+    }
+  },
+  "numericalSolverSourceSha256": {
+    "src/app/workers/core/sanger-marginal-lp.ts": "75ec88bbedc4203dabe51a2c53f48cc58a936c7a35a8e17783c465e0a0d18a2b",
+    "src/app/workers/core/sanger-initial-marginal-fit.ts": "3ac531ed7599bc0f3ed2a3e1ff84ffa63c62da9acddabe240e7c1c3d8acd3e75"
   }
 }

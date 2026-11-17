@@ -79,15 +79,24 @@ export class MarginalLinearSolver {
   // Local consensus residuals are recombined into larger original photon
   // rows. Solve each LP more tightly so their sum still meets the unchanged
   // original1e-7 primal/global certificate, regardless of reference count.
+  try{
   this.native.options.set({output_flag:false,solver:'simplex',simplex_strategy:4,time_limit:300,primal_feasibility_tolerance:1e-10,dual_feasibility_tolerance:1e-10});
   const model=nativeMarginalProgram(program);model.colUpper=Float64Array.from(program.upper,(u,i)=>this.inactive.has(i)?0:u);this.native.passModel(model);
+  }catch(error){try{this.native.dispose();}catch{/* Preserve the initialization error. */}this.native=undefined;throw error;}
  }
  private makeFactorized(){return new FactorizedMarginalSolver(this.program,p=>{const solver=new MarginalLinearSolver({...p,localBlocks:undefined},this.optimizer);solver.setTimeSlice(p.quadratics?.length?120:2);solver.parentFallbackBudget=600;return solver;});}
  setTimeSlice(seconds:number){this.initialSliceSeconds=seconds;this.sliceSeconds=seconds;if(this.fullCompetitor)this.fullCompetitor.setTimeSlice(seconds);else if(this.conic)this.conic.setTimeLimit(seconds);else if(this.native)this.native.options.set({time_limit:seconds});}
  private pending():never{if(this.sliceSeconds!==undefined&&this.sliceSeconds>0){this.sliceSeconds*=2;if(this.conic)this.conic.setTimeLimit(this.sliceSeconds);else this.native.options.set({time_limit:this.sliceSeconds});}throw new OptimizationPending();}
  private tryZeroCostFace():number[]|undefined{
   if(this.costs.some(v=>v<0)||!this.costs.some(v=>v>0))return;
-  const projection=zeroCostProjection(this.program);if(projection){const started=performance.now(),solver=new MarginalLinearSolver(projection.program,this.optimizer);this.zeroFaceProjection={variables:projection.program.upper.length,rows:projection.program.rows.length,seconds:0,verified:false};try{solver.setTimeSlice(30);solver.native.options.set({solver:'ipm',run_crossover:'on'});const answer=projection.lift(solver.solve().x);if(validMarginalSolution(this.program,answer)){this.zeroFaceProjection.verified=true;return answer;}}catch(error){this.zeroFaceProjection.failure=String(error);}finally{this.zeroFaceProjection.seconds=(performance.now()-started)/1000;solver.dispose();}return;}
+  const projection=zeroCostProjection(this.program);if(projection){
+   const started=performance.now();let solver:MarginalLinearSolver|undefined;
+   this.zeroFaceProjection={variables:projection.program.upper.length,rows:projection.program.rows.length,seconds:0,verified:false};
+   try{solver=new MarginalLinearSolver(projection.program,this.optimizer);solver.setTimeSlice(30);solver.native.options.set({solver:'ipm',run_crossover:'on'});const answer=projection.lift(solver.solve().x);if(validMarginalSolution(this.program,answer)){this.zeroFaceProjection.verified=true;return answer;}}
+   catch(error){this.zeroFaceProjection.failure=String(error);}
+   finally{this.zeroFaceProjection.seconds=(performance.now()-started)/1000;solver?.dispose();}
+   return;
+  }
   if(this.inactive.size){this.pricingStats.fullRestores++;this.activate([...this.inactive]);}
   const indices=this.costs.flatMap((c,i)=>c>0&&this.program.upper[i]>0?[i]:[]);if(!indices.length)return;
   this.native.changeColsBounds({kind:'set',indices},indices.map(()=>0),indices.map(()=>0));this.native.options.set({solver:'ipm',run_crossover:'on'});const started=performance.now();let answer:number[]|undefined;

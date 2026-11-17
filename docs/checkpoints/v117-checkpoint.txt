@@ -17,3 +17,13 @@ Follow-up: global5% Sub versus carrier ambiguity is independently verified using
 Reporting fixes: multiple major SNP sites no longer omit the conservative fitted WT lower amount. The all-length Sub metric no longer falls back to a class0-only SNP number/range; until a global measurement exists it shows unavailable. No new inference restriction, fit objective, model noise or scientific cutoff. Group annotation layout unchanged.
 
 Follow-up packaged validation:78 tests in18 focused files passed; actual production build passed.
+
+Accuracy-validation follow-up:65 frozen single cases (62 development+3 earlier holdouts) passed GT annotation/coordinate self-check.60 simple no-Sub/single-event cases had494 default profiles:250 literal known GT sequences,244 additional finite DNA witnesses with identical original raw DATA channels;243 also have identical PBAS, one has a tied G/T basecall difference despite identical DATA/PLOC. This is individual sequence plausibility, not simultaneous point accuracy.
+
+A stricter coupled posthoc gate retained the existing2pp length/.2pp conditional-base tolerances and required exact original raw DATA via explicit finite DNA and original measured quantization cells.51/65 have actual raw-ABI verified simultaneous witnesses. The other14 fail this extra closed-observation/profile gate with independently checked row-and-box infeasibility certificates. This is not original noisy-engine-domain infeasibility, and does not by itself label biological truth wrong; no blanket PASS. The diagnostic is an additional constructive check, not the original noisy-engine model.
+
+Several common-flow representative experiments were evaluated without GT in inference. Hard minimum-Sub/L1 improved aggregate/length estimates but did not consistently improve group-base profiles on independent new Sub titration; it was NOT adopted. All experiments archived outside active source; current scientific v117 model unchanged.
+
+Correctness fix:optional zero-cost projected solver construction is now inside its fallback guard; failed native initialization disposes resources. Original complete problem is still solved at unchanged tolerances. Two actual-optimizer fault-injection regressions verify positive-cost optimum and resource cleanup.62 cold native reruns have compiled original-domain parity and EXACT unchanged length/base point values.
+
+Numerical guard checkpoint validation:80 focused tests/19files and production build passed.

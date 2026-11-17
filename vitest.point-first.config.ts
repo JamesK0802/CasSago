@@ -10,6 +10,7 @@ export default defineConfig({test:{maxWorkers:2,include:[
  'tests/core/sanger-marginal-pagination.spec.ts',
  'tests/core/sanger-marginal-truth-retrieval.spec.ts',
  'tests/core/sanger-initial-marginal-fit.spec.ts',
+ 'tests/core/sanger-zero-face-construction-fallback.spec.ts',
  'tests/core/sanger-conic-objective-units.spec.ts',
  'tests/core/sanger-marginal-domain.spec.ts',
  'tests/core/sanger-raw-signal-identifiability.spec.ts',
