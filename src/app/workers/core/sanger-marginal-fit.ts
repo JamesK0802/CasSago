@@ -23,7 +23,7 @@ export function fitMarginalPoint(model:MarginalModel,optimizer:SangerLinearOptim
   tick('Selecting parsimonious sequence-flow representative');
   const baseline=selectMarginalRepresentative(program,point,edited,optimizer,context);point=baseline.point;
   tick('Refining base proportions');
-  const selected=selectMarginalRepresentative(program,point,edited,optimizer,{...context,diagnostics:marginalModelDiagnostics.representativeProgram,measurements:drafts.flatMap(d=>d.measurements||[]),baseFlowAnchor:drafts.flatMap(d=>d.groups.flatMap(g=>[...g.bases.values()].map(forms=>({forms,mass:g.mass,share:shares[g.reference]}))))});
+  const selected=selectMarginalRepresentative(program,point,edited,optimizer,{...context,diagnostics:marginalModelDiagnostics.representativeProgram,measurements:model.peakRepresentativeMeasurements,baseFlowAnchor:drafts.flatMap(d=>d.groups.flatMap(g=>[...g.bases.values()].map(forms=>({forms,mass:g.mass,share:shares[g.reference]}))))});
   point=selected.point;representativeSelection=selected.summary;marginalModelDiagnostics.representativeFit?.(selected.summary);
   return {solver,point,budget,representativeSelection};
  }catch(error){solver.dispose();throw error;}

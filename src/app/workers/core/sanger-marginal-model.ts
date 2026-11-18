@@ -1,3 +1,5 @@
+import { calibratedPeakAmplitudes } from './sanger-peak-shape';
+import { meanQuietBackground } from './sanger-mean-background';
 import { emissionUncertainty } from './sanger-emission-uncertainty';
 import { MARGINAL_INDEL_ORIGIN_RADIUS as ORIGIN_RADIUS,MARGINAL_SUBSTITUTION_RADIUS as SUB_RADIUS,marginalReferenceSubstitutionAllowed,marginalTargetReadSupport } from './sanger-marginal-domain';
 import { LP_INFINITY,type LinearTerm,type MarginalProgram } from './sanger-marginal-lp';
@@ -170,7 +172,29 @@ export function buildMarginalModel(input:SignalPathInput,tick:(stage:string)=>vo
    return {column: state.column, value};
   })));
 
+ // Rank representatives with local peak amplitudes when the training and
+ // validation control cycles support a common shape. The integrated-area
+ // constraints and report envelopes retain their original physical units.
+ const sequences = refs.map(r => r.sequence);
+ const prefix = [...observation.trainingPositions,...observation.validationPositions].sort((a,b)=>a-b);
+ const peakControlBackground = meanQuietBackground(input.control,sequences,observation.cr.trim,prefix,1).background;
+ const peakSampleBackground = meanQuietBackground(input.sample,sequences,observation.sr.trim,prefix,1).background;
+ const estimatePeak = calibratedPeakAmplitudes(input.control,input.sample,sequences,observation.cr.trim,
+  observation.sr.trim,observation.trainingPositions,observation.validationPositions,peakControlBackground,peakSampleBackground);
+ const peakRepresentativeMeasurements = drafts.flatMap(d => d.measurements ?? []).map(m => {
+  const p = m.position, peak = estimatePeak?.(p);
+  if (!peak) return m;
+  const foreground = peak.map((v,b) => v / calibration.gains[b]);
+  const peakTotal = foreground.reduce((sum,v) => sum + v,0);
+  const amount = observation.sampleSignal.areas[p-observation.sr.trim]
+   .reduce((sum,v,b)=>sum+v/calibration.gains[b],0)/observation.scale;
+  if (!(amount > 0) || !(peakTotal > 0)) return m;
+  const background = observation.backgroundAt(p);
+  const total = amount + background.reduce((sum,v)=>sum+v,0);
+  return {...m,observed:foreground.map((v,b)=>(v/peakTotal*amount+background[b])/total)};
+ });
+
  marginalModelDiagnostics.observe?.({program,refs,shares,targets:drafts,states,noise,phaseSeed,measurements:allMeasurements,spectralPositions:[...spectralMeasurements.values()].flatMap(list=>list.map(m=>m.position)),departures:allDepartures});
- return {refs,report,maxDeletion,maxInsertion,observation,raw,calibration,quality,shares,noise,analysisEnd,count,lengths,regionalResponse,initialization,robustDelta,program,drafts,states,phaseSeed,allMeasurements,allDepartures,allEdges,uncertainEmission,firstMeasured,heldOutError,heldOutVariance,heldOutRows};
+ return {refs,report,maxDeletion,maxInsertion,observation,raw,calibration,quality,shares,noise,analysisEnd,count,lengths,regionalResponse,initialization,robustDelta,program,drafts,states,phaseSeed,allMeasurements,allDepartures,allEdges,peakRepresentativeMeasurements,uncertainEmission,firstMeasured,heldOutError,heldOutVariance,heldOutRows};
 }
 export type MarginalModel=ReturnType<typeof buildMarginalModel>;
