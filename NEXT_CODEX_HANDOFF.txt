@@ -1,3 +1,5 @@
+CURRENT WIP 2026-11-18: report only each group own reference/target read support with one adjacent cycle. Same fitted program and retained points; 62 original single reports byte-equivalent as JSON arrays. See docs/cassago-group-window-audit-20261118.json. Measured 7/7 and 35 selected group ranges returned; informative range criterion failed in several samples. Synthetic 3ref/1target at 120bp retains 32/32 length groups, endpoint shifts <=0.267pp, one tested base 0–100% in both. Full base ranges and 3ref/2target not validated yet.
+
 CURRENT WIP 2026-11-18: representative phase informed by peak-centered invariant flanks; physical detector area domain retained. See docs/point-first-flank-evidence-20261118.json. Native 62/62 joint GT, 6 independent GT, 7 measured unchanged physical hashes, 10 constructed-noise cases complete. Residual false-group mass reaches 12.58pp; needed independent tangent bound on hardest 5-indel case. Final browser and matched multiplex validation pending.
 
 CURRENT WIP 2026-11-18: v118 background/profile correction, NOT overall scientificPASS.

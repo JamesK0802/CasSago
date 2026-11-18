@@ -69,7 +69,7 @@ export function buildMarginalModel(input:SignalPathInput,tick:(stage:string)=>vo
    for(let start=startMin;start<=startMax;start++){
     if(start<0||start+Math.max(0,-size)>refs[h].sequence.length)continue;
     if(size<0){const sequence=refs[h].sequence.slice(0,start)+refs[h].sequence.slice(start-size);if(seen.has(sequence))continue;seen.add(sequence);}
-    const mass=variable(Math.min(a.fraction,b.fraction)),edge:MarginalEdge={reference:h,target,incoming:a.size,outgoing:b.size,size,start,mass,free:new Map()};edges.push(edge);const key=id(h,size);let g=internal.get(key);if(!g){g={id:key,reference:h,target,size,mass:[],bases:new Map(),departures:new Map(),dye:new Map(),flow:new Map(),edges:[],fraction:0,fractionRange:[0,0]};internal.set(key,g);}g.mass.push([mass,1]);g.edges.push(edge);
+    const mass=variable(Math.min(a.fraction,b.fraction)),edge:MarginalEdge={reference:h,target,incoming:a.size,outgoing:b.size,size,start,mass,free:new Map()};edges.push(edge);const key=id(h,size);let g=internal.get(key);if(!g){g={id:key,reference:h,target,size,reportSupport:{first:supports[h].first-1,last:supports[h].last+1},mass:[],bases:new Map(),departures:new Map(),dye:new Map(),flow:new Map(),edges:[],fraction:0,fractionRange:[0,0]};internal.set(key,g);}g.mass.push([mass,1]);g.edges.push(edge);
 
    }
   }

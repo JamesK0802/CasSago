@@ -1,7 +1,7 @@
 import type {SangerMarginalGroup,SangerMarginalDisplayComponent} from '../../models/sanger-analysis';
 import type {MarginalModel} from './sanger-marginal-model';
 import {fittedMarginalRepresentative} from './sanger-marginal-representative';
-import {marginalInputEvent} from './sanger-marginal-state';
+import {marginalInputEvent,marginalReportBases} from './sanger-marginal-state';
 import type {LinearTerm} from './sanger-marginal-lp';
 import {substitutionBlockDisplay} from './sanger-substitution-block-display';
 const DNA='ACGT';
@@ -22,7 +22,7 @@ export function summarizeMarginalPoint(model:MarginalModel,point:number[],displa
   for(const g of target.groups){
    if(Math.max(0,evaluate(g.mass))/model.shares[g.reference]+1e-12<displayThreshold/100)continue;
    const ref=model.refs[g.reference],byPosition=new Map<number,Set<number>>();
-   for(const q of g.bases.keys()){
+   for(const [q] of marginalReportBases(g)){
     const bases=new Set<number>();for(const e of g.edges){if(model.program.upper[e.mass]<=1e-7)continue;if(e.free.has(q)){for(let b=0;b<4;b++)bases.add(b);}else{const at=q<e.start+e.incoming?q-e.incoming:q-e.outgoing,b=DNA.indexOf(ref.sequence[at]);if(b>=0)bases.add(b);}}
     byPosition.set(q,bases);
    }
@@ -31,7 +31,7 @@ export function summarizeMarginalPoint(model:MarginalModel,point:number[],displa
   return target.groups.map(g=>{
    const ref=model.refs[g.reference],share=model.shares[g.reference],mass=Math.max(0,evaluate(g.mass));
    g.fraction=mass;g.fractionRange=[0,share];
-   const group:SangerMarginalGroup={id:g.id,reference:ref.name,target:ref.reverse?ref.cuts.length-g.target:g.target+1,size:g.size,fraction:mass/share,fractionRange:[0,1],scope:'read-cycle-by-length',status:'estimated',boundMethod:'deferred-report-envelope',bases:[...g.bases].map(([q,forms])=>({position:ref.reverse?ref.input.sequence.length-ref.offset-q-1:ref.offset+q,estimate:(ref.reverse?forms.slice().reverse():forms).map(f=>mass?Math.max(0,evaluate(f))/mass:0),lower:[0,0,0,0],upper:[1,1,1,1]})),representative:fittedMarginalRepresentative(g,point,ref,share,(a,b,s)=>marginalInputEvent(ref,a,b,s,g.target))};
+   const group:SangerMarginalGroup={id:g.id,reference:ref.name,target:ref.reverse?ref.cuts.length-g.target:g.target+1,size:g.size,fraction:mass/share,fractionRange:[0,1],scope:'read-cycle-by-length',status:'estimated',boundMethod:'deferred-report-envelope',bases:marginalReportBases(g).map(([q,forms])=>({position:ref.reverse?ref.input.sequence.length-ref.offset-q-1:ref.offset+q,estimate:(ref.reverse?forms.slice().reverse():forms).map(f=>mass?Math.max(0,evaluate(f))/mass:0),lower:[0,0,0,0],upper:[1,1,1,1]})),representative:fittedMarginalRepresentative(g,point,ref,share,(a,b,s)=>marginalInputEvent(ref,a,b,s,g.target))};
    const own=potentials.get(g.id);
    if(own)for(const base of group.bases){const q=ref.reverse?ref.input.sequence.length-ref.offset-base.position-1:base.position-ref.offset,possible=own.get(q)!;if(possible.size<2)continue;const peers=[...potentials].filter(([id,other])=>id!==g.id&&[...possible].filter(b=>other.get(q)?.has(b)).length>=2).map(([id])=>id);if(peers.length)base.sharedWith=peers;}
    const incoming=[...new Set(g.edges.map(e=>e.incoming))];

@@ -1,5 +1,5 @@
 import type {SangerAnalysisResult,SangerMarginalGroup} from '../../models/sanger-analysis';
-import {marginalSessions} from './sanger-marginal-state';
+import {marginalSessions,marginalReportBases} from './sanger-marginal-state';
 import {MarginalLinearSolver,type LinearTerm} from './sanger-marginal-lp';
 import {zeroLengthCompositionBounds} from './sanger-zero-length-composition';
 import {boundMarginalSubstitutionMass} from './sanger-marginal-substitution';
@@ -38,7 +38,7 @@ export function marginalGroupBounds(result:SangerAnalysisResult,groupId:string,p
  const solver=new MarginalLinearSolver({...target.program,localBlocks:undefined},session.optimizer),joint=jointBoundCertificates(target.program,session.optimizer),budgetUpper=nonnegativeBudgetEnvelope(target.program);
  try{
   if(!query){const familyMass=solver.bounds(g.mass),mass=marker?solver.bounds(marker.bases.flatMap(b=>g.bases.get(marker.position)![b])):familyMass;query={index:0,mass,familyMass,seconds:0,group:{...parent,bases:[],fractionRange:[Math.min(1,mass[0]/share),Math.min(1,mass[1]/share)],displayComponents:parent.displayComponents}};map.set(groupId,query);}
-  const positions=[...g.bases],evaluate=(terms:LinearTerm[])=>terms.reduce((n,[i,w])=>n+w*target.point[i],0);
+  const positions=marginalReportBases(g),evaluate=(terms:LinearTerm[])=>terms.reduce((n,[i,w])=>n+w*target.point[i],0);
   for(;query.index<positions.length;query.index++){
    if(performance.now()-started>=1000*timeSliceSeconds)break;
    const[q,forms]=positions[query.index];progress('Bounding selected group · '+(query.index+1)+' / '+positions.length);

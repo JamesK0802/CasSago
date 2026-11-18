@@ -1,0 +1,157 @@
+{
+  "scope": "Native check of reporting by own reference/target read window. All original inference rows remain. Measured checks are group sanity and ranges without external comparison. Synthetic pool compares matched standalone, with GT excluded from both fits.",
+  "overallScientificPass": false,
+  "measuredAudit": "/Users/james/Desktop/CasSago_Resume_20261112/validation-runs/single-reestablishment-20261116/measured-group-intervals-b333287/measured-audit.json",
+  "measuredGroupsCompleted": 35,
+  "measuredSamplesCompleted": 7,
+  "measuredRangesTooBroad": true,
+  "syntheticSingle": {
+    "cases": 62,
+    "jointGtRetrieved": 62,
+    "allPriorMarginalGroupReportsExactlyEqual": true
+  },
+  "syntheticSeparatedPool": {
+    "windows": 3,
+    "minCutSpacingBp": 120,
+    "matchedReportableGroups": 32,
+    "maxPointLengthDifferencePp": 0.030495486233786395,
+    "maxLengthIntervalEndpointDifferencePp": 0.26649759434126674,
+    "maxLengthWidthIncreasePp": 0.4760637274025009,
+    "exactRepresentativeDnaEqual": 21,
+    "maximumBaseTvDifferencePp": 10.915820613410261,
+    "physicalHashesAndRetainedBasePointsUnchanged": true,
+    "publicBasePositionsPerGroupBefore": 342,
+    "publicBasePositionsPerGroupAfter": 102,
+    "worstPointPositionRangeWitnesses": {
+      "single-2": [
+        {
+          "maximize": false,
+          "iteration": 1,
+          "ratio": -1.943405896161079e-11,
+          "mass": 0.03481154445602725,
+          "linearResidual": 0,
+          "violation": 3.383524008664562e-13,
+          "gap": 2.8421709430442466e-14,
+          "observed": [
+            0.004614674665436087,
+            0.9430087678818644,
+            0.004614674665436087,
+            0.0477618827872635
+          ],
+          "predicted": [
+            0.005931725750225473,
+            0.9416297098027805,
+            0.006055056227186,
+            0.04638350821980856
+          ],
+          "anchorPrediction": [
+            0.004640690408495412,
+            0.9429913982306126,
+            0.004623728647181824,
+            0.04774418271370862
+          ]
+        },
+        {
+          "maximize": true,
+          "iteration": 1,
+          "ratio": 1.0000000000971847,
+          "mass": 0.034330327083545845,
+          "linearResidual": -3.4843051634572166e-12,
+          "violation": 1.1554115846418423e-12,
+          "gap": 4.205868386699392e-09,
+          "observed": [
+            0.004614674665436087,
+            0.9430087678818644,
+            0.004614674665436087,
+            0.0477618827872635
+          ],
+          "predicted": [
+            0.005928237361709343,
+            0.9416249952928692,
+            0.0060454023680013074,
+            0.04640136497742002
+          ],
+          "anchorPrediction": [
+            0.004640690408495412,
+            0.9429913982306126,
+            0.004623728647181824,
+            0.04774418271370862
+          ]
+        }
+      ],
+      "pooled": [
+        {
+          "maximize": false,
+          "iteration": 1,
+          "ratio": -9.779924040010778e-11,
+          "mass": 0.012276078356574155,
+          "linearResidual": 0,
+          "violation": 6.00296147705814e-13,
+          "gap": 2.8421709430472253e-14,
+          "observed": [
+            0.3169070975187536,
+            0.3762261973456434,
+            0.15337564916330063,
+            0.15349105597230236
+          ],
+          "predicted": [
+            0.31835504507031454,
+            0.3747325618931055,
+            0.154913832350211,
+            0.15199856068636936
+          ],
+          "anchorPrediction": [
+            0.3168845304675172,
+            0.376144662773876,
+            0.153563091738649,
+            0.15340771501995912
+          ]
+        },
+        {
+          "maximize": true,
+          "iteration": 1,
+          "ratio": 1.0000000000216311,
+          "mass": 0.01125456160339922,
+          "linearResidual": -9.712033694625477e-13,
+          "violation": 8.260071451146845e-14,
+          "gap": 7.550616590535303e-10,
+          "observed": [
+            0.3169070975187536,
+            0.3762261973456434,
+            0.15337564916330063,
+            0.15349105597230236
+          ],
+          "predicted": [
+            0.3182764043169857,
+            0.37474592159695336,
+            0.1549167693378062,
+            0.15206090474825465
+          ],
+          "anchorPrediction": [
+            0.3168845304675172,
+            0.376144662773876,
+            0.153563091738649,
+            0.15340771501995912
+          ]
+        }
+      ]
+    }
+  },
+  "checks": {
+    "focusedTests": 131,
+    "productionBuildPassed": true
+  },
+  "remaining": [
+    "Real experimental base ranges remain broad.",
+    "3-reference two-target and complete matched base-range details pending.",
+    "Final browser equivalence and timing pending."
+  ],
+  "evidenceRoot": "/Users/james/Desktop/CasSago_Resume_20261112/validation-runs/genomic-support-20261116",
+  "sourceHashes": {
+    "sanger-marginal-state.ts": "59ac0e43e42a5a3131542660b3a36fd0ec5bc23b9bf2d217c4b7bf92c9a88faa",
+    "sanger-marginal-model.ts": "7cb7b4218a546464749d433e08aa17f1173ba3fc5fa954be3bc3fe99acb83715",
+    "sanger-marginal-point-report.ts": "e5082a7eac9f1db9967e73e5391df43d13b153c6761ec903b3d742aa185a28a1",
+    "sanger-marginal-group-bounds.ts": "d8204850d57da9ad9128fd35503c43df9603539e9fb247839dada4d27121fa09",
+    "sanger-marginal-display.ts": "64ca46f3cbda45a96ba31cdfac19da8b42fe9eadd3c94b80d8060540a85b5ae0"
+  }
+}

@@ -5,7 +5,7 @@ import type { Prepared } from './sanger-path-common';
 import type { selectMarginalRepresentative } from './sanger-representative-selection';
 
 export interface MarginalEdge {prefixColumns?:number[];reference:number;target:number;incoming:number;outgoing:number;size:number;start:number;mass:number;free:Map<number,number[]>}
-export interface MarginalInternalGroup {sharedInsertions?:boolean;flow?:Map<number,{unchanged:{base:number;column:number;cap:LinearTerm[]}[];changed:number[]}>;dye?:Map<number,LinearTerm[][]>;departures?:Map<number,LinearTerm[]>;id:string;reference:number;target:number;size:number;mass:LinearTerm[];bases:Map<number,LinearTerm[][]>;edges:MarginalEdge[];fraction:number;fractionRange:[number,number]}
+export interface MarginalInternalGroup {reportSupport?:{first:number;last:number};sharedInsertions?:boolean;flow?:Map<number,{unchanged:{base:number;column:number;cap:LinearTerm[]}[];changed:number[]}>;dye?:Map<number,LinearTerm[][]>;departures?:Map<number,LinearTerm[]>;id:string;reference:number;target:number;size:number;mass:LinearTerm[];bases:Map<number,LinearTerm[][]>;edges:MarginalEdge[];fraction:number;fractionRange:[number,number]}
 export interface MarginalMeasurement {noise?:number;position:number;forms:LinearTerm[][];total:LinearTerm[];observed:number[]}
 export interface MarginalTargetState {mutationNoiseVarianceSum?:number;mutationPriorOpportunities?:number;primaryPoint?:number[];measurements?:MarginalMeasurement[];program:MarginalProgram;groups:MarginalInternalGroup[];edges:MarginalEdge[];point:number[];positions:number[];tolerance:number}
 export interface MarginalSession {refs:Prepared[];shares:number[];targets:MarginalTargetState[];optimizer:SangerLinearOptimizer;pages:Map<string,unknown>}
@@ -13,3 +13,10 @@ export const marginalSessions=new WeakMap<SangerAnalysisResult,MarginalSession>(
 /** Optional scientific diagnostics; no truth or inference policy is supplied. */
 export const marginalModelDiagnostics:{representativeProgram?:(problem:{program:MarginalProgram;anchor:number[];photonForms:LinearTerm[][];originalColumns:number;proximityQuadraticCount:number})=>void;transport?:(value:{mutableSources:number[];changed:number[];massRow:number;capRows:(number|undefined)[];unchanged:{base:number;column:number;cap:LinearTerm[];mutable:boolean}[];halls:{base:number;row:number}[];insertionFirst?:number})=>void;observe?:(model:{program:MarginalProgram;refs:Prepared[];shares:number[];targets:MarginalTargetState[];states:{size:number;column:number}[][][];noise:number;phaseSeed:{column:number;value:number}[];measurements:MarginalMeasurement[];spectralPositions:number[];departures:LinearTerm[]})=>void;representativeFit?:(proof:ReturnType<typeof selectMarginalRepresentative>['summary'])=>void;primaryFit?:(proof:{point:number[];value:number;lower:number|undefined;shadow:number[];planes:{terms:LinearTerm[];upper:number}[]})=>void}={};
 export function marginalInputEvent(ref:Prepared,start:number,end:number,inserted:string,target:number):SangerJointEvent{const a=ref.offset+start,b=ref.offset+end;return{target:ref.reverse?ref.cuts.length-target:target+1,start:ref.reverse?ref.input.sequence.length-b:a,end:ref.reverse?ref.input.sequence.length-a:b,inserted:inserted.length,insertedSequence:ref.reverse?[...inserted].reverse().map(c=>({A:'T',C:'G',G:'C',T:'A'}[c]||'N')).join(''):inserted};}
+
+/** Joint inference uses the union of read cycles. Each reported group belongs
+ * to the support of its own reference and target. */
+export function marginalReportBases(group: MarginalInternalGroup) {
+ const support = group.reportSupport;
+ return [...group.bases].filter(([position]) => !support || position >= support.first && position <= support.last);
+}

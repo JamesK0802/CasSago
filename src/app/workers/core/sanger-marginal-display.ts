@@ -1,3 +1,4 @@
+import {marginalReportBases} from './sanger-marginal-state';
 import {conditionalZeroWitnesses} from './sanger-conditional-zero-witness';
 import {expandInsertionTransports} from './sanger-insertion-transport';
 import type {SangerMarginalGroup,SangerMarginalDisplayComponent,SangerJointEvent} from '../../models/sanger-analysis';
@@ -21,7 +22,7 @@ export function withinLengthDisplay(session:MarginalSession,target:MarginalTarge
  const active=g.edges.filter(e=>x[e.mass]>EPS),parts=new Map<string,Part>();
  // One genuinely mixed output site has no inter-site phase ambiguity. Its
  // nucleotide marginal itself defines a disjoint, exhaustive partition.
- const mixed=[...g.bases].filter(([,forms])=>forms.filter(f=>sum(f,x)>EPS).length>1);
+ const mixed=marginalReportBases(g).filter(([,forms])=>forms.filter(f=>sum(f,x)>EPS).length>1);
  if(active.length===1&&mixed.length===1&&display.representative){
   const e=active[0],[q,forms]=mixed[0],insertion=q>=e.start+e.incoming&&q<e.start+e.incoming+Math.max(0,e.size),at=q<e.start+e.incoming?q-e.incoming:q-e.outgoing;
   const rows:Part[]=[];
